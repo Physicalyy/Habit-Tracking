@@ -20,9 +20,12 @@ Habit-Tracking/
   docs/
     product/          # 产品需求、业务规则、流程
     api/              # 接口文档
-    design/           # 架构和技术设计
   scripts/            # 本地开发、构建、检查脚本
 ```
+
+设计原型、视觉稿和参考素材不放在本仓库，统一放在独立文档仓库：
+
+`git@github.com:Physicalyy/Habit-Tracking-docs.git`
 
 ## 子项目
 
