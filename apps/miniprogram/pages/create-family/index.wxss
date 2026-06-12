@@ -1,0 +1,70 @@
+.create-page {
+  padding: 24rpx 22rpx 188rpx;
+}
+
+.home-hero {
+  margin: 28rpx auto 0;
+  width: 686rpx;
+  max-width: 100%;
+  height: 222rpx;
+  overflow: hidden;
+  border-radius: 16rpx;
+}
+
+.home-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.form-card {
+  margin-top: 30rpx;
+}
+
+.tips-grid {
+  display: flex;
+  margin-top: 26rpx;
+}
+
+.tip-card {
+  flex: 1;
+  min-height: 140rpx;
+  padding: 20rpx;
+  background: #f2f4f2;
+  border-radius: 16rpx;
+}
+
+.tip-card + .tip-card {
+  margin-left: 16rpx;
+}
+
+.tip-icon {
+  color: #735c00;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.tip-blue {
+  color: #0c6780;
+}
+
+.tip-title {
+  margin-top: 8rpx;
+  color: #191c1b;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.tip-desc {
+  margin-top: 6rpx;
+  color: #6e7a75;
+  font-size: 20rpx;
+  line-height: 30rpx;
+}
+
+.terms-text {
+  margin-top: 18rpx;
+  color: #6e7a75;
+  font-size: 20rpx;
+  text-align: center;
+}

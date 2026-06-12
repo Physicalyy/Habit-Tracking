@@ -1,0 +1,35 @@
+<view class="page join-page">
+  <view class="top-bar">
+    <button class="icon-button">‹</button>
+    <view class="top-title">加入家庭</view>
+    <view class="icon-button"></view>
+  </view>
+
+  <view class="join-hero">
+    <view class="join-circle">
+      <image class="join-image" mode="aspectFit" src="/assets/onboarding/join-family-welcome.png" />
+    </view>
+  </view>
+
+  <view class="invite-card">
+    <view class="form-field">
+      <view class="field-label">输入邀请码</view>
+      <view class="form-input-wrap">
+        <input class="field-input code-input" type="number" value="{{inviteCode}}" maxlength="6" placeholder="请输入 6 位邀请码" bindinput="onInviteCodeInput" />
+        <view class="field-icon code-icon">⌘</view>
+      </view>
+    </view>
+
+    <view class="info-card join-info">
+      <view class="info-icon">i</view>
+      <view class="muted-text">加入后，你将成为成员家长。你可以查看记录，并根据习惯权限参与打卡。</view>
+    </view>
+
+    <view wx:if="{{errorMessage}}" class="error-text">{{errorMessage}}</view>
+  </view>
+
+  <view class="fixed-action">
+    <button class="primary-button" loading="{{submitting}}" bindtap="submitJoinFamily">加入家庭</button>
+    <button class="secondary-button scan-button">⌘  扫码加入家庭</button>
+  </view>
+</view>

@@ -1,0 +1,46 @@
+<view class="start-page">
+  <view class="brand-bar">
+    <view class="brand-content">
+      <text class="material-symbols-filled brand-symbol">{{icons.bubbleChart}}</text>
+      <text class="brand-name">宝宝成长记</text>
+    </view>
+  </view>
+
+  <view class="start-main">
+    <view class="hero-panel">
+      <view class="hero-blob primary-blob"></view>
+      <view class="hero-blob secondary-blob"></view>
+
+      <view class="hero-card float-animation">
+        <image class="hero-image" mode="aspectFill" src="/assets/onboarding/start-family-growth.png" />
+      </view>
+
+      <view class="floating-chip growth-chip">
+        <image class="chip-icon chip-image" mode="aspectFit" src="/assets/icons/eco-gold.png" />
+        <text>持续成长</text>
+      </view>
+      <view class="floating-chip love-chip">
+        <image class="chip-icon chip-image" mode="aspectFit" src="/assets/icons/favorite-teal.png" />
+        <text>爱与陪伴</text>
+      </view>
+    </view>
+
+    <view class="start-copy">
+      <view class="start-title">开始使用</view>
+      <view class="start-subtitle">先创建或加入一个家庭</view>
+      <view class="start-desc">家长需要加入家庭后，才能为孩子配置习惯并进行打卡。</view>
+    </view>
+
+    <view class="action-stack">
+      <view class="start-button create-button" bindtap="goCreateFamily" hover-class="tap-active">
+        <text class="material-symbols-outlined button-icon">{{icons.addHome}}</text>
+        <text>创建家庭</text>
+      </view>
+      <view class="start-button join-button" bindtap="goJoinFamily" hover-class="tap-active">
+        <text class="material-symbols-outlined button-icon">{{icons.groupAdd}}</text>
+        <text>加入家庭</text>
+      </view>
+    </view>
+
+  </view>
+</view>

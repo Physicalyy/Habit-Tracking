@@ -1,0 +1,47 @@
+.join-page {
+  padding: 24rpx 24rpx 194rpx;
+}
+
+.join-hero {
+  display: flex;
+  justify-content: center;
+  margin-top: 56rpx;
+}
+
+.join-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 420rpx;
+  height: 420rpx;
+  background: radial-gradient(circle, #f4f0d8 0%, #e9f4ef 72%);
+  border-radius: 999rpx;
+}
+
+.join-image {
+  display: block;
+  width: 292rpx;
+  height: 292rpx;
+}
+
+.invite-card {
+  margin-top: 46rpx;
+}
+
+.code-input {
+  font-weight: 700;
+  letter-spacing: 8rpx;
+}
+
+.code-icon {
+  left: auto;
+  right: 28rpx;
+}
+
+.join-info {
+  background: #ffffff;
+}
+
+.scan-button {
+  margin-top: 24rpx;
+}

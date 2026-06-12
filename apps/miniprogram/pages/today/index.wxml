@@ -1,0 +1,16 @@
+<view class="page today-page">
+  <view class="top-bar today-top">
+    <button class="icon-button">‹</button>
+    <view class="top-title">{{childNickname}}今日打卡</view>
+    <button class="icon-button">⋯</button>
+  </view>
+
+  <view class="empty-card">
+    <view class="empty-art float-animation">
+      <image class="empty-image" mode="aspectFit" src="/assets/onboarding/today-empty-sprout.png" />
+    </view>
+    <view class="empty-title">还没有配置习惯</view>
+    <view class="empty-desc">先从习惯库添加适合孩子的习惯</view>
+    <button class="primary-button empty-action">⊕  去配置习惯</button>
+  </view>
+</view>

@@ -1,0 +1,47 @@
+.profile-card {
+  display: flex;
+  align-items: center;
+  padding: 36rpx;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 112rpx;
+  height: 112rpx;
+  color: #005d4c;
+  background: #94f4d9;
+  border-radius: 999rpx;
+  font-size: 44rpx;
+  font-weight: 700;
+}
+
+.profile-name {
+  font-size: 36rpx;
+  font-weight: 700;
+  line-height: 48rpx;
+}
+
+.profile-info {
+  flex: 1;
+  margin-left: 24rpx;
+}
+
+.menu-card {
+  margin-top: 32rpx;
+  padding: 8rpx 32rpx;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 104rpx;
+  border-bottom: 2rpx solid #eceeec;
+  font-size: 30rpx;
+}
+
+.menu-item:last-child {
+  border-bottom: 0;
+}

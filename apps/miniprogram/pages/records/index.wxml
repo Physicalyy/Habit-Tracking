@@ -1,0 +1,9 @@
+<view class="page records-page">
+  <view class="page-title">记录</view>
+  <view class="page-subtitle">历史记录会在打卡闭环接入后展示。</view>
+
+  <view class="placeholder-card card">
+    <view class="placeholder-number">0</view>
+    <view class="muted-text">累计打卡天数</view>
+  </view>
+</view>

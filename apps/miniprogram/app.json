@@ -1,0 +1,39 @@
+{
+  "pages": [
+    "pages/start/index",
+    "pages/create-family/index",
+    "pages/join-family/index",
+    "pages/today/index",
+    "pages/records/index",
+    "pages/me/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "小小习惯",
+    "navigationBarBackgroundColor": "#f8faf8",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f8faf8",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#6e7a75",
+    "selectedColor": "#006b58",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/today/index",
+        "text": "今日"
+      },
+      {
+        "pagePath": "pages/records/index",
+        "text": "记录"
+      },
+      {
+        "pagePath": "pages/me/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
