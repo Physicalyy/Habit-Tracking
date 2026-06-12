@@ -56,3 +56,6 @@ project.private.config.json
 
 # Design assets live in Habit-Tracking-docs
 /docs/design/
+
+# Product specs live in Habit-Tracking-docs
+/docs/product/

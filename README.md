@@ -18,12 +18,11 @@ Habit-Tracking/
     seeds/            # 初始化数据脚本
     docs/             # 数据库设计说明
   docs/
-    product/          # 产品需求、业务规则、流程
     api/              # 接口文档
   scripts/            # 本地开发、构建、检查脚本
 ```
 
-设计原型、视觉稿和参考素材不放在本仓库，统一放在独立文档仓库：
+本仓库是公开主仓，产品规格、PRD、开发前规划、设计原型、视觉稿和参考素材不放在本仓库，统一放在独立文档仓库：
 
 `git@github.com:Physicalyy/Habit-Tracking-docs.git`
 
