@@ -45,6 +45,9 @@ miniprogram_npm/
 project.private.config.json
 
 # Local AI/Trellis/tool state
+AGENTS.md
+TESTING.md
+TOOL.md
 .agents/
 .claude/
 .codex/
