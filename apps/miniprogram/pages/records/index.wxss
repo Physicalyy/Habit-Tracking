@@ -1,0 +1,12 @@
+.placeholder-card {
+  margin-top: 40rpx;
+  padding: 48rpx 36rpx;
+  text-align: center;
+}
+
+.placeholder-number {
+  color: #006b58;
+  font-size: 72rpx;
+  font-weight: 700;
+  line-height: 88rpx;
+}

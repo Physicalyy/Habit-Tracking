@@ -1,0 +1,24 @@
+<view class="page me-page">
+  <view class="profile-card card">
+    <view class="avatar">{{avatarText}}</view>
+    <view class="profile-info">
+      <view class="profile-name">{{nickname}}</view>
+      <view class="profile-family muted-text">{{familyName}}</view>
+    </view>
+  </view>
+
+  <view class="menu-card card">
+    <view class="menu-item">
+      <text>家庭成员</text>
+      <text class="muted-text">待接入</text>
+    </view>
+    <view class="menu-item">
+      <text>习惯库</text>
+      <text class="muted-text">待接入</text>
+    </view>
+    <view class="menu-item">
+      <text>习惯管理</text>
+      <text class="muted-text">待接入</text>
+    </view>
+  </view>
+</view>
