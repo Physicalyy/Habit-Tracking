@@ -19,8 +19,8 @@
             <artifactId>habit-boot-base-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.physicalyy</groupId>
-            <artifactId>habit-family</artifactId>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
         </dependency>
     </dependencies>
 </project>

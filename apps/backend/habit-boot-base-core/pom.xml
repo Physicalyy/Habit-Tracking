@@ -12,4 +12,11 @@
 
     <artifactId>habit-boot-base-core</artifactId>
     <name>habit-boot-base-core</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+        </dependency>
+    </dependencies>
 </project>

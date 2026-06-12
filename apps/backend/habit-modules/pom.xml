@@ -16,6 +16,7 @@
 
     <modules>
         <module>habit-auth</module>
+        <module>habit-me</module>
         <module>habit-family</module>
         <module>habit-child</module>
         <module>habit-habit</module>
