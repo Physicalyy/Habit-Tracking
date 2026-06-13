@@ -30,6 +30,7 @@ function createEmptySession() {
     inviteCode: null,
     familyMembers: [],
     childHabits: [],
+    checkins: [],
     customTemplates: [],
   };
 }

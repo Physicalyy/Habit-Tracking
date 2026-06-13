@@ -5,6 +5,11 @@
   padding: 24rpx 24rpx 150rpx;
 }
 
+.today-state {
+  margin-top: 40rpx;
+  text-align: center;
+}
+
 .empty-card {
   display: flex;
   flex: 1;
@@ -44,4 +49,91 @@
 .empty-action {
   width: 344rpx;
   margin-top: 38rpx;
+}
+
+.today-list {
+  margin-top: 28rpx;
+}
+
+.today-habit-card {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding: 26rpx;
+}
+
+.habit-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 88rpx;
+  height: 88rpx;
+  color: #006b58;
+  background: #e6f7f1;
+  border-radius: 20rpx;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.habit-image {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 20rpx;
+}
+
+.habit-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: 22rpx;
+}
+
+.habit-name {
+  color: #191c1b;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 42rpx;
+}
+
+.habit-desc {
+  margin-top: 6rpx;
+  color: #56625d;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.habit-meta {
+  margin-top: 10rpx;
+  color: #56625d;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.permission-ok,
+.permission-deny {
+  margin-left: 18rpx;
+}
+
+.permission-ok {
+  color: #006b58;
+}
+
+.permission-deny {
+  color: #8a4b00;
+}
+
+.checkin-action {
+  flex: none;
+  margin-left: 18rpx;
+  padding: 18rpx 24rpx;
+  color: #ffffff;
+  background: #006b58;
+  border-radius: 16rpx;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.checkin-action-disabled {
+  color: #7d8782;
+  background: #eef1ef;
 }

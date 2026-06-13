@@ -81,6 +81,20 @@ function childHabitPermissions(childId, childHabitId) {
   });
 }
 
+function todayHabits(childId) {
+  return Object.freeze({
+    method: "GET",
+    path: `/api/children/${childId}/today`,
+  });
+}
+
+function checkinHabit(childId, childHabitId) {
+  return Object.freeze({
+    method: "POST",
+    path: `/api/children/${childId}/habits/${childHabitId}/checkins`,
+  });
+}
+
 module.exports = {
   API_ENDPOINTS,
   familyInvite,
@@ -91,4 +105,6 @@ module.exports = {
   childHabit,
   childHabitStatus,
   childHabitPermissions,
+  todayHabits,
+  checkinHabit,
 };

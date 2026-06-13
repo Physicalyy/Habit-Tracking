@@ -44,6 +44,8 @@ const requiredApiPaths = [
   "PATCH /api/children/{childId}/habits/{childHabitId}",
   "PATCH /api/children/{childId}/habits/{childHabitId}/status",
   "PUT /api/children/{childId}/habits/{childHabitId}/permissions",
+  "GET /api/children/{childId}/today",
+  "POST /api/children/{childId}/habits/{childHabitId}/checkins",
   "POST /api/habit-templates/custom",
 ];
 
@@ -145,6 +147,8 @@ function assertApiConfiguration() {
     "function familyMembers",
     "function childHabits",
     "function childHabitPermissions",
+    "function todayHabits",
+    "function checkinHabit",
   ]) {
     assertTextIncludes(join(rootDir, "core/api.js"), token);
   }
@@ -172,6 +176,8 @@ function assertRoutesAndServices() {
     ["services/family-service.js", ["getFamilyInvite", "refreshFamilyInvite", "listFamilyMembers", "familyMembers("]],
     ["services/habit-service.js", ["listHabitTemplates", "API_ENDPOINTS.HABIT_TEMPLATES"]],
     ["services/child-habit-service.js", ["listChildHabits", "addSystemTemplateToChild", "createCustomHabit", "updateChildHabit", "updateChildHabitStatus", "updateChildHabitPermission", "childHabitPermissions("]],
+    ["services/checkin-service.js", ["listTodayHabits", "checkinHabit", "todayHabits(", "checkinHabit("]],
+    ["pages/today/index.js", ["listTodayHabits", "checkinHabit", "todayHabits", "checkedText", "canCheckin"]],
     ["pages/me/index.js", ["ROUTES.FAMILY_MEMBERS", "ROUTES.FAMILY_INVITE", "goFamilyMembers", "goFamilyInvite", "isFamilyAdmin"]],
     ["pages/habit-manage/index.js", ["ROUTES.HABIT_PERMISSION", "goHabitPermission", "canManageHabits", "permissionTypeText"]],
     ["pages/family-members/index.js", ["listFamilyMembers", "getBootstrap", "goFamilyInvite", "memberCount", "isFamilyAdmin"]],
@@ -205,6 +211,10 @@ async function assertMockFlow() {
     updateChildHabitStatus,
     updateChildHabitPermission,
   } = requireFromRoot("./services/child-habit-service.js");
+  const {
+    listTodayHabits,
+    checkinHabit,
+  } = requireFromRoot("./services/checkin-service.js");
 
   setRequestConfig({ useMockApi: true });
   resetMockSession();
@@ -239,6 +249,13 @@ async function assertMockFlow() {
   });
   assert.equal(permission.permissionType, "SPECIFIC_PARENTS");
   assert.deepEqual(permission.allowedMemberIds, [ownerMembers[0].id]);
+  const todayHabits = await listTodayHabits(childId);
+  assert.equal(todayHabits.length, 1);
+  assert.equal(todayHabits[0].checked, false);
+  assert.equal(todayHabits[0].canCheckin, true);
+  const checked = await checkinHabit(childId, addedHabit.id);
+  assert.equal(checked.checked, true);
+  await assert.rejects(() => checkinHabit(childId, addedHabit.id), /已打卡|already checked/);
 
   const custom = await createCustomHabit({
     childId,
@@ -258,6 +275,8 @@ async function assertMockFlow() {
   assert.equal((await listFamilyMembers(joined.family.id)).length, 2);
   await assert.rejects(() => refreshFamilyInvite(joined.family.id), /主家长/);
   const memberHabit = await addSystemTemplateToChild(joined.child.id, templates[0].id);
+  const memberToday = await listTodayHabits(joined.child.id);
+  assert.equal(memberToday[0].canCheckin, true);
   await assert.rejects(
     () => updateChildHabitPermission(joined.child.id, memberHabit.id, { permissionType: "OWNER_ONLY" }),
     /主家长/,
@@ -287,6 +306,7 @@ for (const path of [
   "services/family-service.js",
   "services/habit-service.js",
   "services/child-habit-service.js",
+  "services/checkin-service.js",
   "services/session-state.js",
 ]) {
   assertFile(join(rootDir, path));

@@ -323,6 +323,42 @@ Request:
 
 Response `data`: same shape as one child habit item in `GET /api/children/{childId}/habits`.
 
+## GET /api/children/{childId}/today
+
+Purpose: list active habits for today's check-in page. The response merges the
+child-habit snapshot, today's check-in state, and the current member's check-in
+permission.
+
+Response `data`:
+
+```json
+[
+  {
+    "childHabitId": 10001,
+    "childId": 3001,
+    "name": "Drink Water",
+    "description": "Drink water during the day.",
+    "iconKey": "water_drop",
+    "imageUrl": "",
+    "permissionType": "ALL_PARENTS",
+    "canCheckin": true,
+    "checked": false,
+    "checkinId": null,
+    "checkedByMemberId": null,
+    "checkinDate": null,
+    "checkedTime": null
+  }
+]
+```
+
+## POST /api/children/{childId}/habits/{childHabitId}/checkins
+
+Purpose: create today's check-in for the child habit. Duplicate check-ins and
+unauthorized parent members return the common error envelope.
+
+Response `data`: same item shape as `GET /api/children/{childId}/today`, with
+`checked=true`.
+
 ## PATCH /api/children/{childId}/habits/{childHabitId}
 
 Purpose: update basic snapshot fields for a child habit. Permission is not edited in this slice.

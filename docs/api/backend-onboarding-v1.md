@@ -553,6 +553,58 @@ Behavior:
 | 400 | `BAD_REQUEST` | `Allowed members are required` |
 | 400 | `BAD_REQUEST` | `Allowed member is invalid` |
 
+## Today Check-In
+
+### List Today Habits
+
+`GET /api/children/{childId}/today`
+
+Returns active child habits for the current child and merges today's check-in
+state plus the current member's permission state. Disabled habits are excluded.
+
+Response `data`:
+
+```json
+[
+  {
+    "childHabitId": 10001,
+    "childId": 3001,
+    "name": "Drink Water",
+    "description": "Drink water during the day.",
+    "iconKey": "water_drop",
+    "imageUrl": "",
+    "permissionType": "ALL_PARENTS",
+    "canCheckin": true,
+    "checked": false,
+    "checkinId": null,
+    "checkedByMemberId": null,
+    "checkinDate": null,
+    "checkedTime": null
+  }
+]
+```
+
+### Create Check-In
+
+`POST /api/children/{childId}/habits/{childHabitId}/checkins`
+
+Creates today's check-in record for the child habit. The backend validates
+family membership, child ownership, active habit status, permission, and the
+one-record-per-habit-per-day unique rule.
+
+Response `data`: same item shape as `GET /api/children/{childId}/today`, with
+`checked=true` and check-in fields filled.
+
+### Errors
+
+| HTTP Status | Code | Message |
+| --- | --- | --- |
+| 400 | `BAD_REQUEST` | `Child not found` |
+| 400 | `BAD_REQUEST` | `Current user is not a family member` |
+| 400 | `BAD_REQUEST` | `Child habit not found or disabled` |
+| 400 | `BAD_REQUEST` | `Current member cannot check in this habit` |
+| 400 | `BAD_REQUEST` | `Habit already checked in today` |
+
 ## Out Of Scope
 
 - Production WeChat AppSecret handling and token refresh.

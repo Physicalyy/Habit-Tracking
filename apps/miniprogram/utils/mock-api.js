@@ -308,6 +308,55 @@ function listChildHabits(childId) {
   return ok(session.childHabits || []);
 }
 
+function todayKey() {
+  return "2026-06-13";
+}
+
+function canCheckin(habit, session) {
+  if (habit.permissionType === "ALL_PARENTS") {
+    return true;
+  }
+  if (habit.permissionType === "OWNER_ONLY") {
+    return String(habit.createdByMemberId) === String(session.member.id);
+  }
+  if (habit.permissionType === "SPECIFIC_PARENTS") {
+    return (habit.allowedMemberIds || []).map((id) => String(id)).includes(String(session.member.id));
+  }
+  return false;
+}
+
+function toTodayHabit(habit, session) {
+  const record = (session.checkins || []).find((item) => (
+    String(item.childHabitId) === String(habit.id) &&
+    item.checkinDate === todayKey()
+  ));
+  return {
+    childHabitId: habit.id,
+    childId: habit.childId,
+    name: habit.name,
+    description: habit.description,
+    iconKey: habit.iconKey,
+    imageUrl: habit.imageUrl || "",
+    permissionType: habit.permissionType,
+    canCheckin: canCheckin(habit, session),
+    checked: Boolean(record),
+    checkinId: record ? record.id : null,
+    checkedByMemberId: record ? record.checkedByMemberId : null,
+    checkinDate: record ? record.checkinDate : null,
+    checkedTime: record ? record.checkedTime : null,
+  };
+}
+
+function listTodayHabits(childId) {
+  const { session, error } = requireChildSession(childId);
+  if (error) {
+    return error;
+  }
+  return ok((session.childHabits || [])
+    .filter((habit) => habit.status === "active")
+    .map((habit) => toTodayHabit(habit, session)));
+}
+
 function addChildHabit(childId, data) {
   const { session, error } = requireChildSession(childId);
   if (error) {
@@ -435,6 +484,45 @@ function updateChildHabitPermission(childId, childHabitId, data) {
   });
 }
 
+function checkinHabit(childId, childHabitId) {
+  const { session, error } = requireChildSession(childId);
+  if (error) {
+    return error;
+  }
+  const habit = (session.childHabits || []).find((item) => (
+    String(item.id) === String(childHabitId) &&
+    item.status === "active"
+  ));
+  if (!habit) {
+    return fail("孩子习惯不存在或已停用");
+  }
+  if (!canCheckin(habit, session)) {
+    return fail("当前家长无打卡权限");
+  }
+  const existing = (session.checkins || []).find((item) => (
+    String(item.childHabitId) === String(childHabitId) &&
+    item.checkinDate === todayKey()
+  ));
+  if (existing) {
+    return fail("今天已打卡");
+  }
+  const record = {
+    id: `checkin_${Date.now()}`,
+    familyId: session.family.id,
+    childId,
+    childHabitId,
+    checkinDate: todayKey(),
+    checkedByMemberId: session.member.id,
+    checkedTime: "2026-06-13T12:00:00",
+  };
+  const nextSession = {
+    ...session,
+    checkins: [...(session.checkins || []), record],
+  };
+  saveMockSession(nextSession);
+  return ok(toTodayHabit(habit, nextSession));
+}
+
 function createCustomHabit(data) {
   const { session, error } = requireChildSession(data.childId);
   if (error) {
@@ -506,6 +594,11 @@ async function handleMockRequest({ endpoint, data = {} }) {
     return listChildHabits(childId);
   }
 
+  if (endpoint.path && endpoint.method === "GET" && /\/api\/children\/[^/]+\/today$/.test(endpoint.path)) {
+    const childId = endpoint.path.match(/\/api\/children\/([^/]+)\/today$/)[1];
+    return listTodayHabits(childId);
+  }
+
   if (endpoint.path && endpoint.method === "POST" && /\/api\/children\/[^/]+\/habits$/.test(endpoint.path)) {
     const childId = endpoint.path.match(/\/api\/children\/([^/]+)\/habits$/)[1];
     return addChildHabit(childId, data);
@@ -524,6 +617,11 @@ async function handleMockRequest({ endpoint, data = {} }) {
   if (endpoint.path && endpoint.method === "PUT" && /\/api\/children\/[^/]+\/habits\/[^/]+\/permissions$/.test(endpoint.path)) {
     const [, childId, childHabitId] = endpoint.path.match(/\/api\/children\/([^/]+)\/habits\/([^/]+)\/permissions$/);
     return updateChildHabitPermission(childId, childHabitId, data);
+  }
+
+  if (endpoint.path && endpoint.method === "POST" && /\/api\/children\/[^/]+\/habits\/[^/]+\/checkins$/.test(endpoint.path)) {
+    const [, childId, childHabitId] = endpoint.path.match(/\/api\/children\/([^/]+)\/habits\/([^/]+)\/checkins$/);
+    return checkinHabit(childId, childHabitId);
   }
 
   if (endpoint.path && /\/api\/families\/[^/]+\/members$/.test(endpoint.path)) {
