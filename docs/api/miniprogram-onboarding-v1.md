@@ -12,7 +12,7 @@
 }
 ```
 
-## POST /auth/wechat-login
+## POST /api/auth/wechat-login
 
 用途：用微信登录 code 换取应用登录态。
 
@@ -37,7 +37,7 @@
 }
 ```
 
-## GET /me/bootstrap
+## GET /api/me/bootstrap
 
 用途：获取小程序启动所需的当前态。
 
@@ -70,13 +70,13 @@
     {
       "id": "family_mock_created",
       "name": "小宝之家",
-      "role": "OWNER"
+      "admin": true
     }
   ],
   "defaultFamily": {
     "id": "family_mock_created",
     "name": "小宝之家",
-    "role": "OWNER"
+    "admin": true
   },
   "defaultChild": {
     "id": "child_mock_created",
@@ -87,7 +87,7 @@
 }
 ```
 
-## POST /families
+## POST /api/families
 
 用途：创建家庭、主家长成员关系和默认孩子。
 
@@ -95,7 +95,7 @@
 
 ```json
 {
-  "familyName": "小宝之家",
+  "name": "小宝之家",
   "childNickname": "小宝"
 }
 ```
@@ -107,27 +107,27 @@
   "family": {
     "id": "family_mock_created",
     "name": "小宝之家",
-    "role": "OWNER"
+    "admin": true
   },
   "child": {
     "id": "child_mock_created",
     "familyId": "family_mock_created",
     "nickname": "小宝"
   },
-  "member": {
-    "id": "member_mock_owner",
-    "role": "OWNER",
-    "displayName": "我"
+  "inviteCode": {
+    "code": "123456",
+    "status": "active",
+    "expiresTime": "2026-06-20T12:00:00"
   }
 }
 ```
 
 校验：
 
-- `familyName` 必填。
+- `name` 必填。
 - `childNickname` 必填。
 
-## POST /families/join
+## POST /api/families/join
 
 用途：通过 6 位邀请码加入家庭。
 
@@ -146,7 +146,7 @@
   "family": {
     "id": "family_mock_joined",
     "name": "阳光家庭",
-    "role": "MEMBER"
+    "admin": false
   },
   "child": {
     "id": "child_mock_joined",
@@ -155,8 +155,10 @@
   },
   "member": {
     "id": "member_mock_joined",
-    "role": "MEMBER",
-    "displayName": "我"
+    "familyId": "family_mock_joined",
+    "userId": "user_mock_parent",
+    "displayName": "我",
+    "admin": false
   }
 }
 ```
@@ -164,4 +166,30 @@
 校验：
 
 - `inviteCode` 必须是 6 位数字。
-- 当前 mock 阶段任意 6 位数字都视为可加入。
+## GET /api/families/{familyId}/invite
+
+用途：查询当前家庭有效邀请码。
+
+响应 `data`：
+
+```json
+{
+  "code": "123456",
+  "status": "active",
+  "expiresTime": "2026-06-20T12:00:00"
+}
+```
+
+## POST /api/families/{familyId}/invite/refresh
+
+用途：刷新当前家庭邀请码。刷新后旧邀请码失效，新邀请码可加入家庭。
+
+响应 `data`：
+
+```json
+{
+  "code": "654321",
+  "status": "active",
+  "expiresTime": "2026-06-20T12:00:00"
+}
+```

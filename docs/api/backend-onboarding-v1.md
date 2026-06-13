@@ -34,7 +34,45 @@ Error responses keep the same shape:
 | `X-Test-Openid` | Yes | Mock current user's WeChat openid. |
 | `X-Test-Nickname` | No | Mock current user's nickname. |
 
-V1 does not implement real WeChat login, JWT, or token refresh.
+V1 keeps test headers for local development. Real WeChat code exchange can be
+enabled later through configuration without changing the public response shape.
+
+## WeChat Login
+
+`POST /api/auth/wechat-login`
+
+### Request
+
+```json
+{
+  "code": "wx-login-code"
+}
+```
+
+### Behavior
+
+- In local development, creates or reuses the current account from
+  `X-Test-Openid`.
+- Returns a temporary application token and current user summary.
+- Does not require clients to guess bootstrap fields from the login response.
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "code": "OK",
+  "message": "ok",
+  "data": {
+    "token": "test-token-1001",
+    "user": {
+      "id": 1001,
+      "openid": "test-openid-001",
+      "nickname": "Parent"
+    }
+  }
+}
+```
 
 ## Bootstrap Current User
 
@@ -180,11 +218,91 @@ client idempotency key for repeated button taps.
 | 400 | `BAD_REQUEST` | `X-Test-Openid is required` |
 | 400 | `BAD_REQUEST` | `Request validation failed` |
 
+## Join Family
+
+`POST /api/families/join`
+
+### Request
+
+```json
+{
+  "inviteCode": "123456"
+}
+```
+
+### Behavior
+
+- Validates that the invite code is 6 digits, active, not deleted, and not
+  expired.
+- Creates or reactivates the current user's family member record.
+- Returns the joined family, default child, and current member summary.
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "code": "OK",
+  "message": "ok",
+  "data": {
+    "family": {
+      "id": 2001,
+      "name": "Little Bao Family",
+      "admin": false
+    },
+    "child": {
+      "id": 3001,
+      "familyId": 2001,
+      "nickname": "Little Bao"
+    },
+    "member": {
+      "id": 4002,
+      "familyId": 2001,
+      "userId": 1002,
+      "displayName": "Grandma",
+      "admin": false
+    }
+  }
+}
+```
+
+## Family Invite Code
+
+`GET /api/families/{familyId}/invite`
+
+Returns the current active invite code. Only the family admin can query it.
+
+`POST /api/families/{familyId}/invite/refresh`
+
+Invalidates existing active invite codes for the family and creates a new
+6-digit code valid for 7 days. Only the family admin can refresh it.
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "code": "OK",
+  "message": "ok",
+  "data": {
+    "code": "654321",
+    "status": "active",
+    "expiresTime": "2026-06-20T12:00:00"
+  }
+}
+```
+
+### Errors
+
+| HTTP Status | Code | Message |
+| --- | --- | --- |
+| 400 | `BAD_REQUEST` | `Request validation failed` |
+| 400 | `BAD_REQUEST` | `Invite code is invalid or expired` |
+| 400 | `BAD_REQUEST` | `Only family admin can manage invite code` |
+
 ## Out Of Scope
 
-- Real WeChat login and session management.
-- Join family by invite code.
-- Refresh, invalidate, or share invite code APIs.
+- Production WeChat AppSecret handling and token refresh.
 - Habit template/library APIs.
 - Child habit configuration APIs.
 - Today check-in APIs.

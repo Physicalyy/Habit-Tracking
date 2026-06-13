@@ -27,6 +27,7 @@ function createEmptySession() {
     family: null,
     child: null,
     member: null,
+    inviteCode: null,
   };
 }
 

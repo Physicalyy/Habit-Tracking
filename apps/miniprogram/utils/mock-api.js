@@ -23,7 +23,7 @@ function toBootstrap(session) {
         {
           id: session.family.id,
           name: session.family.name,
-          role: session.member.role,
+          admin: Boolean(session.member.admin),
         },
       ]
     : [];
@@ -38,7 +38,7 @@ function toBootstrap(session) {
 }
 
 function createFamily(data) {
-  const familyName = String(data.familyName || "").trim();
+  const familyName = String(data.name || data.familyName || "").trim();
   const childNickname = String(data.childNickname || "").trim();
 
   if (!familyName) {
@@ -52,7 +52,7 @@ function createFamily(data) {
   const family = {
     id: "family_mock_created",
     name: familyName,
-    role: "OWNER",
+    admin: true,
   };
   const child = {
     id: "child_mock_created",
@@ -61,7 +61,46 @@ function createFamily(data) {
   };
   const member = {
     id: "member_mock_owner",
-    role: "OWNER",
+    admin: true,
+    displayName: "我",
+  };
+  const inviteCode = {
+    code: "123456",
+    status: "active",
+    expiresTime: "2026-06-20T12:00:00",
+  };
+
+  saveMockSession({
+    ...getMockSession(),
+    family,
+    child,
+    member,
+    inviteCode,
+  });
+
+  return ok({ family, child, member, inviteCode });
+}
+
+function joinFamily(data) {
+  const inviteCode = String(data.inviteCode || "").trim();
+
+  if (!/^\d{6}$/.test(inviteCode)) {
+    return fail("请输入 6 位邀请码");
+  }
+
+  const family = {
+    id: "family_mock_joined",
+    name: "阳光家庭",
+    admin: false,
+  };
+  const child = {
+    id: "child_mock_joined",
+    familyId: family.id,
+    nickname: "小朋友",
+  };
+  const member = {
+    id: "member_mock_joined",
+    admin: false,
     displayName: "我",
   };
 
@@ -75,37 +114,26 @@ function createFamily(data) {
   return ok({ family, child, member });
 }
 
-function joinFamily(data) {
-  const inviteCode = String(data.inviteCode || "").trim();
+function getFamilyInvite() {
+  const session = getMockSession();
+  return ok(session.inviteCode || {
+    code: "123456",
+    status: "active",
+    expiresTime: "2026-06-20T12:00:00",
+  });
+}
 
-  if (!/^\d{6}$/.test(inviteCode)) {
-    return fail("请输入 6 位邀请码");
-  }
-
-  const family = {
-    id: "family_mock_joined",
-    name: "阳光家庭",
-    role: "MEMBER",
+function refreshFamilyInvite() {
+  const nextInviteCode = {
+    code: "654321",
+    status: "active",
+    expiresTime: "2026-06-20T12:00:00",
   };
-  const child = {
-    id: "child_mock_joined",
-    familyId: family.id,
-    nickname: "小朋友",
-  };
-  const member = {
-    id: "member_mock_joined",
-    role: "MEMBER",
-    displayName: "我",
-  };
-
   saveMockSession({
     ...getMockSession(),
-    family,
-    child,
-    member,
+    inviteCode: nextInviteCode,
   });
-
-  return ok({ family, child, member });
+  return ok(nextInviteCode);
 }
 
 async function handleMockRequest({ endpoint, data = {} }) {
@@ -128,6 +156,14 @@ async function handleMockRequest({ endpoint, data = {} }) {
 
   if (endpoint === API_ENDPOINTS.JOIN_FAMILY) {
     return joinFamily(data);
+  }
+
+  if (endpoint.path && /\/api\/families\/[^/]+\/invite$/.test(endpoint.path)) {
+    return getFamilyInvite();
+  }
+
+  if (endpoint.path && /\/api\/families\/[^/]+\/invite\/refresh$/.test(endpoint.path)) {
+    return refreshFamilyInvite();
   }
 
   return {

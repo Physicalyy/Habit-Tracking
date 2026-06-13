@@ -25,10 +25,12 @@ const tabPages = [
 ];
 
 const requiredApiPaths = [
-  "POST /auth/wechat-login",
-  "GET /me/bootstrap",
-  "POST /families",
-  "POST /families/join",
+  "POST /api/auth/wechat-login",
+  "GET /api/me/bootstrap",
+  "POST /api/families",
+  "POST /api/families/join",
+  "GET /api/families/{familyId}/invite",
+  "POST /api/families/{familyId}/invite/refresh",
 ];
 
 const requiredAssets = [
@@ -122,6 +124,46 @@ function assertNoRawApiUrls(pagePath) {
       `${jsPath} must not contain raw API path ${rawPath}`,
     );
   }
+}
+
+function assertApiConfiguration() {
+  const apiSource = readFileSync(join(rootDir, "core/api.js"), "utf8");
+  for (const apiPath of requiredApiPaths) {
+    const rawPath = apiPath.replace(/^[A-Z]+ /, "");
+    const prefix = rawPath.split("{")[0];
+    assert.ok(
+      apiSource.includes(prefix),
+      `core/api.js must define endpoint prefix ${prefix}`,
+    );
+  }
+  assert.ok(
+    apiSource.includes("function familyInvite") &&
+      apiSource.includes("function refreshFamilyInvite"),
+    "core/api.js must expose dynamic invite endpoint builders",
+  );
+
+  const requestSource = readFileSync(join(rootDir, "utils/request.js"), "utf8");
+  assert.ok(
+    !requestSource.includes("const USE_MOCK_API = true"),
+    "utils/request.js must not force mock API on by default",
+  );
+  assert.ok(
+    requestSource.includes("setRequestConfig") &&
+      requestSource.includes("useMockApi"),
+    "utils/request.js must expose explicit request configuration",
+  );
+  assert.ok(
+    requestSource.includes('"X-Test-Openid"') &&
+      requestSource.includes('"X-Test-Nickname"'),
+    "utils/request.js must support development test identity headers",
+  );
+
+  const familyServiceSource = readFileSync(join(rootDir, "services/family-service.js"), "utf8");
+  assert.ok(
+    familyServiceSource.includes("getFamilyInvite") &&
+      familyServiceSource.includes("refreshFamilyInvite"),
+    "family-service.js must expose invite query and refresh functions",
+  );
 }
 
 function assertCommonJsRuntimeModule(path) {
@@ -306,10 +348,17 @@ function assertStartPrototypeStructure() {
 }
 
 async function assertMockFlow() {
+  const { setRequestConfig } = requireFromRoot("./utils/request.js");
   const { resetMockSession } = requireFromRoot("./services/session-state.js");
   const { getBootstrap } = requireFromRoot("./services/bootstrap-service.js");
-  const { createFamily, joinFamily } = requireFromRoot("./services/family-service.js");
+  const {
+    createFamily,
+    joinFamily,
+    getFamilyInvite,
+    refreshFamilyInvite,
+  } = requireFromRoot("./services/family-service.js");
 
+  setRequestConfig({ useMockApi: true });
   resetMockSession();
   const emptyBootstrap = await getBootstrap();
   assert.equal(emptyBootstrap.needOnboarding, true);
@@ -322,6 +371,9 @@ async function assertMockFlow() {
   });
   assert.equal(created.family.name, "小宝之家");
   assert.equal(created.child.nickname, "小宝");
+  assert.equal(created.inviteCode.code, "123456");
+  assert.equal((await getFamilyInvite(created.family.id)).code, "123456");
+  assert.equal((await refreshFamilyInvite(created.family.id)).code, "654321");
 
   const createdBootstrap = await getBootstrap();
   assert.equal(createdBootstrap.needOnboarding, false);
@@ -331,7 +383,8 @@ async function assertMockFlow() {
   resetMockSession();
   const joined = await joinFamily({ inviteCode: "123456" });
   assert.equal(joined.family.name, "阳光家庭");
-  assert.equal(joined.member.role, "MEMBER");
+  assert.equal(joined.family.admin, false);
+  assert.equal(joined.member.admin, false);
   assert.equal((await getBootstrap()).needOnboarding, false);
 }
 
@@ -366,6 +419,7 @@ for (const page of requiredPages) {
 
 assertFile(join(rootDir, "core/api.js"));
 assertCommonJsRuntimeModule(join(rootDir, "core/api.js"));
+assertApiConfiguration();
 assertFile(join(rootDir, "core/routes.js"));
 assertCommonJsRuntimeModule(join(rootDir, "core/routes.js"));
 assertFile(join(rootDir, "utils/request.js"));
