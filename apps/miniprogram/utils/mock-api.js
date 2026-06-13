@@ -110,7 +110,7 @@ function toBootstrap(session) {
     : [];
 
   return {
-    user: session.user,
+    currentUser: session.user,
     families,
     defaultFamily: families[0] || null,
     defaultChild: session.child,

@@ -31,8 +31,8 @@
   "token": "mock-token",
   "user": {
     "id": "user_mock_parent",
+    "openid": "mock-openid",
     "nickname": "新手家长",
-    "avatarUrl": ""
   }
 }
 ```
@@ -45,10 +45,10 @@
 
 ```json
 {
-  "user": {
+  "currentUser": {
     "id": "user_mock_parent",
-    "nickname": "新手家长",
-    "avatarUrl": ""
+    "openid": "mock-openid",
+    "nickname": "新手家长"
   },
   "families": [],
   "defaultFamily": null,
@@ -61,10 +61,10 @@
 
 ```json
 {
-  "user": {
+  "currentUser": {
     "id": "user_mock_parent",
-    "nickname": "新手家长",
-    "avatarUrl": ""
+    "openid": "mock-openid",
+    "nickname": "新手家长"
   },
   "families": [
     {

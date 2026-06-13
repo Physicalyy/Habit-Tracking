@@ -13,7 +13,8 @@ Page({
 
   async onShow() {
     const bootstrap = await getBootstrap();
-    const nickname = bootstrap.user.nickname || "新手家长";
+    const currentUser = bootstrap.currentUser || {};
+    const nickname = currentUser.nickname || "新手家长";
     const family = bootstrap.defaultFamily;
     const child = bootstrap.defaultChild;
     this.setData({

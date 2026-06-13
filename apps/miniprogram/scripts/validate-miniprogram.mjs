@@ -184,7 +184,7 @@ function assertRoutesAndServices() {
     ["pages/today/index.js", ["listTodayHabits", "checkinHabit", "todayHabits", "checkedText", "canCheckin"]],
     ["pages/records/index.js", ["listCheckinHistory", "getCheckinSummary", "historyGroups", "totalCheckinDays", "ROUTES.START", "redirectTo"]],
     ["pages/records/index.wxml", ["historyGroups", "record.habitName", "totalCheckinCount", "totalCheckinDays"]],
-    ["pages/me/index.js", ["ROUTES.FAMILY_MEMBERS", "ROUTES.FAMILY_INVITE", "goFamilyMembers", "goFamilyInvite", "isFamilyAdmin", "childNickname"]],
+    ["pages/me/index.js", ["ROUTES.FAMILY_MEMBERS", "ROUTES.FAMILY_INVITE", "goFamilyMembers", "goFamilyInvite", "isFamilyAdmin", "childNickname", "currentUser"]],
     ["pages/me/index.wxml", ["默认孩子", "childNickname"]],
     ["pages/habit-manage/index.js", ["ROUTES.HABIT_PERMISSION", "goHabitPermission", "canManageHabits", "permissionTypeText", "ROUTES.START", "redirectTo"]],
     ["pages/family-members/index.js", ["listFamilyMembers", "getBootstrap", "goFamilyInvite", "memberCount", "isFamilyAdmin"]],
@@ -227,7 +227,9 @@ async function assertMockFlow() {
 
   setRequestConfig({ useMockApi: true });
   resetMockSession();
-  assert.equal((await getBootstrap()).needOnboarding, true);
+  const emptyBootstrap = await getBootstrap();
+  assert.equal(emptyBootstrap.needOnboarding, true);
+  assert.equal(emptyBootstrap.currentUser.nickname, "新手家长");
 
   const created = await createFamily({ familyName: "小宝之家", childNickname: "小宝" });
   assert.equal(created.family.admin, true);
@@ -342,6 +344,9 @@ assertFile(contractPath);
 for (const apiPath of requiredApiPaths) {
   assertTextIncludes(contractPath, apiPath);
 }
+const contractSource = readFileSync(contractPath, "utf8");
+assert.ok(contractSource.includes('"currentUser"'), "bootstrap contract must use currentUser");
+assert.ok(!contractSource.includes('"avatarUrl"'), "bootstrap contract must not document unsupported avatarUrl");
 
 await assertMockFlow();
 
