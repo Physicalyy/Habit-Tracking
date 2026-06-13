@@ -523,6 +523,55 @@ function checkinHabit(childId, childHabitId) {
   return ok(toTodayHabit(habit, nextSession));
 }
 
+function toHistoryItem(record, habit) {
+  return {
+    checkinId: record.id,
+    childId: record.childId,
+    childHabitId: record.childHabitId,
+    habitName: habit ? habit.name : "已删除习惯",
+    description: habit ? habit.description : "",
+    iconKey: habit ? habit.iconKey : "",
+    imageUrl: habit ? habit.imageUrl || "" : "",
+    checkinDate: record.checkinDate,
+    checkedTime: record.checkedTime,
+    checkedByMemberId: record.checkedByMemberId,
+    note: record.note || "",
+  };
+}
+
+function listCheckinHistory(childId) {
+  const { session, error } = requireChildSession(childId);
+  if (error) {
+    return error;
+  }
+  const childHabits = session.childHabits || [];
+  return ok((session.checkins || [])
+    .filter((record) => String(record.childId) === String(childId))
+    .sort((left, right) => {
+      if (left.checkinDate !== right.checkinDate) {
+        return left.checkinDate < right.checkinDate ? 1 : -1;
+      }
+      return left.checkedTime < right.checkedTime ? 1 : -1;
+    })
+    .map((record) => toHistoryItem(
+      record,
+      childHabits.find((habit) => String(habit.id) === String(record.childHabitId)),
+    )));
+}
+
+function getCheckinSummary(childId) {
+  const { session, error } = requireChildSession(childId);
+  if (error) {
+    return error;
+  }
+  const checkins = (session.checkins || []).filter((record) => String(record.childId) === String(childId));
+  return ok({
+    childId,
+    totalCheckinCount: checkins.length,
+    totalCheckinDays: new Set(checkins.map((record) => record.checkinDate)).size,
+  });
+}
+
 function createCustomHabit(data) {
   const { session, error } = requireChildSession(data.childId);
   if (error) {
@@ -622,6 +671,16 @@ async function handleMockRequest({ endpoint, data = {} }) {
   if (endpoint.path && endpoint.method === "POST" && /\/api\/children\/[^/]+\/habits\/[^/]+\/checkins$/.test(endpoint.path)) {
     const [, childId, childHabitId] = endpoint.path.match(/\/api\/children\/([^/]+)\/habits\/([^/]+)\/checkins$/);
     return checkinHabit(childId, childHabitId);
+  }
+
+  if (endpoint.path && endpoint.method === "GET" && /\/api\/children\/[^/]+\/checkins$/.test(endpoint.path)) {
+    const childId = endpoint.path.match(/\/api\/children\/([^/]+)\/checkins$/)[1];
+    return listCheckinHistory(childId);
+  }
+
+  if (endpoint.path && endpoint.method === "GET" && /\/api\/children\/[^/]+\/checkins\/summary$/.test(endpoint.path)) {
+    const childId = endpoint.path.match(/\/api\/children\/([^/]+)\/checkins\/summary$/)[1];
+    return getCheckinSummary(childId);
   }
 
   if (endpoint.path && /\/api\/families\/[^/]+\/members$/.test(endpoint.path)) {

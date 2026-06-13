@@ -1,9 +1,36 @@
 <view class="page records-page">
   <view class="page-title">记录</view>
-  <view class="page-subtitle">历史记录会在打卡闭环接入后展示。</view>
+  <view class="page-subtitle">{{familyName}} {{childNickname}}</view>
 
-  <view class="placeholder-card card">
-    <view class="placeholder-number">0</view>
-    <view class="muted-text">累计打卡天数</view>
+  <view class="summary-card card">
+    <view class="summary-item">
+      <view class="summary-number">{{totalCheckinDays}}</view>
+      <view class="summary-label muted-text">累计打卡天数</view>
+    </view>
+    <view class="summary-divider"></view>
+    <view class="summary-item">
+      <view class="summary-number">{{totalCheckinCount}}</view>
+      <view class="summary-label muted-text">累计打卡次数</view>
+    </view>
   </view>
+
+  <view wx:if="{{loading}}" class="state-text muted-text">加载中...</view>
+  <view wx:elif="{{errorText}}" class="state-text error-text">{{errorText}}</view>
+  <view wx:elif="{{historyGroups.length === 0}}" class="empty-card card">
+    <view class="empty-title">暂无历史记录</view>
+    <view class="muted-text">完成一次打卡后会出现在这里。</view>
+  </view>
+  <block wx:else>
+    <view wx:for="{{historyGroups}}" wx:key="date" class="history-group">
+      <view class="history-date">{{item.dateText}}</view>
+      <view wx:for="{{item.items}}" wx:for-item="record" wx:key="checkinId" class="record-card card">
+        <view class="record-icon">{{record.fallbackIcon}}</view>
+        <view class="record-info">
+          <view class="record-title">{{record.habitName}}</view>
+          <view class="record-desc muted-text">{{record.description}}</view>
+        </view>
+        <view class="record-time">{{record.timeText}}</view>
+      </view>
+    </view>
+  </block>
 </view>

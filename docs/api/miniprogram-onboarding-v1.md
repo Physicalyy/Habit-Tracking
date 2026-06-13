@@ -359,6 +359,45 @@ unauthorized parent members return the common error envelope.
 Response `data`: same item shape as `GET /api/children/{childId}/today`, with
 `checked=true`.
 
+## GET /api/children/{childId}/checkins
+
+Purpose: list historical check-in records for the current child. Disabled
+habits still appear in history through the saved child-habit snapshot fields.
+
+Response `data`:
+
+```json
+[
+  {
+    "checkinId": 9001,
+    "childId": 3001,
+    "childHabitId": 10001,
+    "habitName": "主动喝水",
+    "description": "白天主动喝水，保持身体水分充足。",
+    "iconKey": "water_drop",
+    "imageUrl": "",
+    "checkinDate": "2026-06-13",
+    "checkedTime": "2026-06-13T12:00:00",
+    "checkedByMemberId": 4001,
+    "note": ""
+  }
+]
+```
+
+## GET /api/children/{childId}/checkins/summary
+
+Purpose: return V1 basic summary for the records page.
+
+Response `data`:
+
+```json
+{
+  "childId": 3001,
+  "totalCheckinCount": 12,
+  "totalCheckinDays": 5
+}
+```
+
 ## PATCH /api/children/{childId}/habits/{childHabitId}
 
 Purpose: update basic snapshot fields for a child habit. Permission is not edited in this slice.

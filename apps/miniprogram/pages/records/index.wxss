@@ -1,12 +1,107 @@
-.placeholder-card {
+.summary-card {
+  display: flex;
+  align-items: center;
   margin-top: 40rpx;
-  padding: 48rpx 36rpx;
+  padding: 40rpx 24rpx;
+}
+
+.summary-item {
+  flex: 1;
   text-align: center;
 }
 
-.placeholder-number {
+.summary-number {
   color: #006b58;
   font-size: 72rpx;
   font-weight: 700;
   line-height: 88rpx;
+}
+
+.summary-label {
+  margin-top: 8rpx;
+}
+
+.summary-divider {
+  width: 2rpx;
+  height: 72rpx;
+  background: #e4e9e6;
+}
+
+.state-text {
+  margin-top: 40rpx;
+  text-align: center;
+}
+
+.error-text {
+  color: #b42318;
+}
+
+.empty-card {
+  margin-top: 32rpx;
+  padding: 40rpx 32rpx;
+  text-align: center;
+}
+
+.empty-title {
+  margin-bottom: 8rpx;
+  color: #21342d;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.history-group {
+  margin-top: 36rpx;
+}
+
+.history-date {
+  margin-bottom: 16rpx;
+  color: #50615a;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.record-card {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding: 28rpx;
+}
+
+.record-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72rpx;
+  height: 72rpx;
+  color: #006b58;
+  background: #e3faf2;
+  border-radius: 18rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.record-info {
+  flex: 1;
+  min-width: 0;
+  margin-left: 22rpx;
+}
+
+.record-title {
+  color: #20362e;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 40rpx;
+}
+
+.record-desc {
+  margin-top: 6rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-time {
+  color: #006b58;
+  font-size: 26rpx;
+  font-weight: 700;
 }

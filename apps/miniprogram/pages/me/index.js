@@ -6,6 +6,7 @@ Page({
     nickname: "新手家长",
     avatarText: "新",
     familyName: "未加入家庭",
+    childNickname: "未选择孩子",
     hasFamily: false,
     isFamilyAdmin: false,
   },
@@ -14,10 +15,12 @@ Page({
     const bootstrap = await getBootstrap();
     const nickname = bootstrap.user.nickname || "新手家长";
     const family = bootstrap.defaultFamily;
+    const child = bootstrap.defaultChild;
     this.setData({
       nickname,
       avatarText: nickname.slice(0, 1),
       familyName: family ? family.name : "未加入家庭",
+      childNickname: child ? child.nickname : "未选择孩子",
       hasFamily: Boolean(family),
       isFamilyAdmin: Boolean(family && family.admin),
     });
@@ -40,10 +43,18 @@ Page({
   },
 
   goHabitLibrary() {
+    if (!this.data.hasFamily) {
+      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      return;
+    }
     wx.navigateTo({ url: ROUTES.HABIT_LIBRARY });
   },
 
   goHabitManage() {
+    if (!this.data.hasFamily) {
+      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      return;
+    }
     wx.navigateTo({ url: ROUTES.HABIT_MANAGE });
   },
 });

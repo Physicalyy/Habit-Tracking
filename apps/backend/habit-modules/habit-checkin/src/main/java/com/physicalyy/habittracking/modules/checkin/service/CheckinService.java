@@ -6,6 +6,8 @@ import com.physicalyy.habittracking.modules.auth.entity.UserAccount;
 import com.physicalyy.habittracking.modules.auth.service.CurrentUserService;
 import com.physicalyy.habittracking.modules.checkin.entity.HabitCheckinRecord;
 import com.physicalyy.habittracking.modules.checkin.mapper.HabitCheckinRecordMapper;
+import com.physicalyy.habittracking.modules.checkin.vo.CheckinHistoryItem;
+import com.physicalyy.habittracking.modules.checkin.vo.CheckinSummary;
 import com.physicalyy.habittracking.modules.checkin.vo.TodayHabitSummary;
 import com.physicalyy.habittracking.modules.child.entity.ChildProfile;
 import com.physicalyy.habittracking.modules.child.mapper.ChildProfileMapper;
@@ -76,6 +78,51 @@ public class CheckinService {
         return childHabits.stream()
                 .map(childHabit -> toSummary(childHabit, todayRecords.get(childHabit.getId()), context.member()))
                 .toList();
+    }
+
+    public List<CheckinHistoryItem> listHistory(String openid, String nickname, Long childId) {
+        ChildContext context = requireChildContext(openid, nickname, childId);
+        List<HabitCheckinRecord> records = habitCheckinRecordMapper.selectList(
+                new LambdaQueryWrapper<HabitCheckinRecord>()
+                        .eq(HabitCheckinRecord::getFamilyId, context.familyId())
+                        .eq(HabitCheckinRecord::getChildId, childId)
+                        .eq(HabitCheckinRecord::getDelFlag, "0")
+                        .orderByDesc(HabitCheckinRecord::getCheckinDate)
+                        .orderByDesc(HabitCheckinRecord::getCheckedTime)
+                        .orderByDesc(HabitCheckinRecord::getId));
+        if (records.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, HabitChildConfig> childHabits = habitChildConfigMapper.selectList(
+                        new LambdaQueryWrapper<HabitChildConfig>()
+                                .eq(HabitChildConfig::getFamilyId, context.familyId())
+                                .eq(HabitChildConfig::getChildId, childId)
+                                .eq(HabitChildConfig::getDelFlag, "0")
+                                .in(HabitChildConfig::getId, records.stream()
+                                        .map(HabitCheckinRecord::getChildHabitId)
+                                        .distinct()
+                                        .toList()))
+                .stream()
+                .collect(Collectors.toMap(HabitChildConfig::getId, Function.identity()));
+
+        return records.stream()
+                .map(record -> toHistoryItem(record, childHabits.get(record.getChildHabitId())))
+                .toList();
+    }
+
+    public CheckinSummary getSummary(String openid, String nickname, Long childId) {
+        ChildContext context = requireChildContext(openid, nickname, childId);
+        List<HabitCheckinRecord> records = habitCheckinRecordMapper.selectList(
+                new LambdaQueryWrapper<HabitCheckinRecord>()
+                        .eq(HabitCheckinRecord::getFamilyId, context.familyId())
+                        .eq(HabitCheckinRecord::getChildId, childId)
+                        .eq(HabitCheckinRecord::getDelFlag, "0"));
+        long totalCheckinDays = records.stream()
+                .map(HabitCheckinRecord::getCheckinDate)
+                .distinct()
+                .count();
+        return new CheckinSummary(childId, records.size(), totalCheckinDays);
     }
 
     @Transactional
@@ -168,6 +215,22 @@ public class CheckinService {
                 record == null ? null : record.getCheckedByMemberId(),
                 record == null ? null : record.getCheckinDate(),
                 record == null ? null : record.getCheckedTime()
+        );
+    }
+
+    private CheckinHistoryItem toHistoryItem(HabitCheckinRecord record, HabitChildConfig childHabit) {
+        return new CheckinHistoryItem(
+                record.getId(),
+                record.getChildId(),
+                record.getChildHabitId(),
+                childHabit == null ? "已删除习惯" : childHabit.getName(),
+                childHabit == null ? "" : childHabit.getDescription(),
+                childHabit == null ? "" : childHabit.getIconKey(),
+                childHabit == null ? "" : childHabit.getImageUrl(),
+                record.getCheckinDate(),
+                record.getCheckedTime(),
+                record.getCheckedByMemberId(),
+                record.getNote()
         );
     }
 

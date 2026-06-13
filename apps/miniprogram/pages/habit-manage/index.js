@@ -23,13 +23,13 @@ Page({
     this.setData({ loading: true, errorText: "" });
     try {
       const bootstrap = await getBootstrap();
-      const family = bootstrap.defaultFamily;
-      const childId = bootstrap.defaultChild ? bootstrap.defaultChild.id : "";
-      const canManageHabits = Boolean(family && family.admin);
-      if (!childId) {
-        this.setData({ familyId: family ? family.id : "", childId: "", habits: [], canManageHabits });
+      if (bootstrap.needOnboarding || !bootstrap.defaultChild) {
+        wx.redirectTo({ url: ROUTES.START });
         return;
       }
+      const family = bootstrap.defaultFamily;
+      const childId = bootstrap.defaultChild.id;
+      const canManageHabits = Boolean(family && family.admin);
       const habits = await listChildHabits(childId);
       this.setData({
         familyId: family ? family.id : "",

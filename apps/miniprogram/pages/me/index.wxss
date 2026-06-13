@@ -28,6 +28,10 @@
   margin-left: 24rpx;
 }
 
+.profile-child {
+  margin-top: 8rpx;
+}
+
 .menu-card {
   margin-top: 32rpx;
   padding: 8rpx 32rpx;

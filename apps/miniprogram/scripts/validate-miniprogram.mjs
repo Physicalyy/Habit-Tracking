@@ -46,6 +46,8 @@ const requiredApiPaths = [
   "PUT /api/children/{childId}/habits/{childHabitId}/permissions",
   "GET /api/children/{childId}/today",
   "POST /api/children/{childId}/habits/{childHabitId}/checkins",
+  "GET /api/children/{childId}/checkins",
+  "GET /api/children/{childId}/checkins/summary",
   "POST /api/habit-templates/custom",
 ];
 
@@ -149,6 +151,8 @@ function assertApiConfiguration() {
     "function childHabitPermissions",
     "function todayHabits",
     "function checkinHabit",
+    "function checkinHistory",
+    "function checkinSummary",
   ]) {
     assertTextIncludes(join(rootDir, "core/api.js"), token);
   }
@@ -176,10 +180,13 @@ function assertRoutesAndServices() {
     ["services/family-service.js", ["getFamilyInvite", "refreshFamilyInvite", "listFamilyMembers", "familyMembers("]],
     ["services/habit-service.js", ["listHabitTemplates", "API_ENDPOINTS.HABIT_TEMPLATES"]],
     ["services/child-habit-service.js", ["listChildHabits", "addSystemTemplateToChild", "createCustomHabit", "updateChildHabit", "updateChildHabitStatus", "updateChildHabitPermission", "childHabitPermissions("]],
-    ["services/checkin-service.js", ["listTodayHabits", "checkinHabit", "todayHabits(", "checkinHabit("]],
+    ["services/checkin-service.js", ["listTodayHabits", "checkinHabit", "listCheckinHistory", "getCheckinSummary", "todayHabits(", "checkinHabit(", "checkinHistory(", "checkinSummary("]],
     ["pages/today/index.js", ["listTodayHabits", "checkinHabit", "todayHabits", "checkedText", "canCheckin"]],
-    ["pages/me/index.js", ["ROUTES.FAMILY_MEMBERS", "ROUTES.FAMILY_INVITE", "goFamilyMembers", "goFamilyInvite", "isFamilyAdmin"]],
-    ["pages/habit-manage/index.js", ["ROUTES.HABIT_PERMISSION", "goHabitPermission", "canManageHabits", "permissionTypeText"]],
+    ["pages/records/index.js", ["listCheckinHistory", "getCheckinSummary", "historyGroups", "totalCheckinDays", "ROUTES.START", "redirectTo"]],
+    ["pages/records/index.wxml", ["historyGroups", "record.habitName", "totalCheckinCount", "totalCheckinDays"]],
+    ["pages/me/index.js", ["ROUTES.FAMILY_MEMBERS", "ROUTES.FAMILY_INVITE", "goFamilyMembers", "goFamilyInvite", "isFamilyAdmin", "childNickname"]],
+    ["pages/me/index.wxml", ["默认孩子", "childNickname"]],
+    ["pages/habit-manage/index.js", ["ROUTES.HABIT_PERMISSION", "goHabitPermission", "canManageHabits", "permissionTypeText", "ROUTES.START", "redirectTo"]],
     ["pages/family-members/index.js", ["listFamilyMembers", "getBootstrap", "goFamilyInvite", "memberCount", "isFamilyAdmin"]],
     ["pages/family-invite/index.js", ["getFamilyInvite", "refreshFamilyInvite", "copyInviteCode", "refreshInvite", "isFamilyAdmin"]],
     ["pages/habit-permission/index.js", ["listFamilyMembers", "updateChildHabitPermission", "permissionOptions", "SPECIFIC_PARENTS", "allowedMemberIds", "savePermission"]],
@@ -214,6 +221,8 @@ async function assertMockFlow() {
   const {
     listTodayHabits,
     checkinHabit,
+    listCheckinHistory,
+    getCheckinSummary,
   } = requireFromRoot("./services/checkin-service.js");
 
   setRequestConfig({ useMockApi: true });
@@ -256,6 +265,14 @@ async function assertMockFlow() {
   const checked = await checkinHabit(childId, addedHabit.id);
   assert.equal(checked.checked, true);
   await assert.rejects(() => checkinHabit(childId, addedHabit.id), /已打卡|already checked/);
+  assert.equal((await getCheckinSummary(childId)).totalCheckinDays, 1);
+  assert.equal((await getCheckinSummary(childId)).totalCheckinCount, 1);
+  const disabledAfterCheckin = await updateChildHabitStatus(childId, addedHabit.id, "disabled");
+  assert.equal(disabledAfterCheckin.status, "disabled");
+  const history = await listCheckinHistory(childId);
+  assert.equal(history.length, 1);
+  assert.equal(history[0].habitName, "每天主动喝水");
+  assert.equal(history[0].iconKey, "water_drop");
 
   const custom = await createCustomHabit({
     childId,

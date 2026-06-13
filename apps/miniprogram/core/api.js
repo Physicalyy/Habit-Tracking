@@ -95,6 +95,20 @@ function checkinHabit(childId, childHabitId) {
   });
 }
 
+function checkinHistory(childId) {
+  return Object.freeze({
+    method: "GET",
+    path: `/api/children/${childId}/checkins`,
+  });
+}
+
+function checkinSummary(childId) {
+  return Object.freeze({
+    method: "GET",
+    path: `/api/children/${childId}/checkins/summary`,
+  });
+}
+
 module.exports = {
   API_ENDPOINTS,
   familyInvite,
@@ -107,4 +121,6 @@ module.exports = {
   childHabitPermissions,
   todayHabits,
   checkinHabit,
+  checkinHistory,
+  checkinSummary,
 };

@@ -605,8 +605,61 @@ Response `data`: same item shape as `GET /api/children/{childId}/today`, with
 | 400 | `BAD_REQUEST` | `Current member cannot check in this habit` |
 | 400 | `BAD_REQUEST` | `Habit already checked in today` |
 
+## Check-In History
+
+### List Check-In History
+
+`GET /api/children/{childId}/checkins`
+
+Returns historical check-in records for the child. The backend validates that
+the current user is an active member of the child's family. History display
+uses the child-habit snapshot fields from `habit_child_config`, so disabled
+habits remain visible in history.
+
+Response `data`:
+
+```json
+[
+  {
+    "checkinId": 9001,
+    "childId": 3001,
+    "childHabitId": 10001,
+    "habitName": "Drink Water",
+    "description": "Drink water during the day.",
+    "iconKey": "water_drop",
+    "imageUrl": "",
+    "checkinDate": "2026-06-13",
+    "checkedTime": "2026-06-13T12:00:00",
+    "checkedByMemberId": 4001,
+    "note": ""
+  }
+]
+```
+
+### Get Check-In Summary
+
+`GET /api/children/{childId}/checkins/summary`
+
+Returns V1 basic summary fields for the child.
+
+Response `data`:
+
+```json
+{
+  "childId": 3001,
+  "totalCheckinCount": 12,
+  "totalCheckinDays": 5
+}
+```
+
+### Errors
+
+| HTTP Status | Code | Message |
+| --- | --- | --- |
+| 400 | `BAD_REQUEST` | `Child not found` |
+| 400 | `BAD_REQUEST` | `Current user is not a family member` |
+
 ## Out Of Scope
 
 - Production WeChat AppSecret handling and token refresh.
-- Today check-in APIs.
 - Account deletion or logout APIs.

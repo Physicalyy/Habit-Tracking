@@ -4,6 +4,7 @@
     <view class="profile-info">
       <view class="profile-name">{{nickname}}</view>
       <view class="profile-family muted-text">{{familyName}}</view>
+      <view class="profile-child muted-text">默认孩子：{{childNickname}}</view>
     </view>
   </view>
 

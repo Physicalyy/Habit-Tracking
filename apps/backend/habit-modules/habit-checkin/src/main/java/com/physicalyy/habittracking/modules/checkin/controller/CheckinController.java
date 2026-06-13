@@ -2,6 +2,8 @@ package com.physicalyy.habittracking.modules.checkin.controller;
 
 import com.physicalyy.habittracking.common.api.vo.ApiResult;
 import com.physicalyy.habittracking.modules.checkin.service.CheckinService;
+import com.physicalyy.habittracking.modules.checkin.vo.CheckinHistoryItem;
+import com.physicalyy.habittracking.modules.checkin.vo.CheckinSummary;
 import com.physicalyy.habittracking.modules.checkin.vo.TodayHabitSummary;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,5 +39,23 @@ public class CheckinController {
             @PathVariable Long childHabitId
     ) {
         return ApiResult.ok(checkinService.checkin(openid, nickname, childId, childHabitId));
+    }
+
+    @GetMapping("/api/children/{childId}/checkins")
+    public ApiResult<List<CheckinHistoryItem>> listHistory(
+            @RequestHeader(value = "X-Test-Openid", required = false) String openid,
+            @RequestHeader(value = "X-Test-Nickname", required = false) String nickname,
+            @PathVariable Long childId
+    ) {
+        return ApiResult.ok(checkinService.listHistory(openid, nickname, childId));
+    }
+
+    @GetMapping("/api/children/{childId}/checkins/summary")
+    public ApiResult<CheckinSummary> getSummary(
+            @RequestHeader(value = "X-Test-Openid", required = false) String openid,
+            @RequestHeader(value = "X-Test-Nickname", required = false) String nickname,
+            @PathVariable Long childId
+    ) {
+        return ApiResult.ok(checkinService.getSummary(openid, nickname, childId));
     }
 }
