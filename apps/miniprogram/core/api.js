@@ -19,6 +19,10 @@ const API_ENDPOINTS = Object.freeze({
     method: "GET",
     path: "/api/habit-templates",
   }),
+  CUSTOM_HABIT_TEMPLATE: Object.freeze({
+    method: "POST",
+    path: "/api/habit-templates/custom",
+  }),
 });
 
 function familyInvite(familyId) {
@@ -35,8 +39,40 @@ function refreshFamilyInvite(familyId) {
   });
 }
 
+function childHabits(childId) {
+  return Object.freeze({
+    method: "GET",
+    path: `/api/children/${childId}/habits`,
+  });
+}
+
+function addChildHabit(childId) {
+  return Object.freeze({
+    method: "POST",
+    path: `/api/children/${childId}/habits`,
+  });
+}
+
+function childHabit(childId, childHabitId) {
+  return Object.freeze({
+    method: "PATCH",
+    path: `/api/children/${childId}/habits/${childHabitId}`,
+  });
+}
+
+function childHabitStatus(childId, childHabitId) {
+  return Object.freeze({
+    method: "PATCH",
+    path: `/api/children/${childId}/habits/${childHabitId}/status`,
+  });
+}
+
 module.exports = {
   API_ENDPOINTS,
   familyInvite,
   refreshFamilyInvite,
+  childHabits,
+  addChildHabit,
+  childHabit,
+  childHabitStatus,
 };

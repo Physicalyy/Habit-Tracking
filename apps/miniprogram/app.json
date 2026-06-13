@@ -6,7 +6,9 @@
     "pages/today/index",
     "pages/records/index",
     "pages/me/index",
-    "pages/habit-library/index"
+    "pages/habit-library/index",
+    "pages/habit-manage/index",
+    "pages/custom-habit/index"
   ],
   "window": {
     "navigationBarTitleText": "小小习惯",

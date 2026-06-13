@@ -1,0 +1,27 @@
+<view class="page custom-habit-page">
+  <view class="page-title">自定义习惯</view>
+  <view class="page-subtitle">创建后会自动添加到当前孩子的习惯管理中</view>
+
+  <view class="form-card card">
+    <view class="form-field">
+      <view class="field-label">习惯名称</view>
+      <input class="plain-input" value="{{habitName}}" maxlength="32" placeholder="例如：练习钢琴" bindinput="onNameInput" />
+    </view>
+
+    <view class="form-field">
+      <view class="field-label">描述</view>
+      <input class="plain-input" value="{{description}}" maxlength="120" placeholder="例如：每天十分钟" bindinput="onDescriptionInput" />
+    </view>
+
+    <view class="form-field">
+      <view class="field-label">图标 Key</view>
+      <input class="plain-input" value="{{iconKey}}" maxlength="32" placeholder="assignment" bindinput="onIconInput" />
+    </view>
+
+    <view wx:if="{{errorText}}" class="error-text">{{errorText}}</view>
+  </view>
+
+  <view class="fixed-action">
+    <button class="primary-button" loading="{{submitting}}" bindtap="submitCustomHabit">创建习惯</button>
+  </view>
+</view>

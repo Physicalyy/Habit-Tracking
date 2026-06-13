@@ -39,7 +39,14 @@
         <view class="template-desc">{{item.description}}</view>
         <view class="template-age">{{item.ageText}}</view>
       </view>
-      <view class="add-template" data-slug="{{item.slug}}" bindtap="onAddTap">添加</view>
+      <view
+        class="add-template"
+        data-slug="{{item.slug}}"
+        data-template-id="{{item.id}}"
+        bindtap="onAddTap"
+      >
+        {{addingSlug === item.slug ? '添加中' : '添加'}}
+      </view>
     </view>
   </view>
 </view>

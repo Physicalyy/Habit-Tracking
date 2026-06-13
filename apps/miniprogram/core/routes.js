@@ -6,6 +6,8 @@ const ROUTES = Object.freeze({
   RECORDS: "/pages/records/index",
   ME: "/pages/me/index",
   HABIT_LIBRARY: "/pages/habit-library/index",
+  HABIT_MANAGE: "/pages/habit-manage/index",
+  CUSTOM_HABIT: "/pages/custom-habit/index",
 });
 
 module.exports = {

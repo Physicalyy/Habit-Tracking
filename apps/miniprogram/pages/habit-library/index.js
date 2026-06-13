@@ -1,3 +1,5 @@
+const { addSystemTemplateToChild } = require("../../services/child-habit-service.js");
+const { getBootstrap } = require("../../services/bootstrap-service.js");
 const { listHabitTemplates } = require("../../services/habit-service.js");
 
 const categories = [
@@ -15,13 +17,23 @@ Page({
     categories,
     selectedCategory: "",
     searchKeyword: "",
+    childId: "",
     templates: [],
     loading: false,
+    addingSlug: "",
     errorText: "",
   },
 
-  onLoad() {
+  async onLoad() {
+    await this.loadBootstrap();
     this.loadTemplates();
+  },
+
+  async loadBootstrap() {
+    const bootstrap = await getBootstrap();
+    this.setData({
+      childId: bootstrap.defaultChild ? bootstrap.defaultChild.id : "",
+    });
   },
 
   async loadTemplates() {
@@ -35,7 +47,7 @@ Page({
       this.setData({
         templates: templates.map((template) => ({
           ...template,
-          ageText: `${template.ageMin}-${template.ageMax}岁`,
+          ageText: template.ageMin === null || template.ageMax === null ? "自定义" : `${template.ageMin}-${template.ageMax}岁`,
           fallbackIcon: iconFallback(template.iconKey),
         })),
       });
@@ -56,11 +68,23 @@ Page({
     this.loadTemplates();
   },
 
-  onAddTap() {
-    wx.showToast({
-      title: "下一步开放",
-      icon: "none",
-    });
+  async onAddTap(event) {
+    if (!this.data.childId || this.data.addingSlug) {
+      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      return;
+    }
+
+    const templateId = event.currentTarget.dataset.templateId;
+    const slug = event.currentTarget.dataset.slug;
+    this.setData({ addingSlug: slug });
+    try {
+      await addSystemTemplateToChild(this.data.childId, templateId);
+      wx.showToast({ title: "已添加", icon: "success" });
+    } catch (error) {
+      wx.showToast({ title: error.message || "添加失败", icon: "none" });
+    } finally {
+      this.setData({ addingSlug: "" });
+    }
   },
 });
 
@@ -72,6 +96,8 @@ function iconFallback(iconKey) {
     bed: "床",
     soap: "洗",
     traffic: "灯",
+    piano: "琴",
+    directions_run: "跑",
   };
   return fallbackMap[iconKey] || "习";
 }

@@ -1,0 +1,41 @@
+<view class="page habit-manage-page">
+  <view class="top-bar">
+    <view class="top-title">习惯管理</view>
+    <view class="custom-action" bindtap="goCustomHabit">自定义</view>
+  </view>
+
+  <view class="page-subtitle">管理当前孩子已配置的习惯</view>
+
+  <view wx:if="{{loading}}" class="muted-text manage-state">加载中...</view>
+  <view wx:elif="{{errorText}}" class="error-text manage-state">{{errorText}}</view>
+  <view wx:elif="{{!childId}}" class="card empty-card">
+    <view class="empty-title">还没有家庭</view>
+    <view class="muted-text">创建或加入家庭后可以配置孩子习惯</view>
+  </view>
+  <view wx:elif="{{habits.length === 0}}" class="card empty-card">
+    <view class="empty-title">还没有习惯</view>
+    <view class="muted-text">从习惯库添加，或创建自定义习惯</view>
+  </view>
+
+  <view wx:else class="habit-list">
+    <view wx:for="{{habits}}" wx:key="id" class="habit-card card">
+      <view class="habit-icon">
+        <image wx:if="{{item.imageUrl}}" class="habit-image" mode="aspectFill" src="{{item.imageUrl}}" />
+        <text wx:else>{{item.fallbackIcon}}</text>
+      </view>
+      <view class="habit-main">
+        <view class="habit-name">{{item.name}}</view>
+        <view class="habit-desc">{{item.description}}</view>
+        <view class="habit-status">{{item.statusText}} · {{item.permissionType}}</view>
+      </view>
+      <view
+        class="toggle-action"
+        data-habit-id="{{item.id}}"
+        data-next-status="{{item.status === 'active' ? 'disabled' : 'active'}}"
+        bindtap="toggleHabitStatus"
+      >
+        {{item.toggleText}}
+      </view>
+    </view>
+  </view>
+</view>

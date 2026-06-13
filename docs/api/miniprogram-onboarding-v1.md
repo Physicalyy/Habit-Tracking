@@ -231,3 +231,126 @@ Notes:
 - The backend only returns templates with `status=active` and `del_flag=0`.
 - The miniprogram must call this endpoint through `core/api.js` and `services/habit-service.js`; page files must not embed raw API paths.
 - The Add action is an entry point for the later child-habit task and must not invent a child-habit URL in this slice.
+
+## GET /api/children/{childId}/habits
+
+Purpose: list configured habits for the current child.
+
+Response `data`:
+
+```json
+[
+  {
+    "id": 10001,
+    "familyId": 2001,
+    "childId": 3001,
+    "templateId": 1,
+    "name": "主动喝水",
+    "description": "白天主动喝水，保持身体水分充足。",
+    "iconKey": "water_drop",
+    "imageUrl": "",
+    "permissionType": "ALL_PARENTS",
+    "createdByMemberId": 4001,
+    "status": "active",
+    "sortOrder": 0
+  }
+]
+```
+
+## POST /api/children/{childId}/habits
+
+Purpose: add a system habit template to the child. Duplicate active child/template pairs return the common error envelope.
+
+Request:
+
+```json
+{
+  "templateId": 1
+}
+```
+
+Response `data`: same shape as one child habit item in `GET /api/children/{childId}/habits`.
+
+## PATCH /api/children/{childId}/habits/{childHabitId}
+
+Purpose: update basic snapshot fields for a child habit. Permission is not edited in this slice.
+
+Request:
+
+```json
+{
+  "name": "每天主动喝水",
+  "description": "早中晚提醒喝水",
+  "iconKey": "water_drop",
+  "imageUrl": ""
+}
+```
+
+Response `data`: same shape as one child habit item in `GET /api/children/{childId}/habits`.
+
+## PATCH /api/children/{childId}/habits/{childHabitId}/status
+
+Purpose: enable or disable a configured child habit.
+
+Request:
+
+```json
+{
+  "status": "disabled"
+}
+```
+
+Allowed `status` values: `active`, `disabled`.
+
+Response `data`: same shape as one child habit item in `GET /api/children/{childId}/habits`.
+
+## POST /api/habit-templates/custom
+
+Purpose: create a custom habit template and immediately add it to the child.
+
+Request:
+
+```json
+{
+  "childId": 3001,
+  "name": "练习钢琴",
+  "description": "每天十分钟",
+  "category": "CUSTOM",
+  "iconKey": "piano",
+  "imageUrl": ""
+}
+```
+
+Response `data`:
+
+```json
+{
+  "template": {
+    "id": 101,
+    "slug": "practice-piano-a1b2c3d4",
+    "name": "练习钢琴",
+    "category": "CUSTOM",
+    "description": "每天十分钟",
+    "iconKey": "piano",
+    "imageUrl": "",
+    "sourceType": "CUSTOM",
+    "familyId": 2001,
+    "createdByMemberId": 4001,
+    "status": "active"
+  },
+  "childHabit": {
+    "id": 10002,
+    "familyId": 2001,
+    "childId": 3001,
+    "templateId": 101,
+    "name": "练习钢琴",
+    "description": "每天十分钟",
+    "iconKey": "piano",
+    "imageUrl": "",
+    "permissionType": "ALL_PARENTS",
+    "createdByMemberId": 4001,
+    "status": "active",
+    "sortOrder": 0
+  }
+}
+```

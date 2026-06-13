@@ -17,6 +17,8 @@ const requiredPages = [
   "pages/records/index",
   "pages/me/index",
   "pages/habit-library/index",
+  "pages/habit-manage/index",
+  "pages/custom-habit/index",
 ];
 
 const tabPages = [
@@ -33,6 +35,11 @@ const requiredApiPaths = [
   "GET /api/families/{familyId}/invite",
   "POST /api/families/{familyId}/invite/refresh",
   "GET /api/habit-templates",
+  "GET /api/children/{childId}/habits",
+  "POST /api/children/{childId}/habits",
+  "PATCH /api/children/{childId}/habits/{childHabitId}",
+  "PATCH /api/children/{childId}/habits/{childHabitId}/status",
+  "POST /api/habit-templates/custom",
 ];
 
 const requiredAssets = [
@@ -173,27 +180,53 @@ function assertApiConfiguration() {
       habitServiceSource.includes("API_ENDPOINTS.HABIT_TEMPLATES"),
     "habit-service.js must expose listHabitTemplates through centralized API endpoints",
   );
+
+  const childHabitServiceSource = readFileSync(join(rootDir, "services/child-habit-service.js"), "utf8");
+  for (const token of [
+    "listChildHabits",
+    "addSystemTemplateToChild",
+    "createCustomHabit",
+    "updateChildHabit",
+    "updateChildHabitStatus",
+    "childHabits(",
+    "childHabit(",
+    "childHabitStatus(",
+    "API_ENDPOINTS.CUSTOM_HABIT_TEMPLATE",
+  ]) {
+    assert.ok(
+      childHabitServiceSource.includes(token),
+      `child-habit-service.js must include ${token}`,
+    );
+  }
 }
 
 function assertHabitLibraryStructure() {
   const routesSource = readFileSync(join(rootDir, "core/routes.js"), "utf8");
   assert.ok(
     routesSource.includes("HABIT_LIBRARY") &&
-      routesSource.includes("/pages/habit-library/index"),
-    "core/routes.js must define HABIT_LIBRARY",
+      routesSource.includes("/pages/habit-library/index") &&
+      routesSource.includes("HABIT_MANAGE") &&
+      routesSource.includes("/pages/habit-manage/index") &&
+      routesSource.includes("CUSTOM_HABIT") &&
+      routesSource.includes("/pages/custom-habit/index"),
+    "core/routes.js must define habit library, manage, and custom routes",
   );
 
   const meSource = readFileSync(join(rootDir, "pages/me/index.js"), "utf8");
   assert.ok(
     meSource.includes("ROUTES.HABIT_LIBRARY") &&
-      meSource.includes("goHabitLibrary"),
-    "me page must navigate to habit library through route constants",
+      meSource.includes("goHabitLibrary") &&
+      meSource.includes("ROUTES.HABIT_MANAGE") &&
+      meSource.includes("goHabitManage"),
+    "me page must navigate to habit library and habit manage through route constants",
   );
 
   const libraryJsPath = join(rootDir, "pages/habit-library/index.js");
   const libraryJs = readFileSync(libraryJsPath, "utf8");
   for (const token of [
     "listHabitTemplates",
+    "addSystemTemplateToChild",
+    "getBootstrap",
     "categories",
     "selectedCategory",
     "searchKeyword",
@@ -206,6 +239,10 @@ function assertHabitLibraryStructure() {
   assert.ok(
     !libraryJs.includes("/api/habit-templates"),
     "habit library page must not contain raw habit template API path",
+  );
+  assert.ok(
+    !libraryJs.includes("/api/children"),
+    "habit library page must not contain raw child habit API path",
   );
 
   const libraryWxmlPath = join(rootDir, "pages/habit-library/index.wxml");
@@ -221,6 +258,49 @@ function assertHabitLibraryStructure() {
     "add-template",
   ]) {
     assertTextIncludes(libraryWxmlPath, token);
+  }
+
+  const manageJsPath = join(rootDir, "pages/habit-manage/index.js");
+  for (const token of [
+    "listChildHabits",
+    "updateChildHabitStatus",
+    "ROUTES.CUSTOM_HABIT",
+    "goCustomHabit",
+    "toggleHabitStatus",
+  ]) {
+    assertTextIncludes(manageJsPath, token);
+  }
+  const manageWxmlPath = join(rootDir, "pages/habit-manage/index.wxml");
+  for (const token of [
+    "habit-manage-page",
+    "habit-card",
+    "habit-status",
+    "toggle-action",
+    "custom-action",
+  ]) {
+    assertTextIncludes(manageWxmlPath, token);
+  }
+
+  const customJsPath = join(rootDir, "pages/custom-habit/index.js");
+  for (const token of [
+    "createCustomHabit",
+    "getBootstrap",
+    "submitCustomHabit",
+    "habitName",
+    "description",
+    "iconKey",
+  ]) {
+    assertTextIncludes(customJsPath, token);
+  }
+  const customWxmlPath = join(rootDir, "pages/custom-habit/index.wxml");
+  for (const token of [
+    "custom-habit-page",
+    "habitName",
+    "description",
+    "iconKey",
+    "submitCustomHabit",
+  ]) {
+    assertTextIncludes(customWxmlPath, token);
   }
 }
 
@@ -416,6 +496,13 @@ async function assertMockFlow() {
     refreshFamilyInvite,
   } = requireFromRoot("./services/family-service.js");
   const { listHabitTemplates } = requireFromRoot("./services/habit-service.js");
+  const {
+    listChildHabits,
+    addSystemTemplateToChild,
+    createCustomHabit,
+    updateChildHabit,
+    updateChildHabitStatus,
+  } = requireFromRoot("./services/child-habit-service.js");
 
   setRequestConfig({ useMockApi: true });
   resetMockSession();
@@ -454,6 +541,43 @@ async function assertMockFlow() {
   assert.equal(healthTemplates.length, 1);
   assert.equal(healthTemplates[0].slug, "drink-water");
   assert.equal(healthTemplates[0].iconKey, "water_drop");
+
+  const bootstrapAfterJoin = await getBootstrap();
+  const childId = bootstrapAfterJoin.defaultChild.id;
+  const addedHabit = await addSystemTemplateToChild(childId, healthTemplates[0].id);
+  assert.equal(addedHabit.templateId, healthTemplates[0].id);
+  assert.equal(addedHabit.permissionType, "ALL_PARENTS");
+  assert.equal(addedHabit.status, "active");
+  await assert.rejects(
+    () => addSystemTemplateToChild(childId, healthTemplates[0].id),
+    /already exists|已添加/,
+  );
+
+  const updatedHabit = await updateChildHabit(childId, addedHabit.id, {
+    name: "每天主动喝水",
+    description: "早中晚提醒喝水",
+    iconKey: "water_drop",
+    imageUrl: "",
+  });
+  assert.equal(updatedHabit.name, "每天主动喝水");
+  assert.equal(updatedHabit.permissionType, "ALL_PARENTS");
+
+  const disabledHabit = await updateChildHabitStatus(childId, addedHabit.id, "disabled");
+  assert.equal(disabledHabit.status, "disabled");
+  const activeHabit = await updateChildHabitStatus(childId, addedHabit.id, "active");
+  assert.equal(activeHabit.status, "active");
+
+  const custom = await createCustomHabit({
+    childId,
+    name: "练习钢琴",
+    description: "每天十分钟",
+    category: "LEARNING",
+    iconKey: "piano",
+  });
+  assert.equal(custom.template.sourceType, "CUSTOM");
+  assert.equal(custom.childHabit.name, "练习钢琴");
+  assert.equal(custom.childHabit.permissionType, "ALL_PARENTS");
+  assert.equal((await listChildHabits(childId)).length, 2);
 }
 
 const appJsonPath = join(rootDir, "app.json");
@@ -500,6 +624,8 @@ assertFile(join(rootDir, "services/family-service.js"));
 assertCommonJsRuntimeModule(join(rootDir, "services/family-service.js"));
 assertFile(join(rootDir, "services/habit-service.js"));
 assertCommonJsRuntimeModule(join(rootDir, "services/habit-service.js"));
+assertFile(join(rootDir, "services/child-habit-service.js"));
+assertCommonJsRuntimeModule(join(rootDir, "services/child-habit-service.js"));
 assertFile(join(rootDir, "services/session-state.js"));
 assertCommonJsRuntimeModule(join(rootDir, "services/session-state.js"));
 

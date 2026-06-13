@@ -1,0 +1,18 @@
+.custom-habit-page {
+  padding-bottom: 160rpx;
+}
+
+.form-card {
+  margin-top: 32rpx;
+  padding: 28rpx;
+}
+
+.plain-input {
+  width: 100%;
+  height: 88rpx;
+  padding: 0 24rpx;
+  color: #191c1b;
+  background: #f2f4f2;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+}

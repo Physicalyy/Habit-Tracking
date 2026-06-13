@@ -20,5 +20,9 @@ Page({
 
   goHabitLibrary() {
     wx.navigateTo({ url: ROUTES.HABIT_LIBRARY });
+  },
+
+  goHabitManage() {
+    wx.navigateTo({ url: ROUTES.HABIT_MANAGE });
   }
 });

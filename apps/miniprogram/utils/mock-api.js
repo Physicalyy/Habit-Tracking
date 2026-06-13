@@ -21,7 +21,7 @@ const mockHabitTemplates = Object.freeze([
   Object.freeze({
     id: "habit_template_drink_water",
     slug: "drink-water",
-    name: "每天喝水",
+    name: "主动喝水",
     category: "HEALTH",
     description: "养成主动喝水的习惯，减少含糖饮料摄入。",
     ageMin: 3,
@@ -218,11 +218,12 @@ function refreshFamilyInvite() {
 }
 
 function listHabitTemplates(data) {
+  const session = getMockSession();
   const category = String(data.category || "").trim();
   const keyword = String(data.keyword || "").trim().toLowerCase();
   const sourceType = String(data.sourceType || "").trim();
 
-  return ok(mockHabitTemplates.filter((template) => {
+  return ok([...mockHabitTemplates, ...(session.customTemplates || [])].filter((template) => {
     if (template.status !== "active") {
       return false;
     }
@@ -241,6 +242,156 @@ function listHabitTemplates(data) {
       template.slug.toLowerCase().includes(keyword)
     );
   }));
+}
+
+function requireChildSession(childId) {
+  const session = getMockSession();
+  if (!session.child || String(session.child.id) !== String(childId)) {
+    return { error: fail("请先加入家庭") };
+  }
+  return { session };
+}
+
+function toChildHabitFromTemplate(session, template) {
+  return {
+    id: `child_habit_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+    familyId: session.family.id,
+    childId: session.child.id,
+    templateId: template.id,
+    name: template.name,
+    description: template.description,
+    iconKey: template.iconKey,
+    imageUrl: template.imageUrl || "",
+    permissionType: "ALL_PARENTS",
+    createdByMemberId: session.member.id,
+    status: "active",
+    sortOrder: 0,
+  };
+}
+
+function listChildHabits(childId) {
+  const { session, error } = requireChildSession(childId);
+  if (error) {
+    return error;
+  }
+  return ok(session.childHabits || []);
+}
+
+function addChildHabit(childId, data) {
+  const { session, error } = requireChildSession(childId);
+  if (error) {
+    return error;
+  }
+
+  const templateId = String(data.templateId || "");
+  const templates = [...mockHabitTemplates, ...(session.customTemplates || [])];
+  const template = templates.find((item) => String(item.id) === templateId && item.status === "active");
+  if (!template) {
+    return fail("习惯模板不存在");
+  }
+
+  const childHabits = session.childHabits || [];
+  if (childHabits.some((item) => String(item.templateId) === templateId)) {
+    return fail("该习惯已添加");
+  }
+
+  const childHabit = toChildHabitFromTemplate(session, template);
+  saveMockSession({
+    ...session,
+    childHabits: [...childHabits, childHabit],
+  });
+  return ok(childHabit);
+}
+
+function updateChildHabit(childId, childHabitId, data) {
+  const { session, error } = requireChildSession(childId);
+  if (error) {
+    return error;
+  }
+
+  let updated = null;
+  const childHabits = (session.childHabits || []).map((habit) => {
+    if (String(habit.id) !== String(childHabitId)) {
+      return habit;
+    }
+    updated = {
+      ...habit,
+      name: String(data.name || habit.name).trim(),
+      description: String(data.description || "").trim(),
+      iconKey: String(data.iconKey || habit.iconKey || "").trim(),
+      imageUrl: String(data.imageUrl || "").trim(),
+    };
+    return updated;
+  });
+  if (!updated) {
+    return fail("孩子习惯不存在");
+  }
+
+  saveMockSession({ ...session, childHabits });
+  return ok(updated);
+}
+
+function updateChildHabitStatus(childId, childHabitId, data) {
+  const status = String(data.status || "").trim();
+  if (status !== "active" && status !== "disabled") {
+    return fail("习惯状态无效");
+  }
+
+  const { session, error } = requireChildSession(childId);
+  if (error) {
+    return error;
+  }
+
+  let updated = null;
+  const childHabits = (session.childHabits || []).map((habit) => {
+    if (String(habit.id) !== String(childHabitId)) {
+      return habit;
+    }
+    updated = { ...habit, status };
+    return updated;
+  });
+  if (!updated) {
+    return fail("孩子习惯不存在");
+  }
+
+  saveMockSession({ ...session, childHabits });
+  return ok(updated);
+}
+
+function createCustomHabit(data) {
+  const { session, error } = requireChildSession(data.childId);
+  if (error) {
+    return error;
+  }
+
+  const name = String(data.name || "").trim();
+  if (!name) {
+    return fail("请填写习惯名称");
+  }
+
+  const template = {
+    id: `custom_template_${Date.now()}`,
+    slug: `custom-${Date.now()}`,
+    name,
+    category: String(data.category || "CUSTOM").trim(),
+    description: String(data.description || "").trim(),
+    ageMin: null,
+    ageMax: null,
+    iconKey: String(data.iconKey || "assignment").trim(),
+    imageUrl: String(data.imageUrl || "").trim(),
+    sourceType: "CUSTOM",
+    familyId: session.family.id,
+    createdByMemberId: session.member.id,
+    status: "active",
+  };
+  const childHabit = toChildHabitFromTemplate(session, template);
+  saveMockSession({
+    ...session,
+    customTemplates: [...(session.customTemplates || []), template],
+    childHabits: [...(session.childHabits || []), childHabit],
+  });
+
+  return ok({ template, childHabit });
 }
 
 async function handleMockRequest({ endpoint, data = {} }) {
@@ -267,6 +418,30 @@ async function handleMockRequest({ endpoint, data = {} }) {
 
   if (endpoint === API_ENDPOINTS.HABIT_TEMPLATES) {
     return listHabitTemplates(data);
+  }
+
+  if (endpoint === API_ENDPOINTS.CUSTOM_HABIT_TEMPLATE) {
+    return createCustomHabit(data);
+  }
+
+  if (endpoint.path && endpoint.method === "GET" && /\/api\/children\/[^/]+\/habits$/.test(endpoint.path)) {
+    const childId = endpoint.path.match(/\/api\/children\/([^/]+)\/habits$/)[1];
+    return listChildHabits(childId);
+  }
+
+  if (endpoint.path && endpoint.method === "POST" && /\/api\/children\/[^/]+\/habits$/.test(endpoint.path)) {
+    const childId = endpoint.path.match(/\/api\/children\/([^/]+)\/habits$/)[1];
+    return addChildHabit(childId, data);
+  }
+
+  if (endpoint.path && endpoint.method === "PATCH" && /\/api\/children\/[^/]+\/habits\/[^/]+$/.test(endpoint.path)) {
+    const [, childId, childHabitId] = endpoint.path.match(/\/api\/children\/([^/]+)\/habits\/([^/]+)$/);
+    return updateChildHabit(childId, childHabitId, data);
+  }
+
+  if (endpoint.path && endpoint.method === "PATCH" && /\/api\/children\/[^/]+\/habits\/[^/]+\/status$/.test(endpoint.path)) {
+    const [, childId, childHabitId] = endpoint.path.match(/\/api\/children\/([^/]+)\/habits\/([^/]+)\/status$/);
+    return updateChildHabitStatus(childId, childHabitId, data);
   }
 
   if (endpoint.path && /\/api\/families\/[^/]+\/invite$/.test(endpoint.path)) {

@@ -346,9 +346,132 @@ Lists enabled habit templates for the V1 miniprogram habit library.
 }
 ```
 
+## Child Habit Configuration
+
+All child-habit APIs require the current `X-Test-Openid` user to be an active
+member of the child's family.
+
+### List Child Habits
+
+`GET /api/children/{childId}/habits`
+
+Returns configured child-habit snapshots. Disabled habits remain visible for
+management, but later today-check-in APIs should only use active rows.
+
+### Add System Template To Child
+
+`POST /api/children/{childId}/habits`
+
+Request:
+
+```json
+{
+  "templateId": 1
+}
+```
+
+Behavior:
+
+- Validates the child belongs to a family where the current user is an active
+  member.
+- Validates the template exists, is active, and has `sourceType=SYSTEM`.
+- Copies template display fields into `habit_child_config` as a snapshot.
+- Sets `permissionType=ALL_PARENTS` and `status=active`.
+- Rejects duplicate `childId + templateId` rows.
+
+### Update Child Habit
+
+`PATCH /api/children/{childId}/habits/{childHabitId}`
+
+Request:
+
+```json
+{
+  "name": "每天主动喝水",
+  "description": "早中晚提醒喝水",
+  "iconKey": "water_drop",
+  "imageUrl": ""
+}
+```
+
+Updates only the basic snapshot display fields in this slice. Permission edits
+are handled by the later family-members-and-permissions task.
+
+### Update Child Habit Status
+
+`PATCH /api/children/{childId}/habits/{childHabitId}/status`
+
+Request:
+
+```json
+{
+  "status": "disabled"
+}
+```
+
+Allowed status values: `active`, `disabled`.
+
+### Create Custom Habit
+
+`POST /api/habit-templates/custom`
+
+Request:
+
+```json
+{
+  "childId": 3001,
+  "name": "Practice Piano",
+  "description": "Practice for ten minutes.",
+  "category": "LEARNING",
+  "iconKey": "piano",
+  "imageUrl": ""
+}
+```
+
+Behavior:
+
+- Creates `habit_template` with `sourceType=CUSTOM`, current family, current
+  member, generated slug, and `status=active`.
+- Creates the linked child habit snapshot in the same transaction.
+- Sets child-habit `permissionType=ALL_PARENTS` and `status=active`.
+
+### Child Habit Response Shape
+
+```json
+{
+  "success": true,
+  "code": "OK",
+  "message": "ok",
+  "data": {
+    "id": 10001,
+    "familyId": 2001,
+    "childId": 3001,
+    "templateId": 1,
+    "name": "主动喝水",
+    "description": "白天主动喝水，保持身体水分充足。",
+    "iconKey": "water_drop",
+    "imageUrl": "",
+    "permissionType": "ALL_PARENTS",
+    "createdByMemberId": 4001,
+    "status": "active",
+    "sortOrder": 0
+  }
+}
+```
+
+### Errors
+
+| HTTP Status | Code | Message |
+| --- | --- | --- |
+| 400 | `BAD_REQUEST` | `Child not found` |
+| 400 | `BAD_REQUEST` | `Current user is not a family member` |
+| 400 | `BAD_REQUEST` | `Habit template not found` |
+| 400 | `BAD_REQUEST` | `Child habit already exists` |
+| 400 | `BAD_REQUEST` | `Child habit status is invalid` |
+
 ## Out Of Scope
 
 - Production WeChat AppSecret handling and token refresh.
-- Child habit configuration APIs.
+- Child-habit permission editing.
 - Today check-in APIs.
 - Account deletion or logout APIs.
