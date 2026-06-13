@@ -300,10 +300,55 @@ Invalidates existing active invite codes for the family and creates a new
 | 400 | `BAD_REQUEST` | `Invite code is invalid or expired` |
 | 400 | `BAD_REQUEST` | `Only family admin can manage invite code` |
 
+## Habit Template Library
+
+`GET /api/habit-templates`
+
+Lists enabled habit templates for the V1 miniprogram habit library.
+
+### Query Parameters
+
+| Name | Required | Description |
+| --- | --- | --- |
+| `category` | No | Template category. Current system categories are `HEALTH`, `LIFE_SKILLS`, `LEARNING`, `SPORTS`, `SOCIAL_EMOTION`, and `SAFETY`. |
+| `keyword` | No | Keyword matched against template name or description. |
+| `sourceType` | No | Template source. V1 system library uses `SYSTEM`. |
+
+### Behavior
+
+- Returns only rows where `status=active` and `del_flag=0`.
+- Supports combining category, keyword, and source-type filters.
+- System templates are maintained by Flyway migration and the public
+  `db/seeds/seed_system_habit_templates_v1.sql` artifact.
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "code": "OK",
+  "message": "ok",
+  "data": [
+    {
+      "id": 1,
+      "slug": "drink-water",
+      "name": "每天喝水",
+      "category": "HEALTH",
+      "description": "养成主动喝水的习惯，减少含糖饮料摄入。",
+      "ageMin": 3,
+      "ageMax": 12,
+      "iconKey": "water_drop",
+      "imageUrl": "",
+      "sourceType": "SYSTEM",
+      "status": "active"
+    }
+  ]
+}
+```
+
 ## Out Of Scope
 
 - Production WeChat AppSecret handling and token refresh.
-- Habit template/library APIs.
 - Child habit configuration APIs.
 - Today check-in APIs.
 - Account deletion or logout APIs.

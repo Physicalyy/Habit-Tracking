@@ -5,6 +5,7 @@ const ROUTES = Object.freeze({
   TODAY: "/pages/today/index",
   RECORDS: "/pages/records/index",
   ME: "/pages/me/index",
+  HABIT_LIBRARY: "/pages/habit-library/index",
 });
 
 module.exports = {

@@ -5,7 +5,8 @@
     "pages/join-family/index",
     "pages/today/index",
     "pages/records/index",
-    "pages/me/index"
+    "pages/me/index",
+    "pages/habit-library/index"
   ],
   "window": {
     "navigationBarTitleText": "小小习惯",

@@ -17,6 +17,87 @@ function fail(message) {
   };
 }
 
+const mockHabitTemplates = Object.freeze([
+  Object.freeze({
+    id: "habit_template_drink_water",
+    slug: "drink-water",
+    name: "每天喝水",
+    category: "HEALTH",
+    description: "养成主动喝水的习惯，减少含糖饮料摄入。",
+    ageMin: 3,
+    ageMax: 12,
+    iconKey: "water_drop",
+    imageUrl: "",
+    sourceType: "SYSTEM",
+    status: "active",
+  }),
+  Object.freeze({
+    id: "habit_template_brush_teeth",
+    slug: "brush-teeth",
+    name: "早晚刷牙",
+    category: "HEALTH",
+    description: "每天早晚完成刷牙，建立基础口腔护理习惯。",
+    ageMin: 3,
+    ageMax: 12,
+    iconKey: "soap",
+    imageUrl: "",
+    sourceType: "SYSTEM",
+    status: "active",
+  }),
+  Object.freeze({
+    id: "habit_template_reading",
+    slug: "daily-reading",
+    name: "亲子阅读",
+    category: "LEARNING",
+    description: "每天固定阅读 10 分钟，提升专注和表达。",
+    ageMin: 3,
+    ageMax: 10,
+    iconKey: "menu_book",
+    imageUrl: "",
+    sourceType: "SYSTEM",
+    status: "active",
+  }),
+  Object.freeze({
+    id: "habit_template_pack_bag",
+    slug: "pack-schoolbag",
+    name: "整理书包",
+    category: "LIFE_SKILLS",
+    description: "睡前整理第二天要用的书包和物品。",
+    ageMin: 5,
+    ageMax: 12,
+    iconKey: "assignment",
+    imageUrl: "",
+    sourceType: "SYSTEM",
+    status: "active",
+  }),
+  Object.freeze({
+    id: "habit_template_jump_rope",
+    slug: "jump-rope",
+    name: "跳绳练习",
+    category: "SPORTS",
+    description: "每天完成适量跳绳，提升协调性和体能。",
+    ageMin: 5,
+    ageMax: 12,
+    iconKey: "directions_run",
+    imageUrl: "",
+    sourceType: "SYSTEM",
+    status: "active",
+  }),
+  Object.freeze({
+    id: "habit_template_traffic_safety",
+    slug: "traffic-safety",
+    name: "过马路看灯",
+    category: "SAFETY",
+    description: "过马路前观察红绿灯和车辆，遵守交通规则。",
+    ageMin: 4,
+    ageMax: 12,
+    iconKey: "traffic",
+    imageUrl: "",
+    sourceType: "SYSTEM",
+    status: "active",
+  }),
+]);
+
 function toBootstrap(session) {
   const families = session.family
     ? [
@@ -136,6 +217,32 @@ function refreshFamilyInvite() {
   return ok(nextInviteCode);
 }
 
+function listHabitTemplates(data) {
+  const category = String(data.category || "").trim();
+  const keyword = String(data.keyword || "").trim().toLowerCase();
+  const sourceType = String(data.sourceType || "").trim();
+
+  return ok(mockHabitTemplates.filter((template) => {
+    if (template.status !== "active") {
+      return false;
+    }
+    if (category && template.category !== category) {
+      return false;
+    }
+    if (sourceType && template.sourceType !== sourceType) {
+      return false;
+    }
+    if (!keyword) {
+      return true;
+    }
+    return (
+      template.name.toLowerCase().includes(keyword) ||
+      template.description.toLowerCase().includes(keyword) ||
+      template.slug.toLowerCase().includes(keyword)
+    );
+  }));
+}
+
 async function handleMockRequest({ endpoint, data = {} }) {
   const session = getMockSession();
 
@@ -156,6 +263,10 @@ async function handleMockRequest({ endpoint, data = {} }) {
 
   if (endpoint === API_ENDPOINTS.JOIN_FAMILY) {
     return joinFamily(data);
+  }
+
+  if (endpoint === API_ENDPOINTS.HABIT_TEMPLATES) {
+    return listHabitTemplates(data);
   }
 
   if (endpoint.path && /\/api\/families\/[^/]+\/invite$/.test(endpoint.path)) {

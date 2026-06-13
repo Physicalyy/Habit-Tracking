@@ -1,0 +1,121 @@
+.habit-library-page {
+  padding-bottom: 56rpx;
+}
+
+.search-card {
+  margin-top: 28rpx;
+  padding: 20rpx 24rpx;
+}
+
+.search-input {
+  width: 100%;
+  height: 72rpx;
+  padding: 0 24rpx;
+  color: #191c1b;
+  background: #f2f4f2;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+}
+
+.category-scroll {
+  width: 100%;
+  margin-top: 24rpx;
+  white-space: nowrap;
+}
+
+.category-row {
+  display: flex;
+  align-items: center;
+}
+
+.category-pill {
+  flex: none;
+  margin-right: 16rpx;
+  padding: 16rpx 28rpx;
+  color: #3e4945;
+  background: #ffffff;
+  border: 2rpx solid #e0e6e3;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.category-active {
+  color: #ffffff;
+  background: #006b58;
+  border-color: #006b58;
+}
+
+.library-state {
+  margin-top: 36rpx;
+  text-align: center;
+}
+
+.template-list {
+  margin-top: 24rpx;
+}
+
+.template-card {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding: 26rpx;
+}
+
+.template-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 88rpx;
+  height: 88rpx;
+  color: #006b58;
+  background: #e6f7f1;
+  border-radius: 20rpx;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.template-image {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 20rpx;
+}
+
+.template-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: 22rpx;
+}
+
+.template-name {
+  color: #191c1b;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 42rpx;
+}
+
+.template-desc {
+  margin-top: 6rpx;
+  color: #56625d;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.template-age {
+  margin-top: 10rpx;
+  color: #006b58;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.add-template {
+  flex: none;
+  margin-left: 18rpx;
+  padding: 16rpx 22rpx;
+  color: #ffffff;
+  background: #006b58;
+  border-radius: 14rpx;
+  font-size: 24rpx;
+  font-weight: 700;
+}

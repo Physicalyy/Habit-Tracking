@@ -16,6 +16,7 @@ const requiredPages = [
   "pages/today/index",
   "pages/records/index",
   "pages/me/index",
+  "pages/habit-library/index",
 ];
 
 const tabPages = [
@@ -31,6 +32,7 @@ const requiredApiPaths = [
   "POST /api/families/join",
   "GET /api/families/{familyId}/invite",
   "POST /api/families/{familyId}/invite/refresh",
+  "GET /api/habit-templates",
 ];
 
 const requiredAssets = [
@@ -164,6 +166,62 @@ function assertApiConfiguration() {
       familyServiceSource.includes("refreshFamilyInvite"),
     "family-service.js must expose invite query and refresh functions",
   );
+
+  const habitServiceSource = readFileSync(join(rootDir, "services/habit-service.js"), "utf8");
+  assert.ok(
+    habitServiceSource.includes("listHabitTemplates") &&
+      habitServiceSource.includes("API_ENDPOINTS.HABIT_TEMPLATES"),
+    "habit-service.js must expose listHabitTemplates through centralized API endpoints",
+  );
+}
+
+function assertHabitLibraryStructure() {
+  const routesSource = readFileSync(join(rootDir, "core/routes.js"), "utf8");
+  assert.ok(
+    routesSource.includes("HABIT_LIBRARY") &&
+      routesSource.includes("/pages/habit-library/index"),
+    "core/routes.js must define HABIT_LIBRARY",
+  );
+
+  const meSource = readFileSync(join(rootDir, "pages/me/index.js"), "utf8");
+  assert.ok(
+    meSource.includes("ROUTES.HABIT_LIBRARY") &&
+      meSource.includes("goHabitLibrary"),
+    "me page must navigate to habit library through route constants",
+  );
+
+  const libraryJsPath = join(rootDir, "pages/habit-library/index.js");
+  const libraryJs = readFileSync(libraryJsPath, "utf8");
+  for (const token of [
+    "listHabitTemplates",
+    "categories",
+    "selectedCategory",
+    "searchKeyword",
+    "onCategoryTap",
+    "onSearchInput",
+    "onAddTap",
+  ]) {
+    assertTextIncludes(libraryJsPath, token);
+  }
+  assert.ok(
+    !libraryJs.includes("/api/habit-templates"),
+    "habit library page must not contain raw habit template API path",
+  );
+
+  const libraryWxmlPath = join(rootDir, "pages/habit-library/index.wxml");
+  for (const token of [
+    "habit-library-page",
+    "search-input",
+    "category-scroll",
+    "template-card",
+    "template-icon",
+    "template-name",
+    "template-desc",
+    "template-age",
+    "add-template",
+  ]) {
+    assertTextIncludes(libraryWxmlPath, token);
+  }
 }
 
 function assertCommonJsRuntimeModule(path) {
@@ -357,6 +415,7 @@ async function assertMockFlow() {
     getFamilyInvite,
     refreshFamilyInvite,
   } = requireFromRoot("./services/family-service.js");
+  const { listHabitTemplates } = requireFromRoot("./services/habit-service.js");
 
   setRequestConfig({ useMockApi: true });
   resetMockSession();
@@ -386,6 +445,15 @@ async function assertMockFlow() {
   assert.equal(joined.family.admin, false);
   assert.equal(joined.member.admin, false);
   assert.equal((await getBootstrap()).needOnboarding, false);
+
+  const healthTemplates = await listHabitTemplates({
+    category: "HEALTH",
+    keyword: "喝水",
+    sourceType: "SYSTEM",
+  });
+  assert.equal(healthTemplates.length, 1);
+  assert.equal(healthTemplates[0].slug, "drink-water");
+  assert.equal(healthTemplates[0].iconKey, "water_drop");
 }
 
 const appJsonPath = join(rootDir, "app.json");
@@ -430,6 +498,8 @@ assertFile(join(rootDir, "services/bootstrap-service.js"));
 assertCommonJsRuntimeModule(join(rootDir, "services/bootstrap-service.js"));
 assertFile(join(rootDir, "services/family-service.js"));
 assertCommonJsRuntimeModule(join(rootDir, "services/family-service.js"));
+assertFile(join(rootDir, "services/habit-service.js"));
+assertCommonJsRuntimeModule(join(rootDir, "services/habit-service.js"));
 assertFile(join(rootDir, "services/session-state.js"));
 assertCommonJsRuntimeModule(join(rootDir, "services/session-state.js"));
 
@@ -461,6 +531,7 @@ assertTextIncludes(
   "/assets/onboarding/today-empty-sprout.png",
 );
 assertStartPrototypeStructure();
+assertHabitLibraryStructure();
 
 const contractPath = join(repoDir, "docs/api/miniprogram-onboarding-v1.md");
 assertFile(contractPath);

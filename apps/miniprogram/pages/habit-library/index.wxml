@@ -1,0 +1,45 @@
+<view class="page habit-library-page">
+  <view class="page-title">习惯库</view>
+  <view class="page-subtitle">选择适合孩子的系统习惯模板</view>
+
+  <view class="search-card card">
+    <input
+      class="search-input"
+      placeholder="搜索习惯"
+      value="{{searchKeyword}}"
+      bindinput="onSearchInput"
+    />
+  </view>
+
+  <scroll-view class="category-scroll" scroll-x="true" enhanced="true">
+    <view class="category-row">
+      <view
+        wx:for="{{categories}}"
+        wx:key="key"
+        class="category-pill {{selectedCategory === item.key ? 'category-active' : ''}}"
+        data-category="{{item.key}}"
+        bindtap="onCategoryTap"
+      >
+        {{item.label}}
+      </view>
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{loading}}" class="muted-text library-state">加载中...</view>
+  <view wx:elif="{{errorText}}" class="error-text library-state">{{errorText}}</view>
+
+  <view wx:else class="template-list">
+    <view wx:for="{{templates}}" wx:key="slug" class="template-card card">
+      <view class="template-icon">
+        <image wx:if="{{item.imageUrl}}" class="template-image" mode="aspectFill" src="{{item.imageUrl}}" />
+        <text wx:else>{{item.fallbackIcon}}</text>
+      </view>
+      <view class="template-main">
+        <view class="template-name">{{item.name}}</view>
+        <view class="template-desc">{{item.description}}</view>
+        <view class="template-age">{{item.ageText}}</view>
+      </view>
+      <view class="add-template" data-slug="{{item.slug}}" bindtap="onAddTap">添加</view>
+    </view>
+  </view>
+</view>

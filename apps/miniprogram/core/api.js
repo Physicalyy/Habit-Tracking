@@ -15,6 +15,10 @@ const API_ENDPOINTS = Object.freeze({
     method: "POST",
     path: "/api/families/join",
   }),
+  HABIT_TEMPLATES: Object.freeze({
+    method: "GET",
+    path: "/api/habit-templates",
+  }),
 });
 
 function familyInvite(familyId) {

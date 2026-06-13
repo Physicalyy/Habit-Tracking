@@ -12,9 +12,9 @@
       <text>家庭成员</text>
       <text class="muted-text">待接入</text>
     </view>
-    <view class="menu-item">
+    <view class="menu-item" bindtap="goHabitLibrary">
       <text>习惯库</text>
-      <text class="muted-text">待接入</text>
+      <text class="muted-text">去添加</text>
     </view>
     <view class="menu-item">
       <text>习惯管理</text>

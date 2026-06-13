@@ -1,3 +1,4 @@
+const { ROUTES } = require("../../core/routes.js");
 const { getBootstrap } = require("../../services/bootstrap-service.js");
 
 Page({
@@ -15,5 +16,9 @@ Page({
       avatarText: nickname.slice(0, 1),
       familyName: bootstrap.defaultFamily ? bootstrap.defaultFamily.name : "未加入家庭"
     });
+  },
+
+  goHabitLibrary() {
+    wx.navigateTo({ url: ROUTES.HABIT_LIBRARY });
   }
 });

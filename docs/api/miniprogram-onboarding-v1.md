@@ -193,3 +193,41 @@
   "expiresTime": "2026-06-20T12:00:00"
 }
 ```
+
+## GET /api/habit-templates
+
+Purpose: list enabled habit templates for the miniprogram habit library.
+
+Query parameters:
+
+| Name | Required | Description |
+| --- | --- | --- |
+| `category` | No | Template category, such as `HEALTH`, `LIFE_SKILLS`, `LEARNING`, `SPORTS`, `SOCIAL_EMOTION`, or `SAFETY`. |
+| `keyword` | No | Search keyword matched against template name or description. |
+| `sourceType` | No | Template source. V1 habit library uses `SYSTEM`. |
+
+Response `data`:
+
+```json
+[
+  {
+    "id": 1,
+    "slug": "drink-water",
+    "name": "每天喝水",
+    "category": "HEALTH",
+    "description": "养成主动喝水的习惯，减少含糖饮料摄入。",
+    "ageMin": 3,
+    "ageMax": 12,
+    "iconKey": "water_drop",
+    "imageUrl": "",
+    "sourceType": "SYSTEM",
+    "status": "active"
+  }
+]
+```
+
+Notes:
+
+- The backend only returns templates with `status=active` and `del_flag=0`.
+- The miniprogram must call this endpoint through `core/api.js` and `services/habit-service.js`; page files must not embed raw API paths.
+- The Add action is an entry point for the later child-habit task and must not invent a child-habit URL in this slice.
