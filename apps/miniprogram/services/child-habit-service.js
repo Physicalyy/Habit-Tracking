@@ -3,6 +3,7 @@ const {
   addChildHabit,
   childHabit,
   childHabits,
+  childHabitPermissions,
   childHabitStatus,
 } = require("../core/api.js");
 const { request } = require("../utils/request.js");
@@ -46,10 +47,21 @@ async function updateChildHabitStatus(childId, childHabitId, status) {
   return result.data;
 }
 
+async function updateChildHabitPermission(childId, childHabitId, data) {
+  const result = await request(childHabitPermissions(childId, childHabitId), {
+    permissionType: String(data.permissionType || "").trim(),
+    allowedMemberIds: Array.isArray(data.allowedMemberIds)
+      ? data.allowedMemberIds
+      : [],
+  });
+  return result.data;
+}
+
 module.exports = {
   listChildHabits,
   addSystemTemplateToChild,
   createCustomHabit,
   updateChildHabit,
   updateChildHabitStatus,
+  updateChildHabitPermission,
 };

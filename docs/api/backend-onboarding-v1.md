@@ -300,6 +300,46 @@ Invalidates existing active invite codes for the family and creates a new
 | 400 | `BAD_REQUEST` | `Invite code is invalid or expired` |
 | 400 | `BAD_REQUEST` | `Only family admin can manage invite code` |
 
+## Family Members
+
+`GET /api/families/{familyId}/members`
+
+Returns active parent members in the family. Any active family member can query
+the list; management-only actions remain limited to the family admin.
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "code": "OK",
+  "message": "ok",
+  "data": [
+    {
+      "id": 4001,
+      "familyId": 2001,
+      "userId": 1001,
+      "displayName": "Parent",
+      "admin": true
+    },
+    {
+      "id": 4002,
+      "familyId": 2001,
+      "userId": 1002,
+      "displayName": "Grandma",
+      "admin": false
+    }
+  ]
+}
+```
+
+### Errors
+
+| HTTP Status | Code | Message |
+| --- | --- | --- |
+| 400 | `BAD_REQUEST` | `Family not found` |
+| 400 | `BAD_REQUEST` | `Current user is not a family member` |
+
 ## Habit Template Library
 
 `GET /api/habit-templates`
@@ -411,6 +451,46 @@ Request:
 
 Allowed status values: `active`, `disabled`.
 
+### Update Child Habit Permissions
+
+`PUT /api/children/{childId}/habits/{childHabitId}/permissions`
+
+Only the family admin can update child-habit permissions. `SPECIFIC_PARENTS`
+replaces the allowed family-member set in `habit_child_allowed_member`.
+
+Request:
+
+```json
+{
+  "permissionType": "SPECIFIC_PARENTS",
+  "allowedMemberIds": [4001, 4002]
+}
+```
+
+Allowed `permissionType` values:
+
+| Value | Meaning |
+| --- | --- |
+| `ALL_PARENTS` | Any active parent member in the family can check in. |
+| `OWNER_ONLY` | Only the member who created the child habit can check in. |
+| `SPECIFIC_PARENTS` | Only listed family member IDs can check in. |
+
+Success response:
+
+```json
+{
+  "success": true,
+  "code": "OK",
+  "message": "ok",
+  "data": {
+    "childHabitId": 10001,
+    "childId": 3001,
+    "permissionType": "SPECIFIC_PARENTS",
+    "allowedMemberIds": [4001, 4002]
+  }
+}
+```
+
 ### Create Custom Habit
 
 `POST /api/habit-templates/custom`
@@ -468,10 +548,13 @@ Behavior:
 | 400 | `BAD_REQUEST` | `Habit template not found` |
 | 400 | `BAD_REQUEST` | `Child habit already exists` |
 | 400 | `BAD_REQUEST` | `Child habit status is invalid` |
+| 400 | `BAD_REQUEST` | `Only family admin can manage habit permissions` |
+| 400 | `BAD_REQUEST` | `Child habit permission type is invalid` |
+| 400 | `BAD_REQUEST` | `Allowed members are required` |
+| 400 | `BAD_REQUEST` | `Allowed member is invalid` |
 
 ## Out Of Scope
 
 - Production WeChat AppSecret handling and token refresh.
-- Child-habit permission editing.
 - Today check-in APIs.
 - Account deletion or logout APIs.

@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -178,6 +179,102 @@ class ChildHabitControllerTest {
                 .andExpect(jsonPath("$.data.status").value("active"));
     }
 
+    @Test
+    void admin_updates_child_habit_permissions_and_replaces_specific_members() throws Exception {
+        String ownerOpenid = "perm-owner-" + System.nanoTime();
+        String memberOpenid = "perm-member-" + System.nanoTime();
+        String secondMemberOpenid = "perm-second-" + System.nanoTime();
+        Long familyId = createFamilyAndReturnId(ownerOpenid, "Permission Family", "Little Permission");
+        Long childId = defaultChildId(familyId);
+        Long childHabitId = addTemplate(ownerOpenid, childId, templateId("drink-water"));
+        joinFamily(memberOpenid, familyId);
+        joinFamily(secondMemberOpenid, familyId);
+        Long ownerMemberId = memberId(familyId, ownerOpenid);
+        Long memberId = memberId(familyId, memberOpenid);
+        Long secondMemberId = memberId(familyId, secondMemberOpenid);
+
+        mockMvc.perform(put("/api/children/{childId}/habits/{childHabitId}/permissions", childId, childHabitId)
+                        .header("X-Test-Openid", ownerOpenid)
+                        .header("X-Test-Nickname", "Owner")
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "permissionType": "OWNER_ONLY"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.permissionType").value("OWNER_ONLY"))
+                .andExpect(jsonPath("$.data.allowedMemberIds.length()").value(0));
+
+        mockMvc.perform(put("/api/children/{childId}/habits/{childHabitId}/permissions", childId, childHabitId)
+                        .header("X-Test-Openid", ownerOpenid)
+                        .header("X-Test-Nickname", "Owner")
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "permissionType": "SPECIFIC_PARENTS",
+                                  "allowedMemberIds": [%d, %d]
+                                }
+                """.formatted(memberId, secondMemberId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.permissionType").value("SPECIFIC_PARENTS"))
+                .andExpect(jsonPath("$.data.allowedMemberIds[0]").value(memberId))
+                .andExpect(jsonPath("$.data.allowedMemberIds[1]").value(secondMemberId));
+
+        assertThat(allowedMemberCount(childHabitId)).isEqualTo(2);
+
+        mockMvc.perform(put("/api/children/{childId}/habits/{childHabitId}/permissions", childId, childHabitId)
+                        .header("X-Test-Openid", ownerOpenid)
+                        .header("X-Test-Nickname", "Owner")
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "permissionType": "SPECIFIC_PARENTS",
+                                  "allowedMemberIds": [%d]
+                                }
+                                """.formatted(ownerMemberId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.allowedMemberIds[0]").value(ownerMemberId));
+
+        assertThat(allowedMemberCount(childHabitId)).isEqualTo(1);
+
+        mockMvc.perform(put("/api/children/{childId}/habits/{childHabitId}/permissions", childId, childHabitId)
+                        .header("X-Test-Openid", ownerOpenid)
+                        .header("X-Test-Nickname", "Owner")
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "permissionType": "ALL_PARENTS"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.permissionType").value("ALL_PARENTS"))
+                .andExpect(jsonPath("$.data.allowedMemberIds.length()").value(0));
+    }
+
+    @Test
+    void member_parent_cannot_update_child_habit_permissions() throws Exception {
+        String ownerOpenid = "deny-owner-" + System.nanoTime();
+        String memberOpenid = "deny-member-" + System.nanoTime();
+        Long familyId = createFamilyAndReturnId(ownerOpenid, "Deny Family", "Little Deny");
+        Long childId = defaultChildId(familyId);
+        Long childHabitId = addTemplate(ownerOpenid, childId, templateId("brush-teeth"));
+        joinFamily(memberOpenid, familyId);
+
+        mockMvc.perform(put("/api/children/{childId}/habits/{childHabitId}/permissions", childId, childHabitId)
+                        .header("X-Test-Openid", memberOpenid)
+                        .header("X-Test-Nickname", "Member")
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "permissionType": "OWNER_ONLY"
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"));
+    }
+
     private Long createFamilyAndReturnId(String ownerOpenid, String familyName, String childNickname) throws Exception {
         mockMvc.perform(post("/api/families")
                         .header("X-Test-Openid", ownerOpenid)
@@ -235,6 +332,46 @@ class ChildHabitControllerTest {
                                 """.formatted(templateId)))
                 .andExpect(status().isOk());
         return childHabitId(childId, templateId);
+    }
+
+    private void joinFamily(String openid, Long familyId) throws Exception {
+        String inviteCode = jdbcTemplate.queryForObject(
+                "select code from family_invite_code where family_id = ? and status = 'active'",
+                String.class,
+                familyId
+        );
+        mockMvc.perform(post("/api/families/join")
+                        .header("X-Test-Openid", openid)
+                        .header("X-Test-Nickname", "Member")
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "inviteCode": "%s"
+                                }
+                                """.formatted(inviteCode)))
+                .andExpect(status().isOk());
+    }
+
+    private Long memberId(Long familyId, String openid) {
+        return jdbcTemplate.queryForObject(
+                """
+                select fm.id
+                from family_member fm
+                join auth_user_account aua on aua.id = fm.user_id
+                where fm.family_id = ? and aua.openid = ? and fm.del_flag = '0'
+                """,
+                Long.class,
+                familyId,
+                openid
+        );
+    }
+
+    private Long allowedMemberCount(Long childHabitId) {
+        return jdbcTemplate.queryForObject(
+                "select count(*) from habit_child_allowed_member where child_habit_id = ? and del_flag = '0'",
+                Long.class,
+                childHabitId
+        );
     }
 
     private Long countChildHabit(Long childId, Long templateId) {

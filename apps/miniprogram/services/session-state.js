@@ -28,6 +28,7 @@ function createEmptySession() {
     child: null,
     member: null,
     inviteCode: null,
+    familyMembers: [],
     childHabits: [],
     customTemplates: [],
   };

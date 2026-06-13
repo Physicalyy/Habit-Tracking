@@ -1,4 +1,9 @@
-const { API_ENDPOINTS, familyInvite, refreshFamilyInvite } = require("../core/api.js");
+const {
+  API_ENDPOINTS,
+  familyInvite,
+  refreshFamilyInvite,
+  familyMembers,
+} = require("../core/api.js");
 const { request } = require("../utils/request.js");
 
 async function createFamily(payload) {
@@ -26,9 +31,15 @@ async function refreshFamilyInviteCode(familyId) {
   return result.data;
 }
 
+async function listFamilyMembers(familyId) {
+  const result = await request(familyMembers(familyId));
+  return result.data;
+}
+
 module.exports = {
   createFamily,
   joinFamily,
   getFamilyInvite,
   refreshFamilyInvite: refreshFamilyInviteCode,
+  listFamilyMembers,
 };

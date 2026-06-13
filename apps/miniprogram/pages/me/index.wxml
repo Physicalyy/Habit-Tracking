@@ -8,9 +8,13 @@
   </view>
 
   <view class="menu-card card">
-    <view class="menu-item">
+    <view class="menu-item" bindtap="goFamilyMembers">
       <text>家庭成员</text>
-      <text class="muted-text">待接入</text>
+      <text class="muted-text">{{hasFamily ? "去查看" : "未加入"}}</text>
+    </view>
+    <view class="menu-item {{isFamilyAdmin ? '' : 'menu-item-disabled'}}" bindtap="goFamilyInvite">
+      <text>邀请码</text>
+      <text class="muted-text">{{isFamilyAdmin ? "去管理" : "仅主家长"}}</text>
     </view>
     <view class="menu-item" bindtap="goHabitLibrary">
       <text>习惯库</text>

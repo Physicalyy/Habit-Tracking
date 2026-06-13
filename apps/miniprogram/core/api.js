@@ -39,6 +39,13 @@ function refreshFamilyInvite(familyId) {
   });
 }
 
+function familyMembers(familyId) {
+  return Object.freeze({
+    method: "GET",
+    path: `/api/families/${familyId}/members`,
+  });
+}
+
 function childHabits(childId) {
   return Object.freeze({
     method: "GET",
@@ -67,12 +74,21 @@ function childHabitStatus(childId, childHabitId) {
   });
 }
 
+function childHabitPermissions(childId, childHabitId) {
+  return Object.freeze({
+    method: "PUT",
+    path: `/api/children/${childId}/habits/${childHabitId}/permissions`,
+  });
+}
+
 module.exports = {
   API_ENDPOINTS,
   familyInvite,
   refreshFamilyInvite,
+  familyMembers,
   childHabits,
   addChildHabit,
   childHabit,
   childHabitStatus,
+  childHabitPermissions,
 };

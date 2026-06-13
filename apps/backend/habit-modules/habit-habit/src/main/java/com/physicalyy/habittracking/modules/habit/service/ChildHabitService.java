@@ -6,16 +6,22 @@ import com.physicalyy.habittracking.modules.auth.entity.UserAccount;
 import com.physicalyy.habittracking.modules.auth.service.CurrentUserService;
 import com.physicalyy.habittracking.modules.child.entity.ChildProfile;
 import com.physicalyy.habittracking.modules.child.mapper.ChildProfileMapper;
+import com.physicalyy.habittracking.modules.family.entity.FamilyGroup;
 import com.physicalyy.habittracking.modules.family.entity.FamilyMember;
+import com.physicalyy.habittracking.modules.family.mapper.FamilyGroupMapper;
 import com.physicalyy.habittracking.modules.family.mapper.FamilyMemberMapper;
 import com.physicalyy.habittracking.modules.habit.controller.AddChildHabitRequest;
 import com.physicalyy.habittracking.modules.habit.controller.CreateCustomHabitTemplateRequest;
 import com.physicalyy.habittracking.modules.habit.controller.UpdateChildHabitRequest;
+import com.physicalyy.habittracking.modules.habit.controller.UpdateChildHabitPermissionRequest;
 import com.physicalyy.habittracking.modules.habit.controller.UpdateChildHabitStatusRequest;
+import com.physicalyy.habittracking.modules.habit.entity.HabitChildAllowedMember;
 import com.physicalyy.habittracking.modules.habit.entity.HabitChildConfig;
 import com.physicalyy.habittracking.modules.habit.entity.HabitTemplate;
+import com.physicalyy.habittracking.modules.habit.mapper.HabitChildAllowedMemberMapper;
 import com.physicalyy.habittracking.modules.habit.mapper.HabitChildConfigMapper;
 import com.physicalyy.habittracking.modules.habit.mapper.HabitTemplateMapper;
+import com.physicalyy.habittracking.modules.habit.vo.ChildHabitPermissionSummary;
 import com.physicalyy.habittracking.modules.habit.vo.ChildHabitSummary;
 import com.physicalyy.habittracking.modules.habit.vo.CreateCustomHabitResponse;
 import com.physicalyy.habittracking.modules.habit.vo.CustomHabitTemplateSummary;
@@ -24,6 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -35,22 +43,28 @@ public class ChildHabitService {
 
     private final CurrentUserService currentUserService;
     private final ChildProfileMapper childProfileMapper;
+    private final FamilyGroupMapper familyGroupMapper;
     private final FamilyMemberMapper familyMemberMapper;
     private final HabitTemplateMapper habitTemplateMapper;
     private final HabitChildConfigMapper habitChildConfigMapper;
+    private final HabitChildAllowedMemberMapper habitChildAllowedMemberMapper;
 
     public ChildHabitService(
             CurrentUserService currentUserService,
             ChildProfileMapper childProfileMapper,
+            FamilyGroupMapper familyGroupMapper,
             FamilyMemberMapper familyMemberMapper,
             HabitTemplateMapper habitTemplateMapper,
-            HabitChildConfigMapper habitChildConfigMapper
+            HabitChildConfigMapper habitChildConfigMapper,
+            HabitChildAllowedMemberMapper habitChildAllowedMemberMapper
     ) {
         this.currentUserService = currentUserService;
         this.childProfileMapper = childProfileMapper;
+        this.familyGroupMapper = familyGroupMapper;
         this.familyMemberMapper = familyMemberMapper;
         this.habitTemplateMapper = habitTemplateMapper;
         this.habitChildConfigMapper = habitChildConfigMapper;
+        this.habitChildAllowedMemberMapper = habitChildAllowedMemberMapper;
     }
 
     public List<ChildHabitSummary> listChildHabits(String openid, String nickname, Long childId) {
@@ -127,6 +141,49 @@ public class ChildHabitService {
         childHabit.touchForUpdate(context.user().getOpenid());
         habitChildConfigMapper.updateById(childHabit);
         return ChildHabitSummary.from(childHabit);
+    }
+
+    @Transactional
+    public ChildHabitPermissionSummary updatePermissions(
+            String openid,
+            String nickname,
+            Long childId,
+            Long childHabitId,
+            UpdateChildHabitPermissionRequest request
+    ) {
+        ChildContext context = requireChildContext(openid, nickname, childId);
+        requireAdminMember(context);
+        HabitChildConfig childHabit = requireChildHabit(context, childHabitId);
+        String permissionType = request.permissionType().trim();
+        if (!List.of("ALL_PARENTS", "OWNER_ONLY", "SPECIFIC_PARENTS").contains(permissionType)) {
+            throw new BusinessException("BAD_REQUEST", "Child habit permission type is invalid");
+        }
+
+        List<Long> allowedMemberIds = "SPECIFIC_PARENTS".equals(permissionType)
+                ? normalizeAllowedMemberIds(request.allowedMemberIds())
+                : List.of();
+        if ("SPECIFIC_PARENTS".equals(permissionType) && allowedMemberIds.isEmpty()) {
+            throw new BusinessException("BAD_REQUEST", "Allowed members are required");
+        }
+        for (Long familyMemberId : allowedMemberIds) {
+            requireFamilyMember(context.familyId(), familyMemberId);
+        }
+
+        replaceAllowedMembers(childHabitId, allowedMemberIds, context.user().getOpenid());
+        childHabit.setPermissionType(permissionType);
+        childHabit.touchForUpdate(context.user().getOpenid());
+        habitChildConfigMapper.updateById(childHabit);
+
+        if ("SPECIFIC_PARENTS".equals(permissionType)) {
+            upsertAllowedMembers(childHabitId, allowedMemberIds, context.user().getOpenid());
+        }
+
+        return new ChildHabitPermissionSummary(
+                childHabit.getId(),
+                childHabit.getChildId(),
+                childHabit.getPermissionType(),
+                "SPECIFIC_PARENTS".equals(permissionType) ? allowedMemberIds : List.of()
+        );
     }
 
     @Transactional
@@ -222,6 +279,71 @@ public class ChildHabitService {
                 .eq(HabitChildConfig::getDelFlag, "0"));
         if (count > 0) {
             throw new BusinessException("BAD_REQUEST", "Child habit already exists");
+        }
+    }
+
+    private List<Long> normalizeAllowedMemberIds(List<Long> allowedMemberIds) {
+        if (allowedMemberIds == null || allowedMemberIds.isEmpty()) {
+            return List.of();
+        }
+        List<Long> normalizedIds = new ArrayList<>();
+        for (Long allowedMemberId : new LinkedHashSet<>(allowedMemberIds)) {
+            if (allowedMemberId == null) {
+                throw new BusinessException("BAD_REQUEST", "Allowed member is invalid");
+            }
+            normalizedIds.add(allowedMemberId);
+        }
+        return normalizedIds;
+    }
+
+    private void replaceAllowedMembers(Long childHabitId, List<Long> allowedMemberIds, String operator) {
+        List<HabitChildAllowedMember> existingMembers = habitChildAllowedMemberMapper.selectList(
+                new LambdaQueryWrapper<HabitChildAllowedMember>()
+                        .eq(HabitChildAllowedMember::getChildHabitId, childHabitId));
+        for (HabitChildAllowedMember existingMember : existingMembers) {
+            String nextDelFlag = allowedMemberIds.contains(existingMember.getFamilyMemberId()) ? "0" : "1";
+            if (!nextDelFlag.equals(existingMember.getDelFlag())) {
+                existingMember.setDelFlag(nextDelFlag);
+                existingMember.touchForUpdate(operator);
+                habitChildAllowedMemberMapper.updateById(existingMember);
+            }
+        }
+    }
+
+    private void upsertAllowedMembers(Long childHabitId, List<Long> allowedMemberIds, String operator) {
+        List<HabitChildAllowedMember> existingMembers = habitChildAllowedMemberMapper.selectList(
+                new LambdaQueryWrapper<HabitChildAllowedMember>()
+                        .eq(HabitChildAllowedMember::getChildHabitId, childHabitId));
+        List<Long> existingMemberIds = existingMembers.stream()
+                .map(HabitChildAllowedMember::getFamilyMemberId)
+                .toList();
+        for (Long familyMemberId : allowedMemberIds) {
+            if (existingMemberIds.contains(familyMemberId)) {
+                continue;
+            }
+            HabitChildAllowedMember allowedMember = new HabitChildAllowedMember();
+            allowedMember.setChildHabitId(childHabitId);
+            allowedMember.setFamilyMemberId(familyMemberId);
+            allowedMember.touchForCreate(operator);
+            habitChildAllowedMemberMapper.insert(allowedMember);
+        }
+    }
+
+    private void requireAdminMember(ChildContext context) {
+        FamilyGroup family = familyGroupMapper.selectById(context.familyId());
+        if (family == null || !context.member().getId().equals(family.getAdminMemberId())) {
+            throw new BusinessException("BAD_REQUEST", "Only family admin can manage habit permissions");
+        }
+    }
+
+    private void requireFamilyMember(Long familyId, Long familyMemberId) {
+        Long count = familyMemberMapper.selectCount(new LambdaQueryWrapper<FamilyMember>()
+                .eq(FamilyMember::getId, familyMemberId)
+                .eq(FamilyMember::getFamilyId, familyId)
+                .eq(FamilyMember::getStatus, "active")
+                .eq(FamilyMember::getDelFlag, "0"));
+        if (count == 0) {
+            throw new BusinessException("BAD_REQUEST", "Allowed member is invalid");
         }
     }
 

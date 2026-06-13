@@ -8,7 +8,10 @@
     "pages/me/index",
     "pages/habit-library/index",
     "pages/habit-manage/index",
-    "pages/custom-habit/index"
+    "pages/custom-habit/index",
+    "pages/family-members/index",
+    "pages/family-invite/index",
+    "pages/habit-permission/index"
   ],
   "window": {
     "navigationBarTitleText": "小小习惯",

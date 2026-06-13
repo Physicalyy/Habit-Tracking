@@ -1,0 +1,26 @@
+<view class="page family-members-page">
+  <view class="top-bar">
+    <view>
+      <view class="top-title">家庭成员</view>
+      <view class="page-subtitle">{{familyName}} · {{memberCount}} 人</view>
+    </view>
+    <view class="invite-action {{isFamilyAdmin ? '' : 'action-disabled'}}" bindtap="goFamilyInvite">邀请</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="muted-text members-state">加载中...</view>
+  <view wx:elif="{{errorText}}" class="error-text members-state">{{errorText}}</view>
+  <view wx:elif="{{!familyId}}" class="card empty-card">
+    <view class="empty-title">还没有家庭</view>
+    <view class="muted-text">创建或加入家庭后可以查看成员</view>
+  </view>
+
+  <view wx:else class="member-list">
+    <view wx:for="{{members}}" wx:key="id" class="member-card card">
+      <view class="member-avatar">{{item.avatarText}}</view>
+      <view class="member-main">
+        <view class="member-name">{{item.displayName}}</view>
+        <view class="member-role">{{item.roleText}}</view>
+      </view>
+    </view>
+  </view>
+</view>

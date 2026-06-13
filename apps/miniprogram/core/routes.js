@@ -8,6 +8,9 @@ const ROUTES = Object.freeze({
   HABIT_LIBRARY: "/pages/habit-library/index",
   HABIT_MANAGE: "/pages/habit-manage/index",
   CUSTOM_HABIT: "/pages/custom-habit/index",
+  FAMILY_MEMBERS: "/pages/family-members/index",
+  FAMILY_INVITE: "/pages/family-invite/index",
+  HABIT_PERMISSION: "/pages/habit-permission/index",
 });
 
 module.exports = {

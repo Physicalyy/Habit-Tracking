@@ -1,0 +1,34 @@
+<view class="page habit-permission-page">
+  <view class="top-title">习惯权限</view>
+  <view class="page-subtitle">{{habitName}}</view>
+
+  <view class="card permission-card">
+    <view
+      wx:for="{{permissionOptions}}"
+      wx:key="value"
+      class="permission-option {{item.checked ? 'permission-option-active' : ''}}"
+      data-value="{{item.value}}"
+      bindtap="choosePermission"
+    >
+      <view class="option-dot"></view>
+      <view class="option-label">{{item.label}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{permissionType === 'SPECIFIC_PARENTS'}}" class="card member-check-card">
+    <view class="section-title">可打卡家长</view>
+    <view wx:if="{{loading}}" class="muted-text member-state">加载中...</view>
+    <view wx:elif="{{errorText}}" class="error-text member-state">{{errorText}}</view>
+    <checkbox-group wx:else bindchange="onMemberChange">
+      <label wx:for="{{members}}" wx:key="id" class="member-check">
+        <checkbox value="{{item.id}}" checked="{{item.checked}}" />
+        <view class="member-text">
+          <view class="member-name">{{item.displayName}}</view>
+          <view class="member-role">{{item.roleText}}</view>
+        </view>
+      </label>
+    </checkbox-group>
+  </view>
+
+  <view class="save-action {{saving ? 'action-disabled' : ''}}" bindtap="savePermission">保存</view>
+</view>

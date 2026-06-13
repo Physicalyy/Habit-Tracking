@@ -45,3 +45,7 @@
 .menu-item:last-child {
   border-bottom: 0;
 }
+
+.menu-item-disabled {
+  color: #9aa49f;
+}

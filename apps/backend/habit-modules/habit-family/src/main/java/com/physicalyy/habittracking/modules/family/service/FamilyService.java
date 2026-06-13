@@ -154,6 +154,27 @@ public class FamilyService {
         return new InviteCodeSummary(inviteCode.getCode(), inviteCode.getStatus(), inviteCode.getExpiresTime());
     }
 
+    public List<FamilyMemberSummary> listFamilyMembers(String openid, String nickname, Long familyId) {
+        UserAccount user = currentUserService.requireCurrentUser(openid, nickname);
+        FamilyGroup family = findActiveFamily(familyId);
+        requireActiveMember(user.getId(), family.getId());
+        return familyMemberMapper.selectList(new LambdaQueryWrapper<FamilyMember>()
+                        .eq(FamilyMember::getFamilyId, family.getId())
+                        .eq(FamilyMember::getStatus, "active")
+                        .eq(FamilyMember::getDelFlag, "0")
+                        .orderByAsc(FamilyMember::getJoinedTime)
+                        .orderByAsc(FamilyMember::getCreateTime))
+                .stream()
+                .map(member -> new FamilyMemberSummary(
+                        member.getId(),
+                        member.getFamilyId(),
+                        member.getUserId(),
+                        member.getDisplayName(),
+                        member.getId().equals(family.getAdminMemberId())
+                ))
+                .toList();
+    }
+
     @Transactional
     public InviteCodeSummary refreshInviteCode(String openid, String nickname, Long familyId) {
         UserAccount user = currentUserService.requireCurrentUser(openid, nickname);
@@ -206,6 +227,19 @@ public class FamilyService {
             throw new BusinessException("BAD_REQUEST", "Active invite code not found");
         }
         return inviteCode;
+    }
+
+    private FamilyMember requireActiveMember(Long userId, Long familyId) {
+        FamilyMember member = familyMemberMapper.selectOne(new LambdaQueryWrapper<FamilyMember>()
+                .eq(FamilyMember::getFamilyId, familyId)
+                .eq(FamilyMember::getUserId, userId)
+                .eq(FamilyMember::getStatus, "active")
+                .eq(FamilyMember::getDelFlag, "0")
+                .last("limit 1"));
+        if (member == null) {
+            throw new BusinessException("BAD_REQUEST", "Current user is not a family member");
+        }
+        return member;
     }
 
     private FamilyGroup findActiveFamily(Long familyId) {

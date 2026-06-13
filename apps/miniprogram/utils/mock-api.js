@@ -104,7 +104,7 @@ function toBootstrap(session) {
         {
           id: session.family.id,
           name: session.family.name,
-          admin: Boolean(session.member.admin),
+          admin: Boolean(session.member && session.member.admin),
         },
       ]
     : [];
@@ -130,6 +130,7 @@ function createFamily(data) {
     return fail("请填写孩子昵称");
   }
 
+  const session = getMockSession();
   const family = {
     id: "family_mock_created",
     name: familyName,
@@ -142,6 +143,8 @@ function createFamily(data) {
   };
   const member = {
     id: "member_mock_owner",
+    familyId: family.id,
+    userId: session.user.id,
     admin: true,
     displayName: "我",
   };
@@ -152,11 +155,12 @@ function createFamily(data) {
   };
 
   saveMockSession({
-    ...getMockSession(),
+    ...session,
     family,
     child,
     member,
     inviteCode,
+    familyMembers: [member],
   });
 
   return ok({ family, child, member, inviteCode });
@@ -169,6 +173,7 @@ function joinFamily(data) {
     return fail("请输入 6 位邀请码");
   }
 
+  const session = getMockSession();
   const family = {
     id: "family_mock_joined",
     name: "阳光家庭",
@@ -179,17 +184,27 @@ function joinFamily(data) {
     familyId: family.id,
     nickname: "小朋友",
   };
+  const ownerMember = {
+    id: "member_mock_owner",
+    familyId: family.id,
+    userId: "user_mock_owner",
+    admin: true,
+    displayName: "主家长",
+  };
   const member = {
     id: "member_mock_joined",
+    familyId: family.id,
+    userId: session.user.id,
     admin: false,
     displayName: "我",
   };
 
   saveMockSession({
-    ...getMockSession(),
+    ...session,
     family,
     child,
     member,
+    familyMembers: [ownerMember, member],
   });
 
   return ok({ family, child, member });
@@ -197,6 +212,9 @@ function joinFamily(data) {
 
 function getFamilyInvite() {
   const session = getMockSession();
+  if (!session.member || !session.member.admin) {
+    return fail("仅主家长可查看邀请码");
+  }
   return ok(session.inviteCode || {
     code: "123456",
     status: "active",
@@ -205,16 +223,28 @@ function getFamilyInvite() {
 }
 
 function refreshFamilyInvite() {
+  const session = getMockSession();
+  if (!session.member || !session.member.admin) {
+    return fail("仅主家长可刷新邀请码");
+  }
   const nextInviteCode = {
     code: "654321",
     status: "active",
     expiresTime: "2026-06-20T12:00:00",
   };
   saveMockSession({
-    ...getMockSession(),
+    ...session,
     inviteCode: nextInviteCode,
   });
   return ok(nextInviteCode);
+}
+
+function listFamilyMembers() {
+  const session = getMockSession();
+  if (!session.family) {
+    return fail("请先加入家庭");
+  }
+  return ok(session.familyMembers || []);
 }
 
 function listHabitTemplates(data) {
@@ -263,6 +293,7 @@ function toChildHabitFromTemplate(session, template) {
     iconKey: template.iconKey,
     imageUrl: template.imageUrl || "",
     permissionType: "ALL_PARENTS",
+    allowedMemberIds: [],
     createdByMemberId: session.member.id,
     status: "active",
     sortOrder: 0,
@@ -358,6 +389,52 @@ function updateChildHabitStatus(childId, childHabitId, data) {
   return ok(updated);
 }
 
+function updateChildHabitPermission(childId, childHabitId, data) {
+  const { session, error } = requireChildSession(childId);
+  if (error) {
+    return error;
+  }
+  if (!session.member || !session.member.admin) {
+    return fail("仅主家长可编辑习惯权限");
+  }
+
+  const permissionType = String(data.permissionType || "").trim();
+  if (!["ALL_PARENTS", "OWNER_ONLY", "SPECIFIC_PARENTS"].includes(permissionType)) {
+    return fail("习惯权限类型无效");
+  }
+
+  const allowedMemberIds = permissionType === "SPECIFIC_PARENTS"
+    ? Array.from(new Set((data.allowedMemberIds || []).map((id) => String(id))))
+    : [];
+  if (permissionType === "SPECIFIC_PARENTS" && allowedMemberIds.length === 0) {
+    return fail("请选择可打卡家长");
+  }
+
+  let updated = null;
+  const childHabits = (session.childHabits || []).map((habit) => {
+    if (String(habit.id) !== String(childHabitId)) {
+      return habit;
+    }
+    updated = {
+      ...habit,
+      permissionType,
+      allowedMemberIds,
+    };
+    return updated;
+  });
+  if (!updated) {
+    return fail("孩子习惯不存在");
+  }
+
+  saveMockSession({ ...session, childHabits });
+  return ok({
+    childHabitId,
+    childId,
+    permissionType,
+    allowedMemberIds,
+  });
+}
+
 function createCustomHabit(data) {
   const { session, error } = requireChildSession(data.childId);
   if (error) {
@@ -442,6 +519,15 @@ async function handleMockRequest({ endpoint, data = {} }) {
   if (endpoint.path && endpoint.method === "PATCH" && /\/api\/children\/[^/]+\/habits\/[^/]+\/status$/.test(endpoint.path)) {
     const [, childId, childHabitId] = endpoint.path.match(/\/api\/children\/([^/]+)\/habits\/([^/]+)\/status$/);
     return updateChildHabitStatus(childId, childHabitId, data);
+  }
+
+  if (endpoint.path && endpoint.method === "PUT" && /\/api\/children\/[^/]+\/habits\/[^/]+\/permissions$/.test(endpoint.path)) {
+    const [, childId, childHabitId] = endpoint.path.match(/\/api\/children\/([^/]+)\/habits\/([^/]+)\/permissions$/);
+    return updateChildHabitPermission(childId, childHabitId, data);
+  }
+
+  if (endpoint.path && /\/api\/families\/[^/]+\/members$/.test(endpoint.path)) {
+    return listFamilyMembers();
   }
 
   if (endpoint.path && /\/api\/families\/[^/]+\/invite$/.test(endpoint.path)) {

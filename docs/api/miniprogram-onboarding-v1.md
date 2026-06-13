@@ -122,6 +122,58 @@
 }
 ```
 
+## V1 Family Members And Habit Permissions
+
+This section extends the miniprogram V1 contract for family member visibility,
+invite-code management, and child-habit permission editing.
+
+### GET /api/families/{familyId}/members
+
+Purpose: list active family parent members. Any active family member can view
+the list. The `admin` boolean identifies the main parent.
+
+Response `data`:
+
+```json
+[
+  {
+    "id": 4001,
+    "familyId": 2001,
+    "userId": 1001,
+    "displayName": "Parent",
+    "admin": true
+  }
+]
+```
+
+### PUT /api/children/{childId}/habits/{childHabitId}/permissions
+
+Purpose: update the check-in permission for a configured child habit. Only the
+main parent can call this endpoint.
+
+Request:
+
+```json
+{
+  "permissionType": "SPECIFIC_PARENTS",
+  "allowedMemberIds": [4001, 4002]
+}
+```
+
+Allowed `permissionType` values are `ALL_PARENTS`, `OWNER_ONLY`, and
+`SPECIFIC_PARENTS`. `SPECIFIC_PARENTS` requires `allowedMemberIds`.
+
+Response `data`:
+
+```json
+{
+  "childHabitId": 10001,
+  "childId": 3001,
+  "permissionType": "SPECIFIC_PARENTS",
+  "allowedMemberIds": [4001, 4002]
+}
+```
+
 校验：
 
 - `name` 必填。

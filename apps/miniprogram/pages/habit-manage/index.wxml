@@ -1,7 +1,7 @@
 <view class="page habit-manage-page">
   <view class="top-bar">
     <view class="top-title">习惯管理</view>
-    <view class="custom-action" bindtap="goCustomHabit">自定义</view>
+    <view class="custom-action {{canManageHabits ? '' : 'action-disabled'}}" bindtap="goCustomHabit">自定义</view>
   </view>
 
   <view class="page-subtitle">管理当前孩子已配置的习惯</view>
@@ -26,10 +26,19 @@
       <view class="habit-main">
         <view class="habit-name">{{item.name}}</view>
         <view class="habit-desc">{{item.description}}</view>
-        <view class="habit-status">{{item.statusText}} · {{item.permissionType}}</view>
+        <view class="habit-status">{{item.statusText}} · {{item.permissionTypeText}}</view>
       </view>
       <view
-        class="toggle-action"
+        class="permission-action {{canManageHabits ? '' : 'action-disabled'}}"
+        data-habit-id="{{item.id}}"
+        data-habit-name="{{item.name}}"
+        data-permission-type="{{item.permissionType}}"
+        bindtap="goHabitPermission"
+      >
+        权限
+      </view>
+      <view
+        class="toggle-action {{canManageHabits ? '' : 'action-disabled'}}"
         data-habit-id="{{item.id}}"
         data-next-status="{{item.status === 'active' ? 'disabled' : 'active'}}"
         bindtap="toggleHabitStatus"

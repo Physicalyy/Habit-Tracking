@@ -1,0 +1,63 @@
+.family-invite-page {
+  padding-bottom: 56rpx;
+}
+
+.invite-state {
+  margin-top: 36rpx;
+  text-align: center;
+}
+
+.empty-card {
+  margin-top: 28rpx;
+  padding: 36rpx;
+}
+
+.empty-title {
+  color: #191c1b;
+  font-size: 32rpx;
+  font-weight: 700;
+  line-height: 44rpx;
+}
+
+.invite-card {
+  margin-top: 32rpx;
+  padding: 40rpx;
+  text-align: center;
+}
+
+.invite-code {
+  margin-top: 22rpx;
+  margin-bottom: 22rpx;
+  color: #005d4c;
+  font-size: 68rpx;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 84rpx;
+}
+
+.action-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 34rpx;
+}
+
+.copy-action,
+.refresh-action {
+  min-width: 150rpx;
+  padding: 18rpx 28rpx;
+  border-radius: 14rpx;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.copy-action {
+  color: #006b58;
+  background: #e6f7f1;
+}
+
+.refresh-action {
+  margin-left: 20rpx;
+  color: #ffffff;
+  background: #006b58;
+}

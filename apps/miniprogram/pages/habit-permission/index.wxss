@@ -1,0 +1,100 @@
+.habit-permission-page {
+  padding-bottom: 56rpx;
+}
+
+.permission-card,
+.member-check-card {
+  margin-top: 28rpx;
+  padding: 24rpx;
+}
+
+.permission-option {
+  display: flex;
+  align-items: center;
+  min-height: 92rpx;
+  padding: 0 20rpx;
+  border-bottom: 2rpx solid #eceeec;
+}
+
+.permission-option:last-child {
+  border-bottom: 0;
+}
+
+.permission-option-active {
+  color: #006b58;
+  font-weight: 700;
+}
+
+.option-dot {
+  flex: none;
+  width: 22rpx;
+  height: 22rpx;
+  margin-right: 18rpx;
+  background: #cdd6d1;
+  border-radius: 999rpx;
+}
+
+.permission-option-active .option-dot {
+  background: #006b58;
+}
+
+.option-label {
+  font-size: 30rpx;
+  line-height: 42rpx;
+}
+
+.section-title {
+  color: #191c1b;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 42rpx;
+}
+
+.member-state {
+  margin-top: 24rpx;
+}
+
+.member-check {
+  display: flex;
+  align-items: center;
+  min-height: 96rpx;
+  border-bottom: 2rpx solid #eceeec;
+}
+
+.member-check:last-child {
+  border-bottom: 0;
+}
+
+.member-text {
+  margin-left: 18rpx;
+}
+
+.member-name {
+  color: #191c1b;
+  font-size: 28rpx;
+  font-weight: 700;
+  line-height: 40rpx;
+}
+
+.member-role {
+  margin-top: 4rpx;
+  color: #56625d;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.save-action {
+  margin-top: 34rpx;
+  padding: 24rpx;
+  color: #ffffff;
+  background: #006b58;
+  border-radius: 18rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+  text-align: center;
+}
+
+.action-disabled {
+  color: #a7b0ab;
+  background: #eef1ef;
+}

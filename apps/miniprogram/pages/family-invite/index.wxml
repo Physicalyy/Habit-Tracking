@@ -1,0 +1,21 @@
+<view class="page family-invite-page">
+  <view class="top-title">邀请码</view>
+  <view class="page-subtitle">邀请另一位家长加入当前家庭</view>
+
+  <view wx:if="{{loading}}" class="muted-text invite-state">加载中...</view>
+  <view wx:elif="{{errorText}}" class="error-text invite-state">{{errorText}}</view>
+  <view wx:elif="{{!isFamilyAdmin}}" class="card empty-card">
+    <view class="empty-title">仅主家长可管理邀请码</view>
+    <view class="muted-text">成员家长可以查看家庭信息，但不能刷新邀请码</view>
+  </view>
+
+  <view wx:else class="invite-card card">
+    <view class="muted-text">当前有效邀请码</view>
+    <view class="invite-code">{{inviteCode}}</view>
+    <view class="muted-text">有效期至 {{expiresTime}}</view>
+    <view class="action-row">
+      <view class="copy-action" bindtap="copyInviteCode">复制</view>
+      <view class="refresh-action" bindtap="refreshInvite">刷新</view>
+    </view>
+  </view>
+</view>

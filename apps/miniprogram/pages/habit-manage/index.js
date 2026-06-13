@@ -7,10 +7,12 @@ const {
 
 Page({
   data: {
+    familyId: "",
     childId: "",
     habits: [],
     loading: false,
     errorText: "",
+    canManageHabits: false,
   },
 
   async onShow() {
@@ -21,18 +23,23 @@ Page({
     this.setData({ loading: true, errorText: "" });
     try {
       const bootstrap = await getBootstrap();
+      const family = bootstrap.defaultFamily;
       const childId = bootstrap.defaultChild ? bootstrap.defaultChild.id : "";
+      const canManageHabits = Boolean(family && family.admin);
       if (!childId) {
-        this.setData({ childId: "", habits: [] });
+        this.setData({ familyId: family ? family.id : "", childId: "", habits: [], canManageHabits });
         return;
       }
       const habits = await listChildHabits(childId);
       this.setData({
+        familyId: family ? family.id : "",
         childId,
+        canManageHabits,
         habits: habits.map((habit) => ({
           ...habit,
           statusText: habit.status === "active" ? "已启用" : "已停用",
           toggleText: habit.status === "active" ? "停用" : "启用",
+          permissionTypeText: permissionTypeText(habit.permissionType),
           fallbackIcon: iconFallback(habit.iconKey),
         })),
       });
@@ -44,10 +51,31 @@ Page({
   },
 
   goCustomHabit() {
+    if (!this.data.canManageHabits) {
+      wx.showToast({ title: "仅主家长可管理习惯", icon: "none" });
+      return;
+    }
     wx.navigateTo({ url: ROUTES.CUSTOM_HABIT });
   },
 
+  goHabitPermission(event) {
+    if (!this.data.canManageHabits) {
+      wx.showToast({ title: "仅主家长可编辑权限", icon: "none" });
+      return;
+    }
+    const habitId = event.currentTarget.dataset.habitId;
+    const habitName = event.currentTarget.dataset.habitName;
+    const permissionType = event.currentTarget.dataset.permissionType;
+    wx.navigateTo({
+      url: `${ROUTES.HABIT_PERMISSION}?familyId=${this.data.familyId}&childId=${this.data.childId}&childHabitId=${habitId}&habitName=${encodeURIComponent(habitName)}&permissionType=${permissionType}`,
+    });
+  },
+
   async toggleHabitStatus(event) {
+    if (!this.data.canManageHabits) {
+      wx.showToast({ title: "仅主家长可管理习惯", icon: "none" });
+      return;
+    }
     const childHabitId = event.currentTarget.dataset.habitId;
     const nextStatus = event.currentTarget.dataset.nextStatus;
     try {
@@ -71,4 +99,13 @@ function iconFallback(iconKey) {
     directions_run: "跑",
   };
   return fallbackMap[iconKey] || "习";
+}
+
+function permissionTypeText(permissionType) {
+  const textMap = {
+    ALL_PARENTS: "所有家长",
+    OWNER_ONLY: "创建人",
+    SPECIFIC_PARENTS: "指定家长",
+  };
+  return textMap[permissionType] || permissionType;
 }

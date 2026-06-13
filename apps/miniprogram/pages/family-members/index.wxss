@@ -1,10 +1,10 @@
-.habit-manage-page {
+.family-members-page {
   padding-bottom: 56rpx;
 }
 
-.custom-action {
+.invite-action {
   flex: none;
-  padding: 14rpx 22rpx;
+  padding: 14rpx 24rpx;
   color: #ffffff;
   background: #006b58;
   border-radius: 14rpx;
@@ -12,7 +12,7 @@
   font-weight: 700;
 }
 
-.manage-state {
+.members-state {
   margin-top: 36rpx;
   text-align: center;
 }
@@ -29,84 +29,49 @@
   line-height: 44rpx;
 }
 
-.habit-list {
+.member-list {
   margin-top: 28rpx;
 }
 
-.habit-card {
+.member-card {
   display: flex;
   align-items: center;
   margin-bottom: 20rpx;
-  padding: 26rpx;
+  padding: 28rpx;
 }
 
-.habit-icon {
+.member-avatar {
   display: flex;
   flex: none;
   align-items: center;
   justify-content: center;
   width: 88rpx;
   height: 88rpx;
-  color: #006b58;
-  background: #e6f7f1;
-  border-radius: 20rpx;
+  color: #005d4c;
+  background: #dff7ee;
+  border-radius: 999rpx;
   font-size: 32rpx;
   font-weight: 700;
 }
 
-.habit-image {
-  width: 88rpx;
-  height: 88rpx;
-  border-radius: 20rpx;
-}
-
-.habit-main {
+.member-main {
   flex: 1;
   min-width: 0;
   margin-left: 22rpx;
 }
 
-.habit-name {
+.member-name {
   color: #191c1b;
   font-size: 30rpx;
   font-weight: 700;
   line-height: 42rpx;
 }
 
-.habit-desc {
-  margin-top: 6rpx;
+.member-role {
+  margin-top: 8rpx;
   color: #56625d;
   font-size: 24rpx;
   line-height: 34rpx;
-}
-
-.habit-status {
-  margin-top: 10rpx;
-  color: #006b58;
-  font-size: 24rpx;
-  font-weight: 600;
-}
-
-.toggle-action {
-  flex: none;
-  margin-left: 18rpx;
-  padding: 16rpx 22rpx;
-  color: #006b58;
-  background: #e6f7f1;
-  border-radius: 14rpx;
-  font-size: 24rpx;
-  font-weight: 700;
-}
-
-.permission-action {
-  flex: none;
-  margin-left: 18rpx;
-  padding: 16rpx 22rpx;
-  color: #2f6f9f;
-  background: #edf5fb;
-  border-radius: 14rpx;
-  font-size: 24rpx;
-  font-weight: 700;
 }
 
 .action-disabled {

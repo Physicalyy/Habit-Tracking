@@ -207,6 +207,41 @@ class FamilyControllerTest {
     }
 
     @Test
+    void list_family_members_returns_admin_and_member_parents() throws Exception {
+        String ownerOpenid = "members-owner-" + System.nanoTime();
+        String memberOpenid = "members-parent-" + System.nanoTime();
+        Long familyId = createFamilyAndReturnId(ownerOpenid, "Members Family", "Little Member");
+        String inviteCode = activeInviteCode(familyId);
+
+        mockMvc.perform(post("/api/families/join")
+                        .header("X-Test-Openid", memberOpenid)
+                        .header("X-Test-Nickname", "Member Parent")
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "inviteCode": "%s"
+                                }
+                                """.formatted(inviteCode)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/families/{familyId}/members", familyId)
+                        .header("X-Test-Openid", ownerOpenid)
+                        .header("X-Test-Nickname", "Owner Parent"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(2))
+                .andExpect(jsonPath("$.data[0].familyId").value(familyId))
+                .andExpect(jsonPath("$.data[*].admin").value(org.hamcrest.Matchers.hasItem(true)))
+                .andExpect(jsonPath("$.data[*].admin").value(org.hamcrest.Matchers.hasItem(false)))
+                .andExpect(jsonPath("$.data[*].displayName").value(org.hamcrest.Matchers.hasItem("Member Parent")));
+
+        mockMvc.perform(get("/api/families/{familyId}/members", familyId)
+                        .header("X-Test-Openid", memberOpenid)
+                        .header("X-Test-Nickname", "Member Parent"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(2));
+    }
+
+    @Test
     void repeated_openid_reuses_user_account_and_updates_profile() throws Exception {
         mockMvc.perform(get("/api/me/bootstrap")
                         .header("X-Test-Openid", openid)
