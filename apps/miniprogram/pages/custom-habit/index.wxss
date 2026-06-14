@@ -1,5 +1,5 @@
 .custom-habit-page {
-  padding-bottom: 160rpx;
+  padding-bottom: 32rpx;
 }
 
 .form-card {

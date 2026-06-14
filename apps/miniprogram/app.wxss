@@ -178,5 +178,13 @@ button {
   left: 24rpx;
   right: 24rpx;
   bottom: 36rpx;
+  bottom: calc(36rpx + env(safe-area-inset-bottom));
+  padding-top: 18rpx;
+  background: linear-gradient(180deg, rgba(248, 250, 248, 0) 0%, #f8faf8 34%);
+}
+
+.fixed-action-spacer {
+  height: 210rpx;
+  height: calc(210rpx + env(safe-area-inset-bottom));
 }
 

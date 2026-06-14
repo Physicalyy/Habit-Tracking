@@ -121,6 +121,18 @@ function assertWxssCompatibility(pagePath) {
   assert.ok(!source.includes("::before") && !source.includes("::after"), `${pagePath}.wxss must avoid pseudo-elements`);
 }
 
+function assertFixedActionSafeArea(pagePath) {
+  const wxmlSource = readFileSync(join(rootDir, pagePath + ".wxml"), "utf8");
+  if (!wxmlSource.includes("fixed-action")) {
+    return;
+  }
+
+  assert.ok(
+    wxmlSource.includes("fixed-action-spacer"),
+    `${pagePath}.wxml must include fixed-action-spacer before fixed bottom actions`,
+  );
+}
+
 function assertNoRawApiUrls(pagePath) {
   const source = readFileSync(join(rootDir, pagePath + ".js"), "utf8");
   for (const apiPath of requiredApiPaths) {
@@ -162,6 +174,16 @@ function assertApiConfiguration() {
   assertTextIncludes(join(rootDir, "utils/request.js"), "setRequestConfig");
   assertTextIncludes(join(rootDir, "utils/request.js"), '"X-Test-Openid"');
   assertTextIncludes(join(rootDir, "utils/request.js"), '"X-Test-Nickname"');
+}
+
+function assertGlobalFixedActionSafeArea() {
+  const source = readFileSync(join(rootDir, "app.wxss"), "utf8");
+  assert.ok(source.includes(".fixed-action"), "app.wxss must define fixed-action");
+  assert.ok(
+    source.includes("env(safe-area-inset-bottom)"),
+    "app.wxss fixed-action must account for safe-area-inset-bottom",
+  );
+  assert.ok(source.includes(".fixed-action-spacer"), "app.wxss must define fixed-action-spacer");
 }
 
 function assertRoutesAndServices() {
@@ -304,6 +326,7 @@ async function assertMockFlow() {
 
 assertNoTextFileBom();
 assertAppConfig();
+assertGlobalFixedActionSafeArea();
 
 for (const page of requiredPages) {
   assertFile(join(rootDir, page + ".js"));
@@ -314,6 +337,7 @@ for (const page of requiredPages) {
   assertNoRawApiUrls(page);
   assertNoWxmlFunctionCalls(page);
   assertWxssCompatibility(page);
+  assertFixedActionSafeArea(page);
 }
 
 for (const path of [

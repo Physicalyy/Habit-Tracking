@@ -1,5 +1,5 @@
 .create-page {
-  padding: 24rpx 22rpx 188rpx;
+  padding: 24rpx 22rpx 32rpx;
 }
 
 .home-hero {

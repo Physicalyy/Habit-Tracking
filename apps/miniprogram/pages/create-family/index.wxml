@@ -52,6 +52,8 @@
     </view>
   </view>
 
+  <view class="fixed-action-spacer"></view>
+
   <view class="fixed-action">
     <button class="primary-button" loading="{{submitting}}" bindtap="submitCreateFamily">创建家庭  ⊕</button>
     <view class="terms-text">点击创建即表示同意 服务条款 和 隐私政策</view>

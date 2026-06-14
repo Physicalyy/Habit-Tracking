@@ -1,5 +1,5 @@
 .join-page {
-  padding: 24rpx 24rpx 194rpx;
+  padding: 24rpx 24rpx 32rpx;
 }
 
 .join-hero {
@@ -44,4 +44,9 @@
 
 .scan-button {
   margin-top: 24rpx;
+}
+
+.join-action-spacer {
+  height: 330rpx;
+  height: calc(330rpx + env(safe-area-inset-bottom));
 }

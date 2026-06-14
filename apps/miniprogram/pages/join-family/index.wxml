@@ -28,6 +28,8 @@
     <view wx:if="{{errorMessage}}" class="error-text">{{errorMessage}}</view>
   </view>
 
+  <view class="fixed-action-spacer join-action-spacer"></view>
+
   <view class="fixed-action">
     <button class="primary-button" loading="{{submitting}}" bindtap="submitJoinFamily">加入家庭</button>
     <button class="secondary-button scan-button">⌘  扫码加入家庭</button>

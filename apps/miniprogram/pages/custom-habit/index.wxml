@@ -21,6 +21,8 @@
     <view wx:if="{{errorText}}" class="error-text">{{errorText}}</view>
   </view>
 
+  <view class="fixed-action-spacer"></view>
+
   <view class="fixed-action">
     <button class="primary-button" loading="{{submitting}}" bindtap="submitCustomHabit">创建习惯</button>
   </view>
