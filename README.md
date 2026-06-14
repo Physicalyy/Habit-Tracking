@@ -33,3 +33,58 @@ Habit-Tracking/
 - `apps/miniprogram/`：微信小程序，面向移动端习惯打卡使用场景。
 
 具体技术栈在各子项目初始化时确定，初始化前不在目录中混入框架模板文件。
+
+## Docker Compose Deployment Test
+
+The V1 deployment test runs the backend service with a MySQL container. The
+WeChat miniprogram is not built into this compose stack.
+
+1. Create a local environment file:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` and set `MYSQL_ROOT_PASSWORD` to the local deployment password.
+   Do not commit `.env`.
+
+3. Package the backend jar:
+
+   ```bash
+   cd apps/backend
+   mvn package -DskipTests
+   cd ../..
+   ```
+
+4. Build and start the stack:
+
+   ```bash
+   docker compose up -d --build
+   ```
+
+5. Verify the backend health endpoint:
+
+   ```bash
+   curl http://localhost:18080/api/health
+   ```
+
+Compose services:
+
+- `mysql`: MySQL 8.0, creates `${MYSQL_DATABASE}` on first startup, persisted in
+  the `habit_mysql_data` Docker volume.
+- `backend`: Spring Boot backend, connects to
+  `jdbc:mysql://mysql:3306/${MYSQL_DATABASE}` inside the compose network.
+
+If Docker Hub is slow or blocked, set `BACKEND_JRE_IMAGE` in `.env` to an
+available Java 17 JRE image mirror before running `docker compose up`.
+
+Default local ports:
+
+- Backend: `localhost:18080`
+- MySQL: `localhost:3306`
+
+To reset all local database data for a clean deployment test:
+
+```bash
+docker compose down -v
+```
