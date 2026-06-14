@@ -67,6 +67,43 @@ Covered path:
 - disabled habit remains visible in history,
 - summary returns one check-in count and one check-in day.
 
+## HTTP Smoke On MySQL
+
+Command shape:
+
+1. Stop the local Windows `MySQL80` service so port `3306` is free.
+2. Start the existing `mysql:8.0` container named `mysql` with the local root
+   password supplied outside source control and `3306:3306` published.
+3. Recreate `habit_tracking_v1_smoke` on `localhost:3306`.
+4. Start `habit-admin` on local port `18082` with the smoke database URL.
+5. Execute the same V1 HTTP requests against `http://localhost:18082`.
+6. Stop the Spring Boot process started for this smoke pass.
+
+Smoke result:
+
+```text
+MYSQL_V1_SMOKE_PASS familyId=2065959365080281089 childId=2065959365080281091 systemHabitId=2065959370247663618 customHabitId=2065959370717425666 historyIcon=water_drop
+```
+
+Covered path:
+
+- new user login,
+- empty bootstrap,
+- create family,
+- refresh invite code,
+- old invite code fails,
+- new parent joins family,
+- family member list,
+- add system habit,
+- create custom habit,
+- update habit permission,
+- member without permission cannot check in,
+- owner checks in,
+- duplicate check-in fails,
+- disabled habit leaves today's list,
+- disabled habit remains visible in history,
+- summary returns one check-in count and one check-in day.
+
 ## Notes
 
 - The HTTP smoke used ASCII test nicknames in headers because the local
