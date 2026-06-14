@@ -8,7 +8,7 @@
   <view wx:if="{{loading}}" class="muted-text today-state">加载中...</view>
   <view wx:elif="{{errorText}}" class="error-text today-state">{{errorText}}</view>
 
-  <view wx:elif="{{todayHabits.length === 0}}" class="empty-card">
+  <view wx:elif="{{hasNoHabits}}" class="empty-card">
     <view class="empty-art float-animation">
       <image class="empty-image" mode="aspectFit" src="/assets/onboarding/today-empty-sprout.png" />
     </view>

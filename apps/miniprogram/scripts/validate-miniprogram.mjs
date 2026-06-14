@@ -113,6 +113,7 @@ function assertCommonJs(path) {
 function assertNoWxmlFunctionCalls(pagePath) {
   const source = readFileSync(join(rootDir, pagePath + ".wxml"), "utf8");
   assert.ok(!/\{\{[^}]*\([^}]*\)[^}]*\}\}/.test(source), `${pagePath}.wxml must not use function calls`);
+  assert.ok(!/\{\{[^}]*\.length\s*[=!<>]/.test(source), `${pagePath}.wxml must not compare array length`);
 }
 
 function assertWxssCompatibility(pagePath) {

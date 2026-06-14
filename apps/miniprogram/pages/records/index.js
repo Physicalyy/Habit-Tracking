@@ -14,6 +14,7 @@ Page({
     totalCheckinDays: 0,
     totalCheckinCount: 0,
     historyGroups: [],
+    hasNoRecords: false,
     errorText: "",
   },
 
@@ -22,7 +23,7 @@ Page({
   },
 
   async loadRecords() {
-    this.setData({ loading: true, errorText: "" });
+    this.setData({ loading: true, errorText: "", hasNoRecords: false });
     try {
       const bootstrap = await getBootstrap();
       if (bootstrap.needOnboarding || !bootstrap.defaultChild) {
@@ -33,13 +34,15 @@ Page({
       const childId = bootstrap.defaultChild.id;
       const summary = await getCheckinSummary(childId);
       const records = await listCheckinHistory(childId);
+      const historyGroups = groupByDate(records);
       this.setData({
         familyName: bootstrap.defaultFamily ? bootstrap.defaultFamily.name : "",
         childNickname: bootstrap.defaultChild.nickname,
         childId,
         totalCheckinDays: summary.totalCheckinDays || 0,
         totalCheckinCount: summary.totalCheckinCount || 0,
-        historyGroups: groupByDate(records),
+        historyGroups,
+        hasNoRecords: historyGroups.length === 0,
       });
     } catch (error) {
       this.setData({ errorText: error.message || "记录加载失败" });

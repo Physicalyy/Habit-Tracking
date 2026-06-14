@@ -12,6 +12,7 @@ Page({
     childId: "",
     childNickname: "",
     todayHabits: [],
+    hasNoHabits: false,
     errorText: "",
   },
 
@@ -20,7 +21,7 @@ Page({
   },
 
   async loadToday() {
-    this.setData({ loading: true, errorText: "" });
+    this.setData({ loading: true, errorText: "", hasNoHabits: false });
 
     try {
       const bootstrap = await getBootstrap();
@@ -29,13 +30,23 @@ Page({
         return;
       }
 
+      if (!bootstrap.defaultChild) {
+        wx.redirectTo({ url: ROUTES.START });
+        return;
+      }
+
       const childId = bootstrap.defaultChild.id;
-      const todayHabits = await listTodayHabits(childId);
       this.setData({
-        familyName: bootstrap.defaultFamily.name,
+        familyName: bootstrap.defaultFamily ? bootstrap.defaultFamily.name : "",
         childId,
         childNickname: bootstrap.defaultChild.nickname,
-        todayHabits: todayHabits.map(toCardState),
+      });
+
+      const todayHabits = await listTodayHabits(childId);
+      const habitCards = todayHabits.map(toCardState);
+      this.setData({
+        todayHabits: habitCards,
+        hasNoHabits: habitCards.length === 0,
       });
     } catch (error) {
       this.setData({ errorText: error.message || "今日习惯加载失败" });

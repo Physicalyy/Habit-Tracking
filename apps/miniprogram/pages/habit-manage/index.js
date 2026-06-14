@@ -10,6 +10,7 @@ Page({
     familyId: "",
     childId: "",
     habits: [],
+    hasNoHabits: false,
     loading: false,
     errorText: "",
     canManageHabits: false,
@@ -20,7 +21,7 @@ Page({
   },
 
   async loadHabits() {
-    this.setData({ loading: true, errorText: "" });
+    this.setData({ loading: true, errorText: "", hasNoHabits: false });
     try {
       const bootstrap = await getBootstrap();
       if (bootstrap.needOnboarding || !bootstrap.defaultChild) {
@@ -42,6 +43,7 @@ Page({
           permissionTypeText: permissionTypeText(habit.permissionType),
           fallbackIcon: iconFallback(habit.iconKey),
         })),
+        hasNoHabits: habits.length === 0,
       });
     } catch (error) {
       this.setData({ errorText: error.message || "习惯加载失败" });
