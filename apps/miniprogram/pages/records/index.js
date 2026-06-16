@@ -4,6 +4,7 @@ const {
   getCheckinSummary,
   listCheckinHistory,
 } = require("../../services/checkin-service.js");
+const { syncCustomTabBar } = require("../../utils/tab-bar.js");
 
 Page({
   data: {
@@ -13,17 +14,38 @@ Page({
     childId: "",
     totalCheckinDays: 0,
     totalCheckinCount: 0,
+    summaryMetricText: "养成 0 个好习惯",
     historyGroups: [],
     hasNoRecords: false,
+    icons: {
+      arrowBack: "\ue5e0",
+      moreHoriz: "\ue5d3",
+      historyEdu: "\uea3e",
+      eco: "\uea35",
+      checkCircle: "\ue86c",
+      chevronRight: "\ue5cc",
+    },
     errorText: "",
   },
 
   async onShow() {
+    syncCustomTabBar(this, 1);
     await this.loadRecords();
   },
 
   async loadRecords() {
-    this.setData({ loading: true, errorText: "", hasNoRecords: false });
+    this.setData({
+      loading: true,
+      errorText: "",
+      familyName: "",
+      childNickname: "",
+      childId: "",
+      totalCheckinDays: 0,
+      totalCheckinCount: 0,
+      summaryMetricText: "养成 0 个好习惯",
+      historyGroups: [],
+      hasNoRecords: false,
+    });
     try {
       const bootstrap = await getBootstrap();
       if (bootstrap.needOnboarding || !bootstrap.defaultChild) {
@@ -41,6 +63,7 @@ Page({
         childId,
         totalCheckinDays: summary.totalCheckinDays || 0,
         totalCheckinCount: summary.totalCheckinCount || 0,
+        summaryMetricText: buildSummaryMetricText(summary),
         historyGroups,
         hasNoRecords: historyGroups.length === 0,
       });
@@ -51,6 +74,11 @@ Page({
     }
   },
 });
+
+function buildSummaryMetricText(summary) {
+  const total = Number(summary.totalCheckinCount || 0);
+  return `养成 ${total} 个好习惯`;
+}
 
 function groupByDate(records) {
   const groups = [];
@@ -69,9 +97,28 @@ function groupByDate(records) {
       ...record,
       fallbackIcon: iconFallback(record.iconKey),
       timeText: formatTimeText(record.checkedTime),
+      weekdayText: formatWeekdayText(date),
+      dayText: formatDayText(date),
+      recordDateText: formatDateText(date),
+      recordSubtitleText: buildRecordSubtitleText(record),
+      descriptionText: record.description || formatTimeText(record.checkedTime) || "已完成打卡",
+      completeText: formatTimeText(record.checkedTime) ? `${formatTimeText(record.checkedTime)} 完成` : "已完成",
     });
   }
   return groups;
+}
+
+function buildRecordSubtitleText(record) {
+  const parts = [record.habitName];
+  const description = String(record.description || "").trim();
+  const timeText = formatTimeText(record.checkedTime);
+  if (description) {
+    parts.push(description);
+  }
+  if (timeText) {
+    parts.push(timeText);
+  }
+  return parts.filter(Boolean).join(" · ");
 }
 
 function formatDateText(date) {
@@ -86,6 +133,22 @@ function formatTimeText(value) {
     return "";
   }
   return value.slice(11, 16);
+}
+
+function formatDayText(date) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return "--";
+  }
+  return String(Number(date.slice(8, 10)));
+}
+
+function formatWeekdayText(date) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return "日期";
+  }
+  const parsed = new Date(`${date}T00:00:00`);
+  const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+  return weekdays[parsed.getDay()];
 }
 
 function iconFallback(iconKey) {

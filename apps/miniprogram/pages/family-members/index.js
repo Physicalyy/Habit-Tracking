@@ -6,11 +6,20 @@ Page({
   data: {
     familyId: "",
     familyName: "",
+    childNickname: "",
+    roleText: "",
     isFamilyAdmin: false,
+    inviteActionClass: "invite-primary action-disabled",
     members: [],
     memberCount: 0,
     loading: false,
     errorText: "",
+    icons: {
+      bubbleChart: "\ue6dd",
+      notifications: "\ue7f4",
+      child: "\ue7fd",
+      personAdd: "\ue7fe",
+    },
   },
 
   async onShow() {
@@ -18,24 +27,40 @@ Page({
   },
 
   async loadMembers() {
-    this.setData({ loading: true, errorText: "" });
+    this.setData({
+      loading: true,
+      errorText: "",
+      familyId: "",
+      familyName: "",
+      childNickname: "",
+      roleText: "",
+      isFamilyAdmin: false,
+      inviteActionClass: "invite-primary action-disabled",
+      members: [],
+      memberCount: 0,
+    });
     try {
       const bootstrap = await getBootstrap();
       const family = bootstrap.defaultFamily;
       if (!family) {
-        this.setData({ familyId: "", familyName: "", isFamilyAdmin: false, members: [], memberCount: 0 });
         return;
       }
+      const child = bootstrap.defaultChild;
       const members = await listFamilyMembers(family.id);
       const displayMembers = members.map((member) => ({
         ...member,
         avatarText: String(member.displayName || "家").slice(0, 1),
         roleText: member.admin ? "主家长" : "成员家长",
+        memberDesc: member.admin ? "可管理家庭、习惯和权限" : "可参与打卡和查看记录",
+        accentClass: member.admin ? "admin" : "member",
       }));
       this.setData({
         familyId: family.id,
         familyName: family.name,
+        childNickname: child ? child.nickname : "未选择孩子",
+        roleText: family.admin ? "主家长" : "成员家长",
         isFamilyAdmin: Boolean(family.admin),
+        inviteActionClass: family.admin ? "invite-primary" : "invite-primary action-disabled",
         members: displayMembers,
         memberCount: displayMembers.length,
       });
@@ -47,6 +72,10 @@ Page({
   },
 
   goFamilyInvite() {
+    if (!this.data.familyId) {
+      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      return;
+    }
     if (!this.data.isFamilyAdmin) {
       wx.showToast({ title: "仅主家长可邀请成员", icon: "none" });
       return;

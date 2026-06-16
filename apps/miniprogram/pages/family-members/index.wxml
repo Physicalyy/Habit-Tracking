@@ -1,10 +1,10 @@
 <view class="page family-members-page">
   <view class="top-bar">
-    <view>
-      <view class="top-title">家庭成员</view>
-      <view class="page-subtitle">{{familyName}} · {{memberCount}} 人</view>
+    <view class="top-heading">
+      <text class="material-symbols-outlined top-icon">{{icons.bubbleChart}}</text>
+      <text class="top-title">家庭成员</text>
     </view>
-    <view class="invite-action {{isFamilyAdmin ? '' : 'action-disabled'}}" bindtap="goFamilyInvite">邀请</view>
+    <view class="top-notification material-symbols-outlined">{{icons.notifications}}</view>
   </view>
 
   <view wx:if="{{loading}}" class="muted-text members-state">加载中...</view>
@@ -14,12 +14,45 @@
     <view class="muted-text">创建或加入家庭后可以查看成员</view>
   </view>
 
-  <view wx:else class="member-list">
-    <view wx:for="{{members}}" wx:key="id" class="member-card card">
-      <view class="member-avatar">{{item.avatarText}}</view>
-      <view class="member-main">
-        <view class="member-name">{{item.displayName}}</view>
-        <view class="member-role">{{item.roleText}}</view>
+  <view wx:else>
+    <view class="family-hero">
+      <view class="family-orbit"></view>
+      <view class="family-hero-content">
+        <view class="family-hero-head">
+          <view>
+            <view class="family-name">{{familyName}}</view>
+            <view class="child-pill">
+              <text class="material-symbols-outlined child-icon">{{icons.child}}</text>
+              <text>当前孩子：{{childNickname}}</text>
+            </view>
+          </view>
+          <view class="role-pill">我的角色：{{roleText}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="member-section-title">家庭成员 ({{memberCount}})</view>
+
+    <view class="member-list">
+      <view wx:for="{{members}}" wx:key="id" class="member-card {{item.accentClass}}">
+        <view class="member-avatar">{{item.avatarText}}</view>
+        <view class="member-main">
+          <view class="member-row">
+            <view class="member-name">{{item.displayName}}</view>
+            <view class="member-role {{item.accentClass}}">{{item.roleText}}</view>
+          </view>
+          <view class="member-desc">{{item.memberDesc}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="family-helper">让更多家人参与{{childNickname}}的成长，<br />共同培养良好习惯。</view>
+
+    <view class="fixed-action-spacer"></view>
+    <view class="fixed-action">
+      <view class="{{inviteActionClass}}" bindtap="goFamilyInvite">
+        <text class="material-symbols-outlined invite-primary-icon">{{icons.personAdd}}</text>
+        <text>邀请家长加入</text>
       </view>
     </view>
   </view>

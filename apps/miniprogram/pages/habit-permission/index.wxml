@@ -1,34 +1,62 @@
 <view class="page habit-permission-page">
-  <view class="top-title">习惯权限</view>
-  <view class="page-subtitle">{{habitName}}</view>
+  <view class="permission-top-bar">
+    <view class="top-icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
+    <view class="top-title">编辑习惯</view>
+    <view class="top-icon-button material-symbols-outlined">{{icons.moreHoriz}}</view>
+  </view>
 
-  <view class="card permission-card">
+  <view class="habit-edit-section">
+    <view class="field-label">习惯名称</view>
+    <view class="habit-name-field">{{habitName}}</view>
+    <view class="icon-row">
+      <view class="habit-icon-shell material-symbols-outlined">{{icons.parent}}</view>
+      <view class="change-icon-pill">更换图标</view>
+    </view>
+    <view class="field-label">习惯描述（选填）</view>
+    <view class="description-field">例如：每天起床后喝一杯温开水...</view>
+  </view>
+
+  <view class="permission-panel">
+    <view class="permission-panel-head">
+      <view class="panel-title-wrap">
+        <text class="material-symbols-outlined panel-icon">{{icons.verifiedUser}}</text>
+        <text class="panel-title">打卡权限</text>
+      </view>
+      <text class="material-symbols-outlined expand-icon">{{icons.expandMore}}</text>
+    </view>
     <view
       wx:for="{{permissionOptions}}"
       wx:key="value"
-      class="permission-option {{item.checked ? 'permission-option-active' : ''}}"
+      class="{{item.optionClass}}"
       data-value="{{item.value}}"
       bindtap="choosePermission"
     >
-      <view class="option-dot"></view>
       <view class="option-label">{{item.label}}</view>
+      <view class="{{item.radioClass}}"></view>
     </view>
+
+    <view wx:if="{{showSpecificParents}}" class="member-check-card">
+      <view wx:if="{{loading}}" class="muted-text member-state">加载中...</view>
+      <view wx:elif="{{errorText}}" class="error-text member-state">{{errorText}}</view>
+      <checkbox-group wx:else bindchange="onMemberChange">
+        <label wx:for="{{members}}" wx:key="id" class="member-check">
+          <view class="member-avatar">{{item.avatarText}}</view>
+          <view class="member-text">
+            <view class="member-name">{{item.displayName}}（{{item.roleText}}）</view>
+          </view>
+          <checkbox class="member-checkbox" value="{{item.id}}" checked="{{item.checked}}" />
+        </label>
+      </checkbox-group>
+      <view class="permission-tip">未勾选的家长仍可查看记录，但不能为该习惯打卡。</view>
+    </view>
+
+    <view class="{{inlineSaveClass}}" bindtap="savePermission">保存权限</view>
   </view>
 
-  <view wx:if="{{permissionType === 'SPECIFIC_PARENTS'}}" class="card member-check-card">
-    <view class="section-title">可打卡家长</view>
-    <view wx:if="{{loading}}" class="muted-text member-state">加载中...</view>
-    <view wx:elif="{{errorText}}" class="error-text member-state">{{errorText}}</view>
-    <checkbox-group wx:else bindchange="onMemberChange">
-      <label wx:for="{{members}}" wx:key="id" class="member-check">
-        <checkbox value="{{item.id}}" checked="{{item.checked}}" />
-        <view class="member-text">
-          <view class="member-name">{{item.displayName}}</view>
-          <view class="member-role">{{item.roleText}}</view>
-        </view>
-      </label>
-    </checkbox-group>
-  </view>
+  <view class="fixed-action-spacer"></view>
 
-  <view class="save-action {{saving ? 'action-disabled' : ''}}" bindtap="savePermission">保存</view>
+  <view class="fixed-action">
+    <view class="{{saveClass}}" bindtap="savePermission" hover-class="tap-active">保存修改</view>
+    <view class="delete-action">删除此习惯</view>
+  </view>
 </view>

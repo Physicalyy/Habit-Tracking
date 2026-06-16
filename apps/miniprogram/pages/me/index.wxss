@@ -1,7 +1,35 @@
-.profile-card {
+.me-page {
+  min-height: 100vh;
+  padding: 136rpx 24rpx 210rpx;
+  padding-bottom: calc(210rpx + env(safe-area-inset-bottom));
+}
+
+.me-top {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 40;
+  height: 112rpx;
+  padding: 48rpx 24rpx 0;
+  background: #f8faf8;
+}
+
+.me-top .icon-button {
+  color: #006b58;
+  font-size: 46rpx;
+}
+
+.profile-section {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 36rpx;
+  margin-top: 36rpx;
+  text-align: center;
+}
+
+.avatar-wrap {
+  position: relative;
 }
 
 .avatar {
@@ -17,7 +45,25 @@
   font-weight: 700;
 }
 
+.edit-dot {
+  position: absolute;
+  right: -4rpx;
+  bottom: -4rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36rpx;
+  height: 36rpx;
+  color: #ffffff;
+  background: #006b58;
+  border: 4rpx solid #ffffff;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  line-height: 1;
+}
+
 .profile-name {
+  margin-top: 24rpx;
   font-size: 36rpx;
   font-weight: 700;
   line-height: 48rpx;
@@ -25,31 +71,310 @@
 
 .profile-info {
   flex: 1;
-  margin-left: 24rpx;
 }
 
-.profile-child {
+.profile-family {
   margin-top: 8rpx;
+  color: #6e7a75;
+  font-size: 26rpx;
+  line-height: 38rpx;
 }
 
-.menu-card {
+.profile-family text {
+  color: #006b58;
+  font-weight: 700;
+}
+
+.child-card {
   margin-top: 32rpx;
-  padding: 8rpx 32rpx;
+  padding: 28rpx;
+  border-left: 8rpx solid #006b58;
 }
 
-.menu-item {
+.child-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 104rpx;
-  border-bottom: 2rpx solid #eceeec;
-  font-size: 30rpx;
 }
 
-.menu-item:last-child {
-  border-bottom: 0;
+.child-left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.child-avatar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 96rpx;
+  height: 96rpx;
+  overflow: hidden;
+  color: #005d4c;
+  background: rgba(118, 214, 188, 0.3);
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.child-info {
+  flex: 1;
+  min-width: 0;
+  margin-left: 22rpx;
+}
+
+.child-name {
+  color: #191c1b;
+  font-size: 32rpx;
+  font-weight: 700;
+  line-height: 42rpx;
+}
+
+.child-desc {
+  margin-top: 6rpx;
+  color: #6e7a75;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.child-score {
+  flex: none;
+  margin-left: 18rpx;
+  text-align: right;
+}
+
+.child-score-value {
+  color: #735c00;
+  font-size: 34rpx;
+  font-weight: 800;
+  line-height: 42rpx;
+}
+
+.child-score-label {
+  margin-top: 2rpx;
+  color: #6e7a75;
+  font-size: 22rpx;
+  line-height: 32rpx;
+}
+
+.child-progress {
+  margin-top: 24rpx;
+}
+
+.progress-track {
+  height: 16rpx;
+  overflow: hidden;
+  background: #e4e9e6;
+  border-radius: 999rpx;
+}
+
+.progress-fill {
+  width: 75%;
+  height: 16rpx;
+  background: #006b58;
+  border-radius: 999rpx;
+}
+
+.child-tip {
+  margin-top: 12rpx;
+  color: #6e7a75;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.family-section {
+  margin-top: 32rpx;
+}
+
+.family-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.family-title {
+  color: #191c1b;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 40rpx;
+}
+
+.family-role {
+  margin-top: 4rpx;
+  color: #006b58;
+  font-size: 24rpx;
+  font-weight: 700;
+  line-height: 34rpx;
+}
+
+.family-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48rpx;
+  height: 48rpx;
+  color: #006b58;
+  line-height: 48rpx;
+}
+
+.family-add text {
+  font-size: 40rpx;
+  line-height: 1;
+}
+
+.family-members-card {
+  display: flex;
+  align-items: center;
+  margin-top: 18rpx;
+  padding: 24rpx;
+}
+
+.member-bubble {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 88rpx;
+  height: 88rpx;
+  color: #005d4c;
+  background: #d9f7ee;
+  border: 4rpx solid #76d6bc;
+  border-radius: 999rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.member-copy {
+  flex: 1;
+  min-width: 0;
+  margin-left: 22rpx;
+}
+
+.member-title {
+  color: #191c1b;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 40rpx;
+}
+
+.member-desc {
+  margin-top: 4rpx;
+  color: #6e7a75;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.member-chevron {
+  color: #a9b4af;
+  font-size: 40rpx;
+}
+
+.bento-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 32rpx;
+  margin-left: -10rpx;
+  margin-right: -10rpx;
+}
+
+.bento-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 47.2%;
+  min-height: 188rpx;
+  margin: 10rpx;
+  padding: 28rpx;
+  background: #ffffff;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 30rpx rgba(0, 107, 88, 0.05);
+}
+
+.bento-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96rpx;
+  height: 96rpx;
+  margin-bottom: 16rpx;
+  border-radius: 999rpx;
+}
+
+.bento-icon text {
+  font-size: 48rpx;
+  line-height: 1;
+}
+
+.bento-icon.primary {
+  color: #006b58;
+  background: #76d6bc;
+}
+
+.bento-icon.tertiary {
+  color: #6d3f00;
+  background: #ffddb0;
+}
+
+.bento-icon.secondary {
+  color: #ffffff;
+  background: #4f635d;
+}
+
+.bento-icon.neutral {
+  color: #6e7a75;
+  background: #e4e9e6;
+}
+
+.bento-text {
+  color: #191c1b;
+  font-size: 26rpx;
+  font-weight: 700;
+  line-height: 36rpx;
 }
 
 .menu-item-disabled {
   color: #9aa49f;
+  opacity: 0.55;
+}
+
+.settings-list {
+  margin-top: 28rpx;
+  overflow: hidden;
+  background: #ffffff;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 30rpx rgba(0, 107, 88, 0.05);
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 96rpx;
+  padding: 0 28rpx;
+  color: #191c1b;
+  border-bottom: 2rpx solid #eef1ef;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.settings-item:last-child {
+  border-bottom: 0;
+}
+
+.settings-left {
+  display: flex;
+  align-items: center;
+}
+
+.settings-icon {
+  margin-right: 18rpx;
+  color: #3e4945;
+  font-size: 34rpx;
+}
+
+.settings-chevron {
+  color: #a9b4af;
+  font-size: 36rpx;
 }

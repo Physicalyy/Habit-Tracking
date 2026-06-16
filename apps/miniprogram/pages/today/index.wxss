@@ -2,7 +2,24 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding: 24rpx 24rpx 150rpx;
+  padding: 136rpx 24rpx 210rpx;
+  padding-bottom: calc(210rpx + env(safe-area-inset-bottom));
+}
+
+.today-top {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 40;
+  height: 112rpx;
+  padding: 48rpx 24rpx 0;
+  background: #f8faf8;
+}
+
+.today-top .icon-button {
+  color: #006b58;
+  font-size: 46rpx;
 }
 
 .today-state {
@@ -16,43 +33,239 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-bottom: 92rpx;
+  padding: 52rpx 0 96rpx;
   text-align: center;
 }
 
-.empty-art {
+.empty-visual {
   position: relative;
-  width: 432rpx;
-  height: 432rpx;
-  margin-bottom: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 512rpx;
+  height: 512rpx;
+  margin-bottom: 48rpx;
+}
+
+.floating-anim {
+  animation: floating 3s ease-in-out infinite;
+}
+
+.empty-orbit,
+.empty-orbit-inner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #94f4d9;
+  border-radius: 999rpx;
+  transform: translate(-50%, -50%);
+}
+
+.empty-orbit {
+  width: 512rpx;
+  height: 512rpx;
+  opacity: 0.1;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.empty-orbit-inner {
+  width: 384rpx;
+  height: 384rpx;
+  opacity: 0.2;
+  animation: empty-pulse 2s ease-in-out infinite;
+  transform: translate(-50%, -50%) scale(0.75);
+}
+
+.empty-image-shell {
+  position: relative;
+  z-index: 1;
+  width: 384rpx;
+  height: 384rpx;
+  overflow: hidden;
+  border-radius: 999rpx;
 }
 
 .empty-image {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 384rpx;
+  height: 384rpx;
 }
 
 .empty-title {
-  font-size: 36rpx;
+  color: #191c1b;
+  font-size: 44rpx;
   font-weight: 700;
-  line-height: 48rpx;
+  line-height: 60rpx;
 }
 
 .empty-desc {
-  margin-top: 12rpx;
+  margin-top: 16rpx;
   color: #3e4945;
-  font-size: 28rpx;
-  line-height: 42rpx;
+  font-size: 30rpx;
+  line-height: 44rpx;
 }
 
 .empty-action {
-  width: 344rpx;
-  margin-top: 38rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(100% - 48rpx);
+  max-width: 640rpx;
+  height: 112rpx;
+  margin-top: 64rpx;
+  border-radius: 24rpx;
+  line-height: 112rpx;
+  background: linear-gradient(180deg, #006b58 0%, #005d4c 100%);
+}
+
+.empty-action-icon {
+  margin-right: 16rpx;
+  color: #ffffff;
+  font-size: 40rpx;
+  line-height: 1;
+}
+
+.empty-action-pressed {
+  transform: scale(0.96);
+}
+
+@keyframes floating {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-20rpx);
+  }
+}
+
+@keyframes empty-pulse {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: translate(-50%, -50%) scale(0.75);
+  }
+
+  50% {
+    opacity: 0.3;
+    transform: translate(-50%, -50%) scale(0.79);
+  }
 }
 
 .today-list {
-  margin-top: 28rpx;
+  margin-top: 32rpx;
+}
+
+.today-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 32rpx;
+}
+
+.today-date {
+  color: #56625d;
+  font-size: 26rpx;
+  line-height: 38rpx;
+}
+
+.today-heading {
+  margin-top: 4rpx;
+  color: #191c1b;
+  font-size: 44rpx;
+  font-weight: 700;
+  line-height: 56rpx;
+}
+
+.child-avatar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 96rpx;
+  height: 96rpx;
+  margin-left: 24rpx;
+  overflow: hidden;
+  color: #005d4c;
+  background: #d9f7ee;
+  border: 4rpx solid #76d6bc;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.progress-card {
+  display: flex;
+  align-items: center;
+  margin-bottom: 32rpx;
+  padding: 40rpx;
+}
+
+.progress-ring {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 192rpx;
+  height: 192rpx;
+  background: radial-gradient(circle, #ffffff 0 57%, transparent 58%), conic-gradient(#006b58 0%, #006b58 75%, #f2f4f2 75%, #f2f4f2 100%);
+  border-radius: 999rpx;
+}
+
+.progress-percent {
+  color: #006b58;
+  font-size: 34rpx;
+  font-weight: 700;
+  line-height: 42rpx;
+}
+
+.progress-label {
+  color: #6e7a75;
+  font-size: 22rpx;
+  line-height: 30rpx;
+}
+
+.progress-copy {
+  flex: 1;
+  min-width: 0;
+  margin-left: 36rpx;
+}
+
+.progress-title {
+  color: #191c1b;
+  font-size: 34rpx;
+  font-weight: 700;
+  line-height: 44rpx;
+}
+
+.progress-desc {
+  margin-top: 8rpx;
+  color: #56625d;
+  font-size: 26rpx;
+  line-height: 38rpx;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.section-title {
+  color: #191c1b;
+  font-size: 34rpx;
+  font-weight: 700;
+  line-height: 44rpx;
+}
+
+.section-link {
+  color: #006b58;
+  font-size: 26rpx;
+  font-weight: 700;
+  line-height: 38rpx;
 }
 
 .today-habit-card {
@@ -60,6 +273,7 @@
   align-items: center;
   margin-bottom: 20rpx;
   padding: 26rpx;
+  border-left: 8rpx solid #76d6bc;
 }
 
 .habit-icon {
@@ -88,11 +302,43 @@
   margin-left: 22rpx;
 }
 
+.habit-title-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
 .habit-name {
+  max-width: 100%;
+  overflow: hidden;
   color: #191c1b;
   font-size: 30rpx;
   font-weight: 700;
   line-height: 42rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.habit-name-checked {
+  color: #56625d;
+  text-decoration: line-through;
+}
+
+.source-badge {
+  flex: none;
+  margin-left: 12rpx;
+  padding: 2rpx 12rpx;
+  color: #574500;
+  background: #ffe088;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  font-weight: 700;
+  line-height: 30rpx;
+}
+
+.source-badge-custom {
+  color: #574500;
+  background: #ffe088;
 }
 
 .habit-desc {
@@ -122,13 +368,27 @@
   color: #8a4b00;
 }
 
+.permission-inline-text {
+  flex: none;
+  max-width: 180rpx;
+  margin-left: 18rpx;
+  color: #6e7a75;
+  font-size: 24rpx;
+  font-weight: 700;
+  line-height: 34rpx;
+  text-align: right;
+}
+
 .checkin-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex: none;
   margin-left: 18rpx;
   padding: 18rpx 24rpx;
-  color: #ffffff;
-  background: #006b58;
-  border-radius: 16rpx;
+  color: #005d4c;
+  background: #76d6bc;
+  border-radius: 999rpx;
   font-size: 26rpx;
   font-weight: 700;
 }
@@ -136,4 +396,11 @@
 .checkin-action-disabled {
   color: #7d8782;
   background: #eef1ef;
+}
+
+.checkin-action-icon {
+  margin-right: 6rpx;
+  color: #006b58;
+  font-size: 28rpx;
+  line-height: 1;
 }

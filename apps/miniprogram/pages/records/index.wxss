@@ -1,30 +1,84 @@
-.summary-card {
+.records-page {
+  min-height: 100vh;
+  padding: 136rpx 24rpx 210rpx;
+  padding-bottom: calc(210rpx + env(safe-area-inset-bottom));
+}
+
+.records-top {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 40;
+  height: 112rpx;
+  padding: 48rpx 24rpx 0;
+  background: #f8faf8;
+}
+
+.records-top .icon-button {
+  color: #006b58;
+  font-size: 46rpx;
+}
+
+.records-summary {
+  position: relative;
   display: flex;
   align-items: center;
-  margin-top: 40rpx;
-  padding: 40rpx 24rpx;
+  min-height: 232rpx;
+  margin-top: 32rpx;
+  overflow: hidden;
+  padding: 40rpx;
+  color: #005d4c;
+  background: #76d6bc;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 30rpx rgba(0, 107, 88, 0.08);
 }
 
-.summary-item {
-  flex: 1;
-  text-align: center;
+.summary-content {
+  position: relative;
+  z-index: 1;
 }
 
-.summary-number {
-  color: #006b58;
-  font-size: 72rpx;
+.summary-eyebrow {
+  opacity: 0.82;
+  font-size: 26rpx;
   font-weight: 700;
-  line-height: 88rpx;
+  line-height: 36rpx;
 }
 
-.summary-label {
+.summary-title {
   margin-top: 8rpx;
+  font-size: 46rpx;
+  font-weight: 800;
+  line-height: 58rpx;
 }
 
-.summary-divider {
-  width: 2rpx;
-  height: 72rpx;
-  background: #e4e9e6;
+.summary-metric-row {
+  display: flex;
+  align-items: center;
+  margin-top: 16rpx;
+  font-size: 28rpx;
+  line-height: 40rpx;
+}
+
+.summary-metric-icon {
+  margin-right: 10rpx;
+  font-size: 36rpx;
+  line-height: 1;
+}
+
+.summary-metric-text {
+  font-size: 28rpx;
+  line-height: 40rpx;
+}
+
+.summary-watermark {
+  position: absolute;
+  right: -20rpx;
+  bottom: -30rpx;
+  color: rgba(0, 93, 76, 0.12);
+  font-size: 180rpx;
+  line-height: 1;
 }
 
 .state-text {
@@ -63,21 +117,36 @@
 .record-card {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 20rpx;
-  padding: 28rpx;
+  padding: 24rpx;
+  border-left: 8rpx solid #fcd664;
 }
 
-.record-icon {
+.record-date-badge {
   display: flex;
+  flex: none;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 72rpx;
-  height: 72rpx;
-  color: #006b58;
-  background: #e3faf2;
-  border-radius: 18rpx;
-  font-size: 30rpx;
+  width: 88rpx;
+  height: 88rpx;
+  color: #735c00;
+  background: #fff5cc;
+  border-radius: 999rpx;
+}
+
+.record-weekday {
+  font-size: 18rpx;
   font-weight: 700;
+  line-height: 24rpx;
+}
+
+.record-day {
+  margin-top: 2rpx;
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 36rpx;
 }
 
 .record-info {
@@ -104,4 +173,35 @@
   color: #006b58;
   font-size: 26rpx;
   font-weight: 700;
+}
+
+.record-right {
+  display: flex;
+  flex: none;
+  align-items: center;
+  margin-left: 20rpx;
+}
+
+.record-complete-pill {
+  display: flex;
+  align-items: center;
+  padding: 8rpx 16rpx;
+  color: #005d4c;
+  background: #d9f7ee;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+  line-height: 30rpx;
+}
+
+.record-check-icon {
+  margin-right: 4rpx;
+  font-size: 26rpx;
+  line-height: 1;
+}
+
+.record-chevron {
+  margin-left: 8rpx;
+  color: #a9b4af;
+  font-size: 38rpx;
 }

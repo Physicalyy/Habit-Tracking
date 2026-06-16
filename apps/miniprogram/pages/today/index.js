@@ -4,6 +4,8 @@ const {
   checkinHabit,
   listTodayHabits,
 } = require("../../services/checkin-service.js");
+const { normalizeAssetPath } = require("../../utils/asset-path.js");
+const { syncCustomTabBar } = require("../../utils/tab-bar.js");
 
 Page({
   data: {
@@ -13,15 +15,41 @@ Page({
     childNickname: "",
     todayHabits: [],
     hasNoHabits: false,
+    currentDateText: "",
+    completedCount: 0,
+    progressPercent: 0,
+    progressText: "0%",
+    progressHint: "先配置一个习惯，开始今天的成长记录",
+    checkingHabitId: "",
+    icons: {
+      arrowBack: "\ue5e0",
+      moreHoriz: "\ue5d3",
+      addCircle: "\ue147",
+    },
     errorText: "",
   },
 
   async onShow() {
+    syncCustomTabBar(this, 0);
     await this.loadToday();
   },
 
   async loadToday() {
-    this.setData({ loading: true, errorText: "", hasNoHabits: false });
+    this.setData({
+      loading: true,
+      errorText: "",
+      familyName: "",
+      childId: "",
+      childNickname: "",
+      todayHabits: [],
+      hasNoHabits: false,
+      currentDateText: "",
+      completedCount: 0,
+      progressPercent: 0,
+      progressText: "0%",
+      progressHint: "先配置一个习惯，开始今天的成长记录",
+      checkingHabitId: "",
+    });
 
     try {
       const bootstrap = await getBootstrap();
@@ -44,7 +72,14 @@ Page({
 
       const todayHabits = await listTodayHabits(childId);
       const habitCards = todayHabits.map(toCardState);
+      const completedCount = habitCards.filter((item) => item.checked).length;
+      const progressPercent = habitCards.length > 0 ? Math.round((completedCount / habitCards.length) * 100) : 0;
       this.setData({
+        currentDateText: formatTodayText(),
+        completedCount,
+        progressPercent,
+        progressText: `${progressPercent}%`,
+        progressHint: buildProgressHint(habitCards.length, completedCount),
         todayHabits: habitCards,
         hasNoHabits: habitCards.length === 0,
       });
@@ -59,31 +94,59 @@ Page({
     wx.navigateTo({ url: ROUTES.HABIT_LIBRARY });
   },
 
+  goHabitManage() {
+    wx.navigateTo({ url: ROUTES.HABIT_MANAGE });
+  },
+
   async checkinTap(event) {
     const childHabitId = event.currentTarget.dataset.habitId;
     const habit = this.data.todayHabits.find((item) => String(item.childHabitId) === String(childHabitId));
-    if (!habit || habit.checked || !habit.canCheckin) {
+    if (!habit || habit.checked || !habit.canCheckin || this.data.checkingHabitId) {
       return;
     }
     try {
+      this.setData({ checkingHabitId: String(childHabitId) });
       await checkinHabit(this.data.childId, childHabitId);
       await this.loadToday();
       wx.showToast({ title: "已打卡", icon: "success" });
     } catch (error) {
       wx.showToast({ title: error.message || "打卡失败", icon: "none" });
+    } finally {
+      this.setData({ checkingHabitId: "" });
     }
   },
 });
 
 function toCardState(habit) {
+  const checked = Boolean(habit.checked);
+  const canCheckin = Boolean(habit.canCheckin);
+  const customSource = isCustomSource(habit);
   return {
     ...habit,
+    imageUrl: normalizeAssetPath(habit.imageUrl),
     fallbackIcon: iconFallback(habit.iconKey),
-    checkedText: habit.checked ? "已打卡" : "待打卡",
-    permissionText: habit.canCheckin ? "可打卡" : "无打卡权限",
-    actionText: habit.checked ? "已完成" : "打卡",
-    actionDisabled: habit.checked || !habit.canCheckin,
+    checkedText: checked ? "已打卡" : "待打卡",
+    permissionText: canCheckin ? "可打卡" : "无打卡权限",
+    permissionClass: canCheckin ? "permission-ok" : "permission-deny",
+    habitNameClass: checked ? "habit-name habit-name-checked" : "habit-name",
+    showSourceBadge: customSource,
+    sourceBadgeText: customSource ? "自定义" : "",
+    sourceBadgeClass: customSource ? "source-badge source-badge-custom" : "source-badge",
+    showPermissionInlineText: !canCheckin,
+    permissionInlineText: canCheckin ? "" : "你无权打卡，可查看记录",
+    actionText: checked ? "已打卡" : canCheckin ? "打卡" : "",
+    actionIcon: checked ? "\ue86c" : "",
+    actionDisabled: checked || !canCheckin,
+    actionClass: checked || !canCheckin ? "checkin-action checkin-action-disabled" : "checkin-action",
   };
+}
+
+function sourceTypeOf(habit) {
+  return String(habit.sourceType || habit.templateSourceType || "").toUpperCase();
+}
+
+function isCustomSource(habit) {
+  return sourceTypeOf(habit) === "CUSTOM";
 }
 
 function iconFallback(iconKey) {
@@ -99,4 +162,21 @@ function iconFallback(iconKey) {
     directions_run: "跑",
   };
   return fallbackMap[iconKey] || "习";
+}
+
+function formatTodayText() {
+  const now = new Date();
+  const weekdays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+  return `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日${weekdays[now.getDay()]}`;
+}
+
+function buildProgressHint(total, completed) {
+  if (total === 0) {
+    return "先配置一个习惯，开始今天的成长记录";
+  }
+  const remaining = total - completed;
+  if (remaining === 0) {
+    return "今天的习惯都完成了，继续保持";
+  }
+  return `再完成${remaining}个习惯就能完成今日打卡`;
 }

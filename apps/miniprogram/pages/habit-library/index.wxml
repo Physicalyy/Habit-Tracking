@@ -1,51 +1,72 @@
-<view class="page habit-library-page">
-  <view class="page-title">习惯库</view>
-  <view class="page-subtitle">选择适合孩子的系统习惯模板</view>
-
-  <view class="search-card card">
-    <input
-      class="search-input"
-      placeholder="搜索习惯"
-      value="{{searchKeyword}}"
-      bindinput="onSearchInput"
-    />
+<view class="habit-library-page">
+  <view class="library-header">
+    <view class="library-icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
+    <view class="library-title">习惯库</view>
+    <view class="library-header-spacer"></view>
   </view>
 
-  <scroll-view class="category-scroll" scroll-x="true" enhanced="true">
-    <view class="category-row">
-      <view
-        wx:for="{{categories}}"
-        wx:key="key"
-        class="category-pill {{selectedCategory === item.key ? 'category-active' : ''}}"
-        data-category="{{item.key}}"
-        bindtap="onCategoryTap"
-      >
-        {{item.label}}
-      </view>
+  <view class="library-main">
+    <view class="search-wrap">
+      <text class="material-symbols-outlined search-icon">{{icons.search}}</text>
+      <input
+        class="search-input"
+        placeholder="搜索习惯..."
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+      />
     </view>
-  </scroll-view>
 
-  <view wx:if="{{loading}}" class="muted-text library-state">加载中...</view>
-  <view wx:elif="{{errorText}}" class="error-text library-state">{{errorText}}</view>
+    <scroll-view class="category-scroll" scroll-x="true" enhanced="true" show-scrollbar="false">
+      <view class="category-row">
+        <view
+          wx:for="{{categories}}"
+          wx:key="key"
+          class="{{item.className}}"
+          data-category="{{item.key}}"
+          bindtap="onCategoryTap"
+        >
+          {{item.label}}
+        </view>
+      </view>
+    </scroll-view>
 
-  <view wx:else class="template-list">
-    <view wx:for="{{templates}}" wx:key="slug" class="template-card card">
-      <view class="template-icon">
-        <image wx:if="{{item.imageUrl}}" class="template-image" mode="aspectFill" src="{{item.imageUrl}}" />
-        <text wx:else>{{item.fallbackIcon}}</text>
+    <view wx:if="{{loading}}" class="muted-text library-state">加载中...</view>
+    <view wx:elif="{{errorText}}" class="error-text library-state">{{errorText}}</view>
+
+    <view wx:else>
+      <view class="template-grid">
+        <view wx:for="{{templateCards}}" wx:key="slug" class="library-template-card {{item.accentClass}}">
+          <view class="template-icon-shell {{item.iconShellClass}}">
+            <image wx:if="{{item.imageUrl}}" class="template-image" mode="aspectFill" src="{{item.imageUrl}}" />
+            <text wx:else class="material-symbols-outlined template-icon {{item.iconToneClass}}">{{item.iconSymbol}}</text>
+          </view>
+          <view class="template-name">{{item.name}}</view>
+          <view class="template-desc">{{item.shortDescription}}</view>
+          <view wx:if="{{item.ageText}}" class="template-age">{{item.ageText}}</view>
+          <view
+            class="{{item.addClass}}"
+            data-slug="{{item.slug}}"
+            data-template-id="{{item.id}}"
+            bindtap="onAddTap"
+            hover-class="template-add-pressed"
+          >
+            <text class="material-symbols-outlined add-icon">{{item.addIcon}}</text>
+            <text>{{item.addText}}</text>
+          </view>
+        </view>
       </view>
-      <view class="template-main">
-        <view class="template-name">{{item.name}}</view>
-        <view class="template-desc">{{item.description}}</view>
-        <view class="template-age">{{item.ageText}}</view>
+
+      <view wx:if="{{!hasTemplates}}" class="library-empty">
+        <view class="library-empty-icon material-symbols-outlined">{{icons.search}}</view>
+        <view class="library-empty-title">没有找到习惯</view>
+        <view class="library-empty-desc">换个关键词或分类再试试</view>
       </view>
-      <view
-        class="add-template"
-        data-slug="{{item.slug}}"
-        data-template-id="{{item.id}}"
-        bindtap="onAddTap"
-      >
-        {{addingSlug === item.slug ? '添加中' : '添加'}}
+
+      <view class="custom-cta">
+        <view class="custom-icon material-symbols-outlined">{{icons.add}}</view>
+        <view class="custom-title">还没有自定义习惯</view>
+        <view class="custom-desc">可以根据孩子的情况，创建一个专属习惯</view>
+        <view class="custom-button" bindtap="goCustomHabit" hover-class="custom-button-pressed">创建自定义习惯</view>
       </view>
     </view>
   </view>

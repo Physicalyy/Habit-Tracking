@@ -1,6 +1,6 @@
 <view class="page create-page">
   <view class="top-bar">
-    <button class="icon-button">‹</button>
+    <view class="icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
     <view class="top-title">创建家庭</view>
     <view class="icon-button"></view>
   </view>
@@ -18,7 +18,7 @@
     <view class="form-field">
       <view class="field-label">家庭名称</view>
       <view class="form-input-wrap">
-        <view class="field-icon">⌂</view>
+        <view class="field-icon material-symbols-outlined">{{icons.home}}</view>
         <input class="field-input" value="{{familyName}}" maxlength="20" placeholder="例如：小宝之家" bindinput="onFamilyNameInput" />
       </view>
     </view>
@@ -26,7 +26,7 @@
     <view class="form-field">
       <view class="field-label">孩子昵称</view>
       <view class="form-input-wrap">
-        <view class="field-icon">☺</view>
+        <view class="field-icon material-symbols-outlined">{{icons.face6}}</view>
         <input class="field-input" value="{{childNickname}}" maxlength="12" placeholder="例如：小宝" bindinput="onChildNicknameInput" />
       </view>
     </view>
@@ -34,28 +34,31 @@
     <view wx:if="{{errorMessage}}" class="error-text">{{errorMessage}}</view>
 
     <view class="info-card">
-      <view class="info-icon">i</view>
+      <view class="info-icon material-symbols-outlined">{{icons.info}}</view>
       <view class="muted-text">创建后，你将成为主家长，可管理家庭成员、习惯和权限。</view>
     </view>
   </view>
 
   <view class="tips-grid">
     <view class="tip-card">
-      <view class="tip-icon">♧</view>
+      <view class="tip-icon material-symbols-outlined">{{icons.groupAdd}}</view>
       <view class="tip-title">邀请家人</view>
       <view class="tip-desc">邀请另一位家长加入家庭，一起为孩子打卡</view>
     </view>
     <view class="tip-card">
-      <view class="tip-icon tip-blue">✓</view>
+      <view class="tip-icon tip-blue material-symbols-outlined">{{icons.verified}}</view>
       <view class="tip-title">隐私安全</view>
-      <view class="tip-desc">仅家庭成员可查看孩子成长记录</view>
+      <view class="tip-desc">端到端加密，守护成长瞬间</view>
     </view>
   </view>
 
   <view class="fixed-action-spacer"></view>
 
   <view class="fixed-action">
-    <button class="primary-button" loading="{{submitting}}" bindtap="submitCreateFamily">创建家庭  ⊕</button>
+    <view class="{{submitClass}}" bindtap="submitCreateFamily" hover-class="tap-active">
+      <text>创建家庭</text>
+      <text class="material-symbols-outlined visual-action-icon">{{icons.addCircle}}</text>
+    </view>
     <view class="terms-text">点击创建即表示同意 服务条款 和 隐私政策</view>
   </view>
 </view>

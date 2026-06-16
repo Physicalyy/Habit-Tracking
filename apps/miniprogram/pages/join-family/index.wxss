@@ -50,3 +50,20 @@
   height: 330rpx;
   height: calc(330rpx + env(safe-area-inset-bottom));
 }
+
+.visual-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 96rpx;
+}
+
+.visual-action-icon-left {
+  margin-right: 12rpx;
+  font-size: 34rpx;
+  line-height: 1;
+}
+
+.action-disabled {
+  opacity: 0.65;
+}

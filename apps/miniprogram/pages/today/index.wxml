@@ -1,42 +1,79 @@
 <view class="page today-page">
   <view class="top-bar today-top">
-    <view class="icon-button">‹</view>
-    <view class="top-title">{{childNickname}} 今日打卡</view>
-    <view class="icon-button">›</view>
+    <view class="icon-button material-symbols-outlined">{{icons.arrowBack}}</view>
+    <view class="top-title">{{childNickname}}今日打卡</view>
+    <view class="icon-button material-symbols-outlined">{{icons.moreHoriz}}</view>
   </view>
 
   <view wx:if="{{loading}}" class="muted-text today-state">加载中...</view>
   <view wx:elif="{{errorText}}" class="error-text today-state">{{errorText}}</view>
 
   <view wx:elif="{{hasNoHabits}}" class="empty-card">
-    <view class="empty-art float-animation">
-      <image class="empty-image" mode="aspectFit" src="/assets/onboarding/today-empty-sprout.png" />
+    <view class="empty-visual floating-anim">
+      <view class="empty-orbit"></view>
+      <view class="empty-orbit-inner"></view>
+      <view class="empty-image-shell">
+        <image class="empty-image" mode="aspectFill" src="/assets/onboarding/today-empty-sprout.png" />
+      </view>
     </view>
     <view class="empty-title">还没有配置习惯</view>
     <view class="empty-desc">先从习惯库添加适合孩子的习惯</view>
-    <view class="primary-button empty-action" bindtap="goHabitLibrary">去配置习惯</view>
+    <view class="primary-button empty-action" bindtap="goHabitLibrary" hover-class="empty-action-pressed">
+      <text class="material-symbols-outlined empty-action-icon">{{icons.addCircle}}</text>
+      <text>去配置习惯</text>
+    </view>
   </view>
 
   <view wx:else class="today-list">
+    <view class="today-hero">
+      <view class="today-copy">
+        <view class="today-date">{{currentDateText}}</view>
+        <view class="today-heading">今天为{{childNickname}}打卡</view>
+      </view>
+      <view class="child-avatar">{{childNickname}}</view>
+    </view>
+
+    <view class="progress-card card">
+      <view class="progress-ring">
+        <view class="progress-percent">{{progressText}}</view>
+        <view class="progress-label">进度</view>
+      </view>
+      <view class="progress-copy">
+        <view class="progress-title">今日进度</view>
+        <view class="progress-desc">{{progressHint}}</view>
+      </view>
+    </view>
+
+    <view class="section-heading">
+      <view class="section-title">今日习惯</view>
+      <view class="section-link" bindtap="goHabitManage">管理习惯</view>
+    </view>
+
     <view wx:for="{{todayHabits}}" wx:key="childHabitId" class="today-habit-card card">
       <view class="habit-icon">
         <image wx:if="{{item.imageUrl}}" class="habit-image" mode="aspectFill" src="{{item.imageUrl}}" />
         <text wx:else>{{item.fallbackIcon}}</text>
       </view>
       <view class="habit-main">
-        <view class="habit-name">{{item.name}}</view>
+        <view class="habit-title-row">
+          <view class="{{item.habitNameClass}}">{{item.name}}</view>
+          <view wx:if="{{item.showSourceBadge}}" class="{{item.sourceBadgeClass}}">{{item.sourceBadgeText}}</view>
+        </view>
         <view class="habit-desc">{{item.description}}</view>
         <view class="habit-meta">
           <text>{{item.checkedText}}</text>
-          <text class="{{item.canCheckin ? 'permission-ok' : 'permission-deny'}}">{{item.permissionText}}</text>
+          <text class="{{item.permissionClass}}">{{item.permissionText}}</text>
         </view>
       </view>
+      <view wx:if="{{item.showPermissionInlineText}}" class="permission-inline-text">{{item.permissionInlineText}}</view>
       <view
-        class="checkin-action {{item.actionDisabled ? 'checkin-action-disabled' : ''}}"
+        wx:else
+        class="{{item.actionClass}}"
         data-habit-id="{{item.childHabitId}}"
         bindtap="checkinTap"
       >
-        {{item.actionText}}
+        <text wx:if="{{item.actionIcon}}" class="material-symbols-outlined checkin-action-icon">{{item.actionIcon}}</text>
+        <text>{{item.actionText}}</text>
       </view>
     </view>
   </view>

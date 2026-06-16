@@ -1,21 +1,48 @@
 <view class="page custom-habit-page">
-  <view class="page-title">自定义习惯</view>
-  <view class="page-subtitle">创建后会自动添加到当前孩子的习惯管理中</view>
+  <view class="top-bar">
+    <view class="icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
+    <view class="top-title">创建自定义习惯</view>
+    <view class="icon-button material-symbols-outlined">{{icons.moreHoriz}}</view>
+  </view>
 
-  <view class="form-card card">
+  <view class="custom-icon-section">
+    <view class="selected-icon-shell">
+      <text class="material-symbols-outlined selected-icon">{{selectedIconSymbol}}</text>
+      <view class="edit-badge material-symbols-outlined">{{icons.edit}}</view>
+    </view>
+    <view class="change-icon-text" bindtap="chooseIcon">更换图标</view>
+  </view>
+
+  <view class="form-card">
     <view class="form-field">
       <view class="field-label">习惯名称</view>
-      <input class="plain-input" value="{{habitName}}" maxlength="32" placeholder="例如：练习钢琴" bindinput="onNameInput" />
+      <input class="plain-input" value="{{habitName}}" maxlength="32" placeholder="例如：每天整理书包" bindinput="onNameInput" />
     </view>
 
     <view class="form-field">
-      <view class="field-label">描述</view>
-      <input class="plain-input" value="{{description}}" maxlength="120" placeholder="例如：每天十分钟" bindinput="onDescriptionInput" />
+      <view class="field-label">所属分类</view>
+      <view class="category-grid">
+        <view wx:for="{{categoryOptions}}" wx:key="key" class="{{item.className}}" data-key="{{item.key}}" bindtap="chooseCategory">{{item.label}}</view>
+      </view>
     </view>
 
     <view class="form-field">
-      <view class="field-label">图标 Key</view>
-      <input class="plain-input" value="{{iconKey}}" maxlength="32" placeholder="assignment" bindinput="onIconInput" />
+      <view class="field-label">习惯描述（选填）</view>
+      <textarea class="plain-textarea" value="{{description}}" maxlength="120" placeholder="例如：放学后整理好书包和文具" bindinput="onDescriptionInput" />
+    </view>
+
+    <view class="permission-field-label">打卡权限</view>
+    <view class="permission-preview">
+      <view class="permission-left">
+        <text class="material-symbols-outlined permission-icon">{{icons.groups}}</text>
+        <text>全家长可打卡</text>
+      </view>
+      <text class="material-symbols-outlined permission-chevron">{{icons.chevronRight}}</text>
+    </view>
+
+    <view class="helper-text">
+      <text class="material-symbols-outlined helper-icon">{{icons.info}}</text>
+      <text>自定义习惯创建后，会加入孩子的习惯管理，并可在今日打卡中使用。</text>
     </view>
 
     <view wx:if="{{errorText}}" class="error-text">{{errorText}}</view>
@@ -24,6 +51,9 @@
   <view class="fixed-action-spacer"></view>
 
   <view class="fixed-action">
-    <button class="primary-button" loading="{{submitting}}" bindtap="submitCustomHabit">创建习惯</button>
+    <view class="{{submitClass}}" bindtap="submitCustomHabit" hover-class="tap-active">
+      <text>创建并添加到孩子习惯</text>
+      <text class="material-symbols-outlined visual-action-icon">{{icons.add}}</text>
+    </view>
   </view>
 </view>

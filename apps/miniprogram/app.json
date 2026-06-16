@@ -21,6 +21,7 @@
     "backgroundTextStyle": "light"
   },
   "tabBar": {
+    "custom": true,
     "color": "#6e7a75",
     "selectedColor": "#006b58",
     "backgroundColor": "#ffffff",
