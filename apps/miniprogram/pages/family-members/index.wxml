@@ -1,10 +1,13 @@
-<view class="page family-members-page">
-  <view class="top-bar">
-    <view class="top-heading">
+<view class="page family-members-page" style="{{pageTopStyle}}">
+  <view class="top-bar page-nav" style="{{navBarStyle}}">
+    <view class="nav-content" style="{{navContentStyle}}">
+      <view wx:if="{{showNavBack}}" class="top-back material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
+      <view class="top-heading" style="{{navTitleStyle}}">
       <text class="material-symbols-outlined top-icon">{{icons.bubbleChart}}</text>
-      <text class="top-title">家庭成员</text>
+        <text class="top-title">{{navTitle}}</text>
+      </view>
+      <view class="top-spacer"></view>
     </view>
-    <view class="top-notification material-symbols-outlined">{{icons.notifications}}</view>
   </view>
 
   <view wx:if="{{loading}}" class="muted-text members-state">加载中...</view>

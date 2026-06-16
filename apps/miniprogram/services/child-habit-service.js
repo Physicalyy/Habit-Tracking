@@ -3,6 +3,7 @@ const {
   addChildHabit,
   childHabit,
   childHabits,
+  deleteChildHabit,
   childHabitPermissions,
   childHabitStatus,
 } = require("../core/api.js");
@@ -47,6 +48,11 @@ async function updateChildHabitStatus(childId, childHabitId, status) {
   return result.data;
 }
 
+async function removeChildHabit(childId, childHabitId) {
+  const result = await request(deleteChildHabit(childId, childHabitId));
+  return result.data;
+}
+
 async function updateChildHabitPermission(childId, childHabitId, data) {
   const result = await request(childHabitPermissions(childId, childHabitId), {
     permissionType: String(data.permissionType || "").trim(),
@@ -63,5 +69,6 @@ module.exports = {
   createCustomHabit,
   updateChildHabit,
   updateChildHabitStatus,
+  removeChildHabit,
   updateChildHabitPermission,
 };

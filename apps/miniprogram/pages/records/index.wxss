@@ -1,6 +1,6 @@
 .records-page {
   min-height: 100vh;
-  padding: 136rpx 24rpx 210rpx;
+  padding: 0 24rpx 210rpx;
   padding-bottom: calc(210rpx + env(safe-area-inset-bottom));
 }
 
@@ -10,14 +10,15 @@
   right: 0;
   top: 0;
   z-index: 40;
-  height: 112rpx;
-  padding: 48rpx 24rpx 0;
+  padding-left: 24rpx;
+  padding-right: 24rpx;
   background: #f8faf8;
 }
 
-.records-top .icon-button {
-  color: #006b58;
-  font-size: 46rpx;
+.records-top .nav-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .records-summary {

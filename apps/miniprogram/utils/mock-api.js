@@ -438,6 +438,28 @@ function updateChildHabitStatus(childId, childHabitId, data) {
   return ok(updated);
 }
 
+function deleteChildHabit(childId, childHabitId) {
+  const { session, error } = requireChildSession(childId);
+  if (error) {
+    return error;
+  }
+  if (!session.member || !session.member.admin) {
+    return fail("仅主家长可删除习惯");
+  }
+
+  const childHabits = session.childHabits || [];
+  const exists = childHabits.some((habit) => String(habit.id) === String(childHabitId));
+  if (!exists) {
+    return fail("孩子习惯不存在");
+  }
+
+  saveMockSession({
+    ...session,
+    childHabits: childHabits.filter((habit) => String(habit.id) !== String(childHabitId)),
+  });
+  return ok(null);
+}
+
 function updateChildHabitPermission(childId, childHabitId, data) {
   const { session, error } = requireChildSession(childId);
   if (error) {
@@ -661,6 +683,11 @@ async function handleMockRequest({ endpoint, data = {} }) {
   if (endpoint.path && endpoint.method === "PATCH" && /\/api\/children\/[^/]+\/habits\/[^/]+\/status$/.test(endpoint.path)) {
     const [, childId, childHabitId] = endpoint.path.match(/\/api\/children\/([^/]+)\/habits\/([^/]+)\/status$/);
     return updateChildHabitStatus(childId, childHabitId, data);
+  }
+
+  if (endpoint.path && endpoint.method === "DELETE" && /\/api\/children\/[^/]+\/habits\/[^/]+$/.test(endpoint.path)) {
+    const [, childId, childHabitId] = endpoint.path.match(/\/api\/children\/([^/]+)\/habits\/([^/]+)$/);
+    return deleteChildHabit(childId, childHabitId);
   }
 
   if (endpoint.path && endpoint.method === "PUT" && /\/api\/children\/[^/]+\/habits\/[^/]+\/permissions$/.test(endpoint.path)) {

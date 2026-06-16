@@ -1,8 +1,10 @@
-<view class="page join-page">
-  <view class="top-bar">
-    <view class="icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
-    <view class="top-title">加入家庭</view>
-    <view class="icon-button"></view>
+<view class="page join-page" style="{{pageTopStyle}}">
+  <view class="top-bar page-nav" style="{{navBarStyle}}">
+    <view class="nav-content" style="{{navContentStyle}}">
+      <view wx:if="{{showNavBack}}" class="icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
+      <view class="top-title" style="{{navTitleStyle}}">{{navTitle}}</view>
+      <view class="icon-button"></view>
+    </view>
   </view>
 
   <view class="join-hero">
@@ -32,7 +34,7 @@
 
   <view class="fixed-action">
     <view class="{{submitClass}}" bindtap="submitJoinFamily" hover-class="tap-active">加入家庭</view>
-    <view class="secondary-button visual-action scan-button">
+    <view class="secondary-button visual-action scan-button" bindtap="scanInviteCode">
       <text class="material-symbols-outlined visual-action-icon-left">{{icons.qrCodeScanner}}</text>
       <text>扫码加入家庭</text>
     </view>

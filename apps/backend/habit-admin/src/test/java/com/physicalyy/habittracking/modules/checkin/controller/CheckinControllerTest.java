@@ -42,26 +42,26 @@ class CheckinControllerTest {
                         .header("X-Test-Nickname", "Owner"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(1))
-                .andExpect(jsonPath("$.data[0].childHabitId").value(activeHabitId))
+                .andExpect(jsonPath("$.data[0].childHabitId").value(String.valueOf(activeHabitId)))
                 .andExpect(jsonPath("$.data[0].checked").value(false))
                 .andExpect(jsonPath("$.data[0].canCheckin").value(true))
-                .andExpect(jsonPath("$.data[*].childHabitId").value(not(hasItem(disabledHabitId))));
+                .andExpect(jsonPath("$.data[*].childHabitId").value(not(hasItem(String.valueOf(disabledHabitId)))));
 
         mockMvc.perform(post("/api/children/{childId}/habits/{childHabitId}/checkins", childId, activeHabitId)
                         .header("X-Test-Openid", ownerOpenid)
                         .header("X-Test-Nickname", "Owner"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.childHabitId").value(activeHabitId))
+                .andExpect(jsonPath("$.data.childHabitId").value(String.valueOf(activeHabitId)))
                 .andExpect(jsonPath("$.data.checked").value(true))
                 .andExpect(jsonPath("$.data.canCheckin").value(true))
-                .andExpect(jsonPath("$.data.checkinId").isNumber());
+                .andExpect(jsonPath("$.data.checkinId").isString());
 
         mockMvc.perform(get("/api/children/{childId}/today", childId)
                         .header("X-Test-Openid", ownerOpenid)
                         .header("X-Test-Nickname", "Owner"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].checked").value(true))
-                .andExpect(jsonPath("$.data[0].checkinId").isNumber());
+                .andExpect(jsonPath("$.data[0].checkinId").isString());
 
         mockMvc.perform(post("/api/children/{childId}/habits/{childHabitId}/checkins", childId, activeHabitId)
                         .header("X-Test-Openid", ownerOpenid)
@@ -93,7 +93,7 @@ class CheckinControllerTest {
                         .header("X-Test-Nickname", "Member"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(1))
-                .andExpect(jsonPath("$.data[0].childHabitId").value(childHabitId))
+                .andExpect(jsonPath("$.data[0].childHabitId").value(String.valueOf(childHabitId)))
                 .andExpect(jsonPath("$.data[0].checked").value(false))
                 .andExpect(jsonPath("$.data[0].canCheckin").value(false));
 

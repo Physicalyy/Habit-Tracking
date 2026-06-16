@@ -2,9 +2,11 @@ const { ROUTES } = require("../../core/routes.js");
 const { getBootstrap } = require("../../services/bootstrap-service.js");
 const {
   listChildHabits,
+  removeChildHabit,
   updateChildHabitStatus,
 } = require("../../services/child-habit-service.js");
 const { normalizeAssetPath } = require("../../utils/asset-path.js");
+const { buildNavState, goBackWithFallback } = require("../../utils/navigation-bar.js");
 
 Page({
   data: {
@@ -16,14 +18,15 @@ Page({
     errorText: "",
     canManageHabits: false,
     updatingHabitId: "",
+    deletingHabitId: "",
     addActionClass: "add-habit-action action-disabled",
     icons: {
       arrowBack: "\ue5e0",
-      moreHoriz: "\ue5d3",
       add: "\ue145",
       drag: "\ue25d",
       lightbulb: "\ue0f0",
     },
+    ...buildNavState({ title: "习惯管理", showBack: true }),
   },
 
   async onShow() {
@@ -40,6 +43,7 @@ Page({
       hasNoHabits: false,
       canManageHabits: false,
       updatingHabitId: "",
+      deletingHabitId: "",
       addActionClass: "add-habit-action action-disabled",
     });
     try {
@@ -71,6 +75,7 @@ Page({
           sourceBadgeClass: sourceBadgeClass(habit),
           toggleSwitchClass: buildToggleSwitchClass(habit.status, canManageHabits, this.data.updatingHabitId === String(habit.id)),
           permissionActionClass: canManageHabits ? "permission-action" : "permission-action action-disabled",
+          deleteActionClass: canManageHabits ? "delete-swipe-action" : "delete-swipe-action action-disabled",
           nextStatus: habit.status === "active" ? "disabled" : "active",
         })),
         hasNoHabits: habits.length === 0,
@@ -82,7 +87,7 @@ Page({
     }
   },
 
-  goCustomHabit() {
+  goHabitLibrary() {
     if (!this.data.childId) {
       wx.showToast({ title: "请先加入家庭", icon: "none" });
       return;
@@ -91,11 +96,11 @@ Page({
       wx.showToast({ title: "仅主家长可管理习惯", icon: "none" });
       return;
     }
-    wx.navigateTo({ url: ROUTES.CUSTOM_HABIT });
+    wx.navigateTo({ url: ROUTES.HABIT_LIBRARY });
   },
 
   goBack() {
-    wx.navigateBack();
+    goBackWithFallback(ROUTES.ME, true);
   },
 
   goHabitPermission(event) {
@@ -139,6 +144,42 @@ Page({
       wx.showToast({ title: error.message || "状态更新失败", icon: "none" });
       this.setData({ updatingHabitId: "" });
     }
+  },
+
+  async deleteHabitTap(event) {
+    if (this.data.deletingHabitId) {
+      return;
+    }
+    if (!this.data.childId) {
+      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      return;
+    }
+    if (!this.data.canManageHabits) {
+      wx.showToast({ title: "仅主家长可删除习惯", icon: "none" });
+      return;
+    }
+    const childHabitId = event.currentTarget.dataset.habitId;
+    wx.showModal({
+      title: "删除习惯",
+      content: "删除后今日页不再显示，历史打卡记录会保留。",
+      confirmText: "删除",
+      confirmColor: "#ba1a1a",
+      success: async (result) => {
+        if (!result.confirm) {
+          return;
+        }
+        try {
+          this.setData({ deletingHabitId: String(childHabitId) });
+          await removeChildHabit(this.data.childId, childHabitId);
+          wx.showToast({ title: "已删除", icon: "success" });
+          await this.loadHabits();
+        } catch (error) {
+          wx.showToast({ title: error.message || "删除失败", icon: "none" });
+        } finally {
+          this.setData({ deletingHabitId: "" });
+        }
+      },
+    });
   },
 });
 

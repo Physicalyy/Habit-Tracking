@@ -207,11 +207,25 @@ public class ChildHabitService {
         return ChildHabitSummary.from(childHabit);
     }
 
+    @Transactional
+    public void deleteChildHabit(String openid, String nickname, Long childId, Long childHabitId) {
+        ChildContext context = requireChildContext(openid, nickname, childId);
+        requireAdminMember(context);
+        HabitChildConfig childHabit = requireChildHabit(context, childHabitId);
+        String operator = context.user().getOpenid();
+        childHabit.setDelFlag("1");
+        childHabit.setActiveTemplateId(null);
+        childHabit.touchForUpdate(operator);
+        habitChildConfigMapper.updateById(childHabit);
+        replaceAllowedMembers(childHabitId, List.of(), operator);
+    }
+
     private HabitChildConfig createChildHabitFromTemplate(ChildContext context, HabitTemplate template) {
         HabitChildConfig childHabit = new HabitChildConfig();
         childHabit.setFamilyId(context.familyId());
         childHabit.setChildId(context.child().getId());
         childHabit.setTemplateId(template.getId());
+        childHabit.setActiveTemplateId(template.getId());
         childHabit.setName(template.getName());
         childHabit.setDescription(template.getDescription());
         childHabit.setIconKey(template.getIconKey());

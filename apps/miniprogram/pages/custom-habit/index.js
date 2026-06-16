@@ -1,5 +1,7 @@
 const { getBootstrap } = require("../../services/bootstrap-service.js");
 const { createCustomHabit } = require("../../services/child-habit-service.js");
+const { buildNavState, goBackWithFallback } = require("../../utils/navigation-bar.js");
+const { ROUTES } = require("../../core/routes.js");
 
 Page({
   data: {
@@ -28,13 +30,13 @@ Page({
     errorText: "",
     icons: {
       arrowBack: "\ue5e0",
-      moreHoriz: "\ue5d3",
       edit: "\ue3c9",
       groups: "\ue7ef",
       chevronRight: "\ue5cc",
       info: "\ue88e",
       add: "\ue145",
     },
+    ...buildNavState({ title: "创建自定义习惯", showBack: true }),
   },
 
   async onLoad() {
@@ -81,7 +83,7 @@ Page({
   },
 
   goBack() {
-    wx.navigateBack();
+    goBackWithFallback(ROUTES.HABIT_LIBRARY);
   },
 
   async submitCustomHabit() {

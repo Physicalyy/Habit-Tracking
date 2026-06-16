@@ -3,6 +3,9 @@ const {
   getFamilyInvite,
   refreshFamilyInvite,
 } = require("../../services/family-service.js");
+const { ROUTES } = require("../../core/routes.js");
+const { buildNavState, goBackWithFallback } = require("../../utils/navigation-bar.js");
+const { drawInviteQr } = require("../../utils/qr-code.js");
 
 Page({
   data: {
@@ -11,6 +14,7 @@ Page({
     childNickname: "",
     isFamilyAdmin: false,
     inviteCode: "",
+    qrPayload: "",
     expiresTime: "",
     loading: false,
     refreshing: false,
@@ -27,10 +31,11 @@ Page({
       refresh: "\ue5d5",
     },
     errorText: "",
+    ...buildNavState({ title: "邀请家长加入", showBack: true }),
   },
 
   goBack() {
-    wx.navigateBack();
+    goBackWithFallback(ROUTES.FAMILY_MEMBERS);
   },
 
   async onShow() {
@@ -46,6 +51,7 @@ Page({
       childNickname: "",
       isFamilyAdmin: false,
       inviteCode: "",
+      qrPayload: "",
       expiresTime: "",
       refreshing: false,
       refreshActionClass: "refresh-button action-disabled",
@@ -65,15 +71,18 @@ Page({
         return;
       }
       const invite = await getFamilyInvite(family.id);
+      const qrPayload = buildInvitePayload(invite.code);
       this.setData({
         familyId: family.id,
         familyName: family.name,
         childNickname: child ? child.nickname : "孩子",
         isFamilyAdmin,
         inviteCode: invite.code,
+        qrPayload,
         expiresTime: invite.expiresTime,
         refreshActionClass: "refresh-button",
       });
+      this.drawQrCode(qrPayload);
     } catch (error) {
       this.setData({ errorText: error.message || "邀请码加载失败" });
     } finally {
@@ -107,10 +116,13 @@ Page({
     try {
       this.setData({ refreshing: true, refreshActionClass: "refresh-button action-disabled" });
       const invite = await refreshFamilyInvite(this.data.familyId);
+      const qrPayload = buildInvitePayload(invite.code);
       this.setData({
         inviteCode: invite.code,
+        qrPayload,
         expiresTime: invite.expiresTime,
       });
+      this.drawQrCode(qrPayload);
       wx.showToast({ title: "已刷新", icon: "success" });
     } catch (error) {
       wx.showToast({ title: error.message || "刷新失败", icon: "none" });
@@ -118,4 +130,12 @@ Page({
       this.setData({ refreshing: false, refreshActionClass: "refresh-button" });
     }
   },
+
+  drawQrCode(payload) {
+    drawInviteQr("inviteQr", this, payload);
+  },
 });
+
+function buildInvitePayload(inviteCode) {
+  return `/pages/join-family/index?inviteCode=${encodeURIComponent(inviteCode)}`;
+}

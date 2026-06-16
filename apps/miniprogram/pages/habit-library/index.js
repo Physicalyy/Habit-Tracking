@@ -6,6 +6,7 @@ const {
 const { getBootstrap } = require("../../services/bootstrap-service.js");
 const { listHabitTemplates } = require("../../services/habit-service.js");
 const { normalizeAssetPath } = require("../../utils/asset-path.js");
+const { buildNavState, goBackWithFallback } = require("../../utils/navigation-bar.js");
 
 const categories = [
   { key: "", label: "全部" },
@@ -67,6 +68,7 @@ Page({
     addedTemplateIds: [],
     errorText: "",
     icons,
+    ...buildNavState({ title: "习惯库", showBack: true }),
   },
 
   async onLoad() {
@@ -138,7 +140,7 @@ Page({
   },
 
   goBack() {
-    wx.navigateBack({ delta: 1 });
+    goBackWithFallback(ROUTES.TODAY, true);
   },
 
   goCustomHabit() {

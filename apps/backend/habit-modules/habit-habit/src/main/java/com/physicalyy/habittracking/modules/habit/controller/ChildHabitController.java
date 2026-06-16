@@ -6,6 +6,7 @@ import com.physicalyy.habittracking.modules.habit.vo.ChildHabitPermissionSummary
 import com.physicalyy.habittracking.modules.habit.vo.ChildHabitSummary;
 import com.physicalyy.habittracking.modules.habit.vo.CreateCustomHabitResponse;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -76,6 +77,17 @@ public class ChildHabitController {
             @Valid @RequestBody UpdateChildHabitStatusRequest request
     ) {
         return ApiResult.ok(childHabitService.updateStatus(openid, nickname, childId, childHabitId, request));
+    }
+
+    @DeleteMapping("/api/children/{childId}/habits/{childHabitId}")
+    public ApiResult<Void> deleteChildHabit(
+            @RequestHeader(value = "X-Test-Openid", required = false) String openid,
+            @RequestHeader(value = "X-Test-Nickname", required = false) String nickname,
+            @PathVariable Long childId,
+            @PathVariable Long childHabitId
+    ) {
+        childHabitService.deleteChildHabit(openid, nickname, childId, childHabitId);
+        return ApiResult.ok(null);
     }
 
     @PostMapping("/api/habit-templates/custom")

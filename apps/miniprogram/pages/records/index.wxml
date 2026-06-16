@@ -1,8 +1,8 @@
-<view class="page records-page">
-  <view class="top-bar records-top">
-    <view class="icon-button material-symbols-outlined">{{icons.arrowBack}}</view>
-    <view class="top-title">{{childNickname}}的打卡记录</view>
-    <view class="icon-button material-symbols-outlined">{{icons.moreHoriz}}</view>
+<view class="page records-page" style="{{pageTopStyle}}">
+  <view class="top-bar records-top" style="{{navBarStyle}}">
+    <view class="nav-content" style="{{navContentStyle}}">
+      <view class="top-title" style="{{navTitleStyle}}">{{navTitle}}</view>
+    </view>
   </view>
 
   <view class="records-summary">

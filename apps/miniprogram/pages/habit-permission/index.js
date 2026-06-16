@@ -1,5 +1,7 @@
 const { listFamilyMembers } = require("../../services/family-service.js");
 const { updateChildHabitPermission } = require("../../services/child-habit-service.js");
+const { ROUTES } = require("../../core/routes.js");
+const { buildNavState, goBackWithFallback } = require("../../utils/navigation-bar.js");
 
 Page({
   data: {
@@ -14,17 +16,15 @@ Page({
     loading: false,
     saving: false,
     saveClass: "save-action",
-    inlineSaveClass: "permission-save-inline",
     errorText: "",
     icons: {
       arrowBack: "\ue5e0",
-      moreHoriz: "\ue5d3",
       verifiedUser: "\ue8e8",
       expandMore: "\ue5cf",
       checkCircle: "\ue86c",
-      parent: "\ue7fd",
     },
     permissionOptions: buildPermissionOptions("ALL_PARENTS"),
+    ...buildNavState({ title: "权限设置", showBack: true }),
   },
 
   async onLoad(options) {
@@ -50,7 +50,6 @@ Page({
       members: [],
       saving: false,
       saveClass: "save-action",
-      inlineSaveClass: "permission-save-inline",
     });
     try {
       const pages = getCurrentPages();
@@ -73,7 +72,7 @@ Page({
   },
 
   goBack() {
-    wx.navigateBack();
+    goBackWithFallback(ROUTES.HABIT_MANAGE);
   },
 
   choosePermission(event) {
@@ -115,7 +114,6 @@ Page({
     this.setData({
       saving: true,
       saveClass: "save-action action-disabled",
-      inlineSaveClass: "permission-save-inline action-disabled",
     });
     try {
       await updateChildHabitPermission(this.data.childId, this.data.childHabitId, {
@@ -130,7 +128,6 @@ Page({
       this.setData({
         saving: false,
         saveClass: "save-action",
-        inlineSaveClass: "permission-save-inline",
       });
     }
   },

@@ -3,15 +3,15 @@
 }
 
 .top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 64rpx;
+  display: block;
 }
 
 .top-heading {
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
 }
 
 .top-icon {
@@ -27,12 +27,22 @@
   font-weight: 700;
 }
 
-.top-notification {
+.top-back,
+.top-spacer {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 56rpx;
   height: 56rpx;
+}
+
+.top-back {
+  color: #006b58;
+  font-size: 34rpx;
+  line-height: 1;
+}
+
+.top-spacer {
   color: #56625d;
   font-size: 34rpx;
   line-height: 1;

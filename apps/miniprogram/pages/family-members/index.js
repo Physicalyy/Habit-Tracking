@@ -1,6 +1,7 @@
 const { ROUTES } = require("../../core/routes.js");
 const { getBootstrap } = require("../../services/bootstrap-service.js");
 const { listFamilyMembers } = require("../../services/family-service.js");
+const { buildNavState, goBackWithFallback } = require("../../utils/navigation-bar.js");
 
 Page({
   data: {
@@ -15,15 +16,21 @@ Page({
     loading: false,
     errorText: "",
     icons: {
+      arrowBack: "\ue5e0",
       bubbleChart: "\ue6dd",
       notifications: "\ue7f4",
       child: "\ue7fd",
       personAdd: "\ue7fe",
     },
+    ...buildNavState({ title: "家庭成员", showBack: true }),
   },
 
   async onShow() {
     await this.loadMembers();
+  },
+
+  goBack() {
+    goBackWithFallback(ROUTES.ME, true);
   },
 
   async loadMembers() {

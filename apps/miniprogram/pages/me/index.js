@@ -1,5 +1,7 @@
 const { ROUTES } = require("../../core/routes.js");
 const { getBootstrap } = require("../../services/bootstrap-service.js");
+const { getCheckinSummary } = require("../../services/checkin-service.js");
+const { buildNavState } = require("../../utils/navigation-bar.js");
 const { syncCustomTabBar } = require("../../utils/tab-bar.js");
 
 const defaultFamilyState = {
@@ -11,9 +13,6 @@ const defaultFamilyState = {
   isFamilyAdmin: false,
   habitManageEntryClass: "bento-item menu-item-disabled",
   habitLibraryEntryClass: "bento-item menu-item-disabled",
-  familyMembersEntryClass: "bento-item menu-item-disabled",
-  inviteEntryClass: "bento-item menu-item-disabled",
-  familyAddClass: "family-add menu-item-disabled",
   familyCardClass: "family-members-card card menu-item-disabled",
   roleText: "未加入家庭",
   familyMemberText: "加入家庭后显示成员",
@@ -25,18 +24,12 @@ Page({
     avatarText: "新",
     ...defaultFamilyState,
     icons: {
-      arrowBack: "\ue5e0",
-      moreHoriz: "\ue5d3",
-      edit: "\ue3c9",
       checklist: "\ue065",
       libraryBooks: "\ue02f",
-      qrCode: "\ue00a",
       groupAdd: "\uf8eb",
       chevronRight: "\ue5cc",
-      settings: "\ue8b8",
-      help: "\ue887",
-      info: "\ue88e",
     },
+    ...buildNavState({ title: "我的" }),
   },
 
   async onShow() {
@@ -51,23 +44,29 @@ Page({
     const nickname = currentUser.nickname || "新手家长";
     const family = bootstrap.defaultFamily;
     const child = bootstrap.defaultChild;
+    let totalCheckinCount = 0;
+    if (child) {
+      try {
+        const summary = await getCheckinSummary(child.id);
+        totalCheckinCount = Number(summary.totalCheckinCount || 0);
+      } catch (error) {
+        totalCheckinCount = 0;
+      }
+    }
     this.setData({
       nickname,
       avatarText: nickname.slice(0, 1),
       familyName: family ? family.name : "未加入家庭",
       childNickname: child ? child.nickname : "未选择孩子",
-      growthPointsText: buildGrowthPointsText(child),
+      growthPointsText: totalCheckinCount.toLocaleString("zh-CN"),
       growthPointsLabel: "成长积分",
       hasFamily: Boolean(family),
       isFamilyAdmin: Boolean(family && family.admin),
       habitManageEntryClass: family ? "bento-item" : "bento-item menu-item-disabled",
       habitLibraryEntryClass: family ? "bento-item" : "bento-item menu-item-disabled",
-      familyMembersEntryClass: family ? "bento-item" : "bento-item menu-item-disabled",
-      inviteEntryClass: family && family.admin ? "bento-item" : "bento-item menu-item-disabled",
-      familyAddClass: family ? "family-add" : "family-add menu-item-disabled",
       familyCardClass: family ? "family-members-card card" : "family-members-card card menu-item-disabled",
       roleText: family ? (family.admin ? "主家长" : "成员家长") : "未加入家庭",
-      familyMemberText: family ? "查看和管理家庭成员" : "加入家庭后显示成员",
+      familyMemberText: family ? "进入家庭组管理成员和邀请" : "加入家庭后显示成员",
     });
   },
 
@@ -77,18 +76,6 @@ Page({
       return;
     }
     wx.navigateTo({ url: ROUTES.FAMILY_MEMBERS });
-  },
-
-  goFamilyInvite() {
-    if (!this.data.hasFamily) {
-      wx.showToast({ title: "请先加入家庭", icon: "none" });
-      return;
-    }
-    if (!this.data.isFamilyAdmin) {
-      wx.showToast({ title: "仅主家长可管理邀请", icon: "none" });
-      return;
-    }
-    wx.navigateTo({ url: ROUTES.FAMILY_INVITE });
   },
 
   goHabitLibrary() {
@@ -107,11 +94,3 @@ Page({
     wx.navigateTo({ url: ROUTES.HABIT_MANAGE });
   },
 });
-
-function buildGrowthPointsText(child) {
-  if (!child) {
-    return "0";
-  }
-  const points = Number(child.growthPoints || child.points || child.score || 0);
-  return points.toLocaleString("zh-CN");
-}

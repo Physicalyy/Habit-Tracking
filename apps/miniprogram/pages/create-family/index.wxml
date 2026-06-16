@@ -1,8 +1,10 @@
-<view class="page create-page">
-  <view class="top-bar">
-    <view class="icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
-    <view class="top-title">创建家庭</view>
-    <view class="icon-button"></view>
+<view class="page create-page" style="{{pageTopStyle}}">
+  <view class="top-bar page-nav" style="{{navBarStyle}}">
+    <view class="nav-content" style="{{navContentStyle}}">
+      <view wx:if="{{showNavBack}}" class="icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
+      <view class="top-title" style="{{navTitleStyle}}">{{navTitle}}</view>
+      <view class="icon-button"></view>
+    </view>
   </view>
 
   <view class="home-hero">

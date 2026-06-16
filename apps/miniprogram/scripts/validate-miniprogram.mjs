@@ -48,6 +48,7 @@ const requiredApiPaths = [
   "GET /api/children/{childId}/habits",
   "POST /api/children/{childId}/habits",
   "PATCH /api/children/{childId}/habits/{childHabitId}",
+  "DELETE /api/children/{childId}/habits/{childHabitId}",
   "PATCH /api/children/{childId}/habits/{childHabitId}/status",
   "PUT /api/children/{childId}/habits/{childHabitId}/permissions",
   "GET /api/children/{childId}/today",
@@ -222,16 +223,39 @@ function assertFixedActionSafeArea(pagePath) {
   );
 }
 
+function assertTopBarBugfixGuard() {
+  const navUtilSource = readFileSync(join(rootDir, "utils/navigation-bar.js"), "utf8");
+  assert.ok(navUtilSource.includes("getMenuButtonBoundingClientRect"), "navigation bar utility must align with WeChat capsule metrics");
+  assert.ok(navUtilSource.includes("navBarStyle") && navUtilSource.includes("navContentStyle") && navUtilSource.includes("navTitleStyle"), "navigation bar utility must expose shared top-bar styles");
+
+  for (const page of tabPages) {
+    const jsPath = join(rootDir, page + ".js");
+    const wxmlPath = join(rootDir, page + ".wxml");
+    const jsSource = readFileSync(jsPath, "utf8");
+    const wxmlSource = readFileSync(wxmlPath, "utf8");
+    assert.ok(!jsSource.includes("arrowBack") && !wxmlSource.includes("icons.arrowBack"), `${page} must not render a tab-page back button`);
+  }
+
+  for (const page of requiredPages) {
+    const jsSource = readFileSync(join(rootDir, page + ".js"), "utf8");
+    const wxmlSource = readFileSync(join(rootDir, page + ".wxml"), "utf8");
+    assert.ok(!jsSource.includes("moreHoriz") && !wxmlSource.includes("moreHoriz"), `${page} must not render static more menu placeholder`);
+  }
+
+  for (const page of requiredPages.filter((item) => item !== "pages/start/index")) {
+    const jsSource = readFileSync(join(rootDir, page + ".js"), "utf8");
+    const wxmlSource = readFileSync(join(rootDir, page + ".wxml"), "utf8");
+    assert.ok(jsSource.includes("buildNavState"), `${page} must use shared navigation metrics`);
+    assert.ok(wxmlSource.includes("navBarStyle") && wxmlSource.includes("navContentStyle") && wxmlSource.includes("navTitleStyle"), `${page} must bind shared navigation styles`);
+  }
+}
+
 function assertTodayEmptyPrototypeGuard() {
   const wxmlSource = readFileSync(join(rootDir, "pages/today/index.wxml"), "utf8");
   const wxssSource = readFileSync(join(rootDir, "pages/today/index.wxss"), "utf8");
 
   for (const token of [
-    "arrowBack",
-    "moreHoriz",
     "addCircle",
-    "\\ue5e0",
-    "\\ue5d3",
     "\\ue147",
   ]) {
     assertTextIncludes(join(rootDir, "pages/today/index.js"), token);
@@ -318,8 +342,8 @@ function assertHabitLibraryPrototypeGuard() {
     "library-template-card",
     "template-icon-shell",
     "template-add-button",
-    "custom-cta",
-    "custom-button",
+    "library-sticky-tools",
+    "custom-sticky-entry",
   ]) {
     assert.ok(
       wxmlSource.includes(token) || wxssSource.includes(token),
@@ -335,7 +359,7 @@ function assertHabitLibraryPrototypeGuard() {
     "运动锻炼",
     "社交情绪",
     "安全教育",
-    "创建自定义习惯",
+    "自定义习惯",
   ]) {
     assert.ok(wxmlSource.includes(token) || jsSource.includes(token), `habit-library must include prototype copy: ${token}`);
   }
@@ -441,7 +465,7 @@ function assertHabitLibraryPrototypeGuard() {
   assert.ok(/\.template-grid\s*\{[\s\S]*display:\s*flex;[\s\S]*flex-wrap:\s*wrap;/.test(wxssSource), "habit-library must use a two-column wrapping grid");
   assert.ok(/\.library-template-card\s*\{[\s\S]*width:\s*48\.2%;[\s\S]*border-left:\s*8rpx solid #76d6bc;/.test(wxssSource), "habit-library cards must match prototype two-column card proportions and accent border");
   assert.ok(wxssSource.includes("background: #ff9d4d"), "habit-library active category must use prototype orange pill");
-  assert.ok(wxssSource.includes("border: 4rpx dashed #76d6bc"), "habit-library custom CTA must use prototype dashed primary-container border");
+  assert.ok(wxssSource.includes(".library-sticky-tools") && wxssSource.includes(".custom-sticky-entry"), "habit-library search/category/custom entry must be sticky together");
   assert.ok(!wxssSource.includes("gap:"), "habit-library must avoid WXSS gap");
   assert.ok(fontSource.includes("Material Symbols Outlined Local"), "habit-library icons must use the local Material Symbols family");
   assert.ok(
@@ -568,7 +592,7 @@ function assertLoadStartClearsStalePageState() {
     [
       "habit-permission",
       "pages/habit-permission/index.js",
-      /loadMembers\(\)\s*\{[\s\S]*this\.setData\(\{[\s\S]*members:\s*\[\][\s\S]*saving:\s*false[\s\S]*saveClass:\s*"save-action"[\s\S]*inlineSaveClass:\s*"permission-save-inline"/,
+      /loadMembers\(\)\s*\{[\s\S]*this\.setData\(\{[\s\S]*members:\s*\[\][\s\S]*saving:\s*false[\s\S]*saveClass:\s*"save-action"/,
       "habit-permission loadMembers must clear stale member and save state before fetching",
     ],
     [
@@ -617,10 +641,6 @@ function assertP0VisualPrototypeGuard() {
   assert.ok(todayWxml.includes('class="material-symbols-outlined checkin-action-icon"'), "today checked action must render Material check_circle icon from page data");
 
   for (const token of [
-    "arrowBack: \"\\ue5e0\"",
-    "moreHoriz: \"\\ue5d3\"",
-    'class="icon-button material-symbols-outlined">{{icons.arrowBack}}</view>',
-    'class="icon-button material-symbols-outlined">{{icons.moreHoriz}}</view>',
     "record-date-badge",
     "record-weekday",
     "record-day",
@@ -648,28 +668,11 @@ function assertP0VisualPrototypeGuard() {
   assert.ok(!/[>][\ue000-\uf8ff][<]/u.test(recordsWxml), "records page must not hard-code private-use Material Symbol glyphs in WXML");
 
   for (const token of [
-    "arrowBack: \"\\ue5e0\"",
-    "moreHoriz: \"\\ue5d3\"",
-    'class="icon-button material-symbols-outlined">{{icons.arrowBack}}</view>',
-    'class="icon-button material-symbols-outlined">{{icons.moreHoriz}}</view>',
-    "settings-list",
-    "settings-item",
-    "通用设置",
-    "帮助与反馈",
-    "关于我们",
-    "edit: \"\\ue3c9\"",
     "checklist: \"\\ue065\"",
     "libraryBooks: \"\\ue02f\"",
-    "qrCode: \"\\ue00a\"",
     "groupAdd: \"\\uf8eb\"",
-    "settings: \"\\ue8b8\"",
-    "help: \"\\ue887\"",
-    "info: \"\\ue88e\"",
-    "inviteEntryClass",
     "habitManageEntryClass",
     "habitLibraryEntryClass",
-    "familyMembersEntryClass",
-    "familyAddClass",
     "familyCardClass",
     "growthPointsText",
     "growthPointsLabel",
@@ -684,22 +687,19 @@ function assertP0VisualPrototypeGuard() {
       meWxml.includes('class="child-score-label">{{growthPointsLabel}}</view>'),
     "me child card must render the prototype growth-points block with JS-derived text",
   );
-  assert.ok(/\.progress-fill\s*\{[\s\S]*width:\s*75%;/.test(meWxss), "me child growth progress bar must preserve the prototype 75% width");
   assert.ok(!/[>][\ue000-\uf8ff][<]/u.test(meWxml), "me page must not hard-code private-use Material Symbol glyphs in WXML");
   assert.ok(!meWxml.includes("✎") && !meWxml.includes("＋"), "me page must not use text-symbol fallbacks for visible prototype icons");
-  assert.ok(
-    meWxml.includes('class="edit-dot material-symbols-outlined">{{icons.edit}}</view>'),
-    "me profile edit affordance must render the prototype edit Material Symbol from page data",
-  );
-  assert.ok(
-    /class="\{\{familyAddClass\}\}"[\s\S]*class="material-symbols-outlined"\>\{\{icons\.groupAdd\}\}/.test(meWxml),
-    "me family add affordance must render the prototype group_add Material Symbol from page data",
-  );
+  assert.ok(!meWxml.includes("edit-dot") && !meJs.includes("edit:"), "me page must not expose fake avatar edit entry");
+  assert.ok(!meWxml.includes("settings-list") && !meWxml.includes("通用设置"), "me page must not expose unavailable settings entries");
+  assert.ok(!meWxml.includes("家庭邀请码") && !meWxml.includes("成员管理"), "me page family features must converge into family group management");
+  assert.ok(meJs.includes("getCheckinSummary") && meJs.includes("totalCheckinCount"), "me growth points must come from check-in summary totalCheckinCount");
   assert.ok(meWxml.includes('class="{{habitManageEntryClass}}"'), "me habit-manage entry must use JS-derived disabled state");
   assert.ok(meWxml.includes('class="{{habitLibraryEntryClass}}"'), "me habit-library entry must use JS-derived disabled state");
-  assert.ok(meWxml.includes('class="{{familyMembersEntryClass}}"'), "me family-members entry must use JS-derived disabled state");
-  assert.ok(meWxml.includes('class="{{familyAddClass}}"'), "me family add affordance must use JS-derived disabled state");
   assert.ok(meWxml.includes('class="{{familyCardClass}}"'), "me family member card must use JS-derived disabled state");
+  assert.equal((meWxml.match(/家庭组管理/g) || []).length, 1, "me page must expose family group management through a single entry");
+  assert.ok(!meJs.includes("familyMembersEntryClass"), "me page must not keep a duplicate family group bento entry state");
+  assert.ok(!meWxml.includes("child-progress") && !meWxml.includes("progress-fill"), "me child card must not render a static progress percentage bar");
+  assert.ok(!/width:\s*75%/.test(meWxss), "me page must not keep a static 75% progress width");
   assert.ok(
     /habitManageEntryClass:\s*family\s*\?\s*"bento-item"\s*:\s*"bento-item menu-item-disabled"/.test(meJs),
     "me habit-manage entry must be visually disabled without a family",
@@ -709,20 +709,8 @@ function assertP0VisualPrototypeGuard() {
     "me habit-library entry must be visually disabled without a family",
   );
   assert.ok(
-    /familyMembersEntryClass:\s*family\s*\?\s*"bento-item"\s*:\s*"bento-item menu-item-disabled"/.test(meJs),
-    "me family-members entry must be visually disabled without a family",
-  );
-  assert.ok(
-    /familyAddClass:\s*family\s*\?\s*"family-add"\s*:\s*"family-add menu-item-disabled"/.test(meJs),
-    "me family add affordance must be visually disabled without a family",
-  );
-  assert.ok(
     /familyCardClass:\s*family\s*\?\s*"family-members-card card"\s*:\s*"family-members-card card menu-item-disabled"/.test(meJs),
     "me family member card must be visually disabled without a family",
-  );
-  assert.ok(
-    /goFamilyInvite\(\)\s*\{[\s\S]*if\s*\(\s*!this\.data\.hasFamily\s*\)[\s\S]*if\s*\(\s*!this\.data\.isFamilyAdmin\s*\)/.test(meJs),
-    "me invite entry must show no-family guidance before admin permission errors",
   );
   assert.ok(
     /onShow\(\)\s*\{[\s\S]*syncCustomTabBar\(this,\s*2\)[\s\S]*this\.setData\(\{[\s\S]*\.\.\.defaultFamilyState[\s\S]*\}\);[\s\S]*const bootstrap = await getBootstrap\(\)/.test(meJs),
@@ -861,7 +849,6 @@ function assertSecondaryVisualPrototypeGuard() {
   );
   for (const token of [
     "arrowBack: \"\\ue5e0\"",
-    "moreHoriz: \"\\ue5d3\"",
     "edit: \"\\ue3c9\"",
     "groups: \"\\ue7ef\"",
     "chevronRight: \"\\ue5cc\"",
@@ -939,7 +926,6 @@ function assertSecondaryVisualPrototypeGuard() {
     "family: \"\\ue63d\"",
     "key: \"\\ue73c\"",
     "qrCode: \"\\ue00a\"",
-    "share: \"\\ue80d\"",
     "goBack",
   ]) {
     assert.ok(familyInviteJs.includes(token), `family-invite must preserve prototype data/icon token ${token}`);
@@ -954,7 +940,6 @@ function assertSecondaryVisualPrototypeGuard() {
     "refresh-button",
     "qr-card",
     "qr-box",
-    "share-action",
     "invite-footer-hint",
     "refreshActionClass",
   ]) {
@@ -964,6 +949,9 @@ function assertSecondaryVisualPrototypeGuard() {
     );
   }
   assert.ok(familyInviteJs.includes("this.data.refreshing"), "family-invite must prevent repeated invite refresh taps");
+  assert.ok(familyInviteJs.includes("drawInviteQr") && familyInviteWxml.includes('canvas-id="inviteQr"'), "family-invite must render a real local QR canvas");
+  assert.ok(familyInviteJs.includes("inviteCode="), "family-invite QR payload must carry inviteCode");
+  assert.ok(!familyInviteWxml.includes("qr-placeholder") && !familyInviteWxml.includes("share-action"), "family-invite must not keep static QR placeholder or fake share action");
   assert.ok(
     /copyInviteCode\(\)\s*\{[\s\S]*if\s*\(\s*!this\.data\.inviteCode\s*\)[\s\S]*wx\.showToast\(\{ title: "邀请码未生成", icon: "none" \}\)[\s\S]*return;/.test(familyInviteJs),
     "family-invite copy action must show feedback when invite code is missing",
@@ -988,8 +976,8 @@ function assertSecondaryVisualPrototypeGuard() {
   assert.equal(familyMembersConfig.navigationStyle, "custom", "family-members must use custom navigation to match prototype header");
   assert.ok(!Object.hasOwn(familyMembersConfig, "navigationBarTitleText"), "family-members must not render duplicate native title");
   for (const token of [
+    "arrowBack: \"\\ue5e0\"",
     "bubbleChart: \"\\ue6dd\"",
-    "notifications: \"\\ue7f4\"",
     "child: \"\\ue7fd\"",
     "personAdd: \"\\ue7fe\"",
     "roleText",
@@ -1000,7 +988,7 @@ function assertSecondaryVisualPrototypeGuard() {
   }
   for (const token of [
     "top-heading",
-    "top-notification",
+    "top-back",
     "family-hero",
     "family-orbit",
     "child-pill",
@@ -1019,14 +1007,7 @@ function assertSecondaryVisualPrototypeGuard() {
   }
   assert.ok(!familyMembersWxml.includes("<button"), "family-members must not use native button for prototype bottom invite action");
   assert.ok(!/[>][\ue000-\uf8ff][<]/u.test(familyMembersWxml), "family-members must not hard-code private-use Material Symbol glyphs in WXML");
-  assert.ok(
-    familyMembersWxml.includes('class="top-notification material-symbols-outlined">{{icons.notifications}}</view>'),
-    "family-members must render the prototype notifications icon in the top bar",
-  );
-  assert.ok(
-    fontHasCodepoint(join(rootDir, "assets/fonts/material-symbols-outlined-subset.ttf"), 0xe7f4),
-    "family-members notifications icon must be included in the local outlined Material Symbols subset",
-  );
+  assert.ok(familyMembersJs.includes("goBack()") && familyMembersJs.includes("ROUTES.ME"), "family-members must provide fallback back navigation");
   assert.ok(
     /goFamilyInvite\(\)\s*\{[\s\S]*if\s*\(\s*!this\.data\.familyId\s*\)[\s\S]*if\s*\(\s*!this\.data\.isFamilyAdmin\s*\)/.test(familyMembersJs),
     "family-members invite action must show no-family guidance before admin permission errors",
@@ -1036,7 +1017,6 @@ function assertSecondaryVisualPrototypeGuard() {
   assert.ok(!Object.hasOwn(habitManageConfig, "navigationBarTitleText"), "habit-manage must not render duplicate native title");
   for (const token of [
     "arrowBack: \"\\ue5e0\"",
-    "moreHoriz: \"\\ue5d3\"",
     "add: \"\\ue145\"",
     "drag: \"\\ue25d\"",
     "lightbulb: \"\\ue0f0\"",
@@ -1055,9 +1035,11 @@ function assertSecondaryVisualPrototypeGuard() {
   assert.ok(habitManageWxss.includes(".source-badge"), "habit-manage must style the prototype source badge");
   assert.ok(habitManageJs.includes("this.data.updatingHabitId"), "habit-manage must prevent repeated habit status updates");
   assert.ok(
-    /goCustomHabit\(\)\s*\{[\s\S]*if\s*\(\s*!this\.data\.childId\s*\)[\s\S]*if\s*\(\s*!this\.data\.canManageHabits\s*\)/.test(habitManageJs),
-    "habit-manage add action must show no-family guidance before admin permission errors",
+    /goHabitLibrary\(\)\s*\{[\s\S]*if\s*\(\s*!this\.data\.childId\s*\)[\s\S]*if\s*\(\s*!this\.data\.canManageHabits\s*\)/.test(habitManageJs),
+    "habit-manage add action must open library after no-family/admin checks",
   );
+  assert.ok(habitManageWxml.includes("bindtap=\"goHabitLibrary\""), "habit-manage add action must navigate to habit library");
+  assert.ok(habitManageJs.includes("removeChildHabit") && habitManageWxml.includes("scroll-view") && habitManageWxml.includes("deleteHabitTap"), "habit-manage must support swipe-confirm delete");
   assert.ok(
     /goHabitPermission\(event\)\s*\{[\s\S]*if\s*\(\s*!this\.data\.childId\s*\)[\s\S]*if\s*\(\s*!this\.data\.canManageHabits\s*\)/.test(habitManageJs),
     "habit-manage permission action must show no-family guidance before admin permission errors",
@@ -1094,7 +1076,6 @@ function assertSecondaryVisualPrototypeGuard() {
   assert.ok(!Object.hasOwn(habitPermissionConfig, "navigationBarTitleText"), "habit-permission must not render duplicate native title");
   for (const token of [
     "arrowBack: \"\\ue5e0\"",
-    "moreHoriz: \"\\ue5d3\"",
     "verifiedUser: \"\\ue8e8\"",
     "expandMore: \"\\ue5cf\"",
     "parseAllowedMemberIds",
@@ -1116,24 +1097,22 @@ function assertSecondaryVisualPrototypeGuard() {
   );
   for (const token of [
     "permission-top-bar",
-    "habit-edit-section",
-    "habit-name-field",
-    "change-icon-pill",
     "permission-panel",
     "permission-panel-head",
     "option-radio",
     "member-avatar",
     "permission-tip",
-    "permission-save-inline",
-    "保存修改",
-    "删除此习惯",
+    "保存权限",
   ]) {
     assert.ok(
       habitPermissionWxml.includes(token) || habitPermissionWxss.includes(token),
       `habit-permission must preserve edit-habit prototype visual token ${token}`,
     );
   }
+  assert.equal((habitPermissionWxml.match(/保存权限/g) || []).length, 1, "habit-permission must expose a single save action");
+  assert.ok(!habitPermissionJs.includes("inlineSaveClass") && !habitPermissionWxml.includes("permission-save-inline"), "habit-permission must not keep the redundant inline save action");
   assert.ok(!habitPermissionWxml.includes("<button"), "habit-permission must not use native button for prototype visible actions");
+  assert.ok(!habitPermissionWxml.includes("删除此习惯") && !habitPermissionWxml.includes("更换图标") && !habitPermissionWxml.includes("习惯描述"), "habit-permission must not expose fake edit or delete actions");
   assert.ok(!/[>][\ue000-\uf8ff][<]/u.test(habitPermissionWxml), "habit-permission must not hard-code private-use Material Symbol glyphs in WXML");
 }
 
@@ -1165,6 +1144,7 @@ function assertApiConfiguration() {
     "function familyMembers",
     "function childHabits",
     "function childHabitPermissions",
+    "function deleteChildHabit",
     "function todayHabits",
     "function checkinHabit",
     "function checkinHistory",
@@ -1205,12 +1185,12 @@ function assertRoutesAndServices() {
   const checks = [
     ["services/family-service.js", ["getFamilyInvite", "refreshFamilyInvite", "listFamilyMembers", "familyMembers("]],
     ["services/habit-service.js", ["listHabitTemplates", "API_ENDPOINTS.HABIT_TEMPLATES"]],
-    ["services/child-habit-service.js", ["listChildHabits", "addSystemTemplateToChild", "createCustomHabit", "updateChildHabit", "updateChildHabitStatus", "updateChildHabitPermission", "childHabitPermissions("]],
+    ["services/child-habit-service.js", ["listChildHabits", "addSystemTemplateToChild", "createCustomHabit", "updateChildHabit", "updateChildHabitStatus", "removeChildHabit", "updateChildHabitPermission", "childHabitPermissions(", "deleteChildHabit("]],
     ["services/checkin-service.js", ["listTodayHabits", "checkinHabit", "listCheckinHistory", "getCheckinSummary", "todayHabits(", "checkinHabit(", "checkinHistory(", "checkinSummary("]],
     ["pages/today/index.js", ["listTodayHabits", "checkinHabit", "todayHabits", "checkedText", "canCheckin"]],
     ["pages/records/index.js", ["listCheckinHistory", "getCheckinSummary", "historyGroups", "totalCheckinDays", "ROUTES.START", "redirectTo"]],
     ["pages/records/index.wxml", ["historyGroups", "record.recordDateText", "record.recordSubtitleText", "summaryMetricText", "totalCheckinDays"]],
-    ["pages/me/index.js", ["ROUTES.FAMILY_MEMBERS", "ROUTES.FAMILY_INVITE", "goFamilyMembers", "goFamilyInvite", "isFamilyAdmin", "childNickname", "currentUser"]],
+    ["pages/me/index.js", ["ROUTES.FAMILY_MEMBERS", "goFamilyMembers", "isFamilyAdmin", "childNickname", "currentUser", "getCheckinSummary", "totalCheckinCount"]],
     ["pages/me/index.wxml", ["默认孩子", "childNickname"]],
     ["pages/habit-manage/index.js", ["ROUTES.HABIT_PERMISSION", "goHabitPermission", "canManageHabits", "permissionTypeText", "ROUTES.START", "redirectTo"]],
     ["pages/family-members/index.js", ["listFamilyMembers", "getBootstrap", "goFamilyInvite", "memberCount", "isFamilyAdmin"]],
@@ -1240,6 +1220,7 @@ async function assertMockFlow() {
     listChildHabits,
     addSystemTemplateToChild,
     createCustomHabit,
+    removeChildHabit,
     updateChildHabit,
     updateChildHabitStatus,
     updateChildHabitPermission,
@@ -1301,6 +1282,11 @@ async function assertMockFlow() {
   assert.equal(history.length, 1);
   assert.equal(history[0].habitName, "每天主动喝水");
   assert.equal(history[0].iconKey, "water_drop");
+  await removeChildHabit(childId, addedHabit.id);
+  assert.equal((await listChildHabits(childId)).length, 0);
+  assert.equal((await listCheckinHistory(childId)).length, 1);
+  const readdedHabit = await addSystemTemplateToChild(childId, templates[0].id);
+  assert.notEqual(readdedHabit.id, addedHabit.id);
 
   const custom = await createCustomHabit({
     childId,
@@ -1331,6 +1317,7 @@ async function assertMockFlow() {
 assertNoTextFileBom();
 assertAppConfig();
 assertGlobalFixedActionSafeArea();
+assertTopBarBugfixGuard();
 assertTodayEmptyPrototypeGuard();
 assertHabitLibraryPrototypeGuard();
 assertCustomTabBarPrototypeGuard();

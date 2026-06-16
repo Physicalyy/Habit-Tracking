@@ -1,6 +1,6 @@
 .me-page {
   min-height: 100vh;
-  padding: 136rpx 24rpx 210rpx;
+  padding: 0 24rpx 210rpx;
   padding-bottom: calc(210rpx + env(safe-area-inset-bottom));
 }
 
@@ -10,14 +10,15 @@
   right: 0;
   top: 0;
   z-index: 40;
-  height: 112rpx;
-  padding: 48rpx 24rpx 0;
+  padding-left: 24rpx;
+  padding-right: 24rpx;
   background: #f8faf8;
 }
 
-.me-top .icon-button {
-  color: #006b58;
-  font-size: 46rpx;
+.me-top .nav-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .profile-section {
@@ -43,23 +44,6 @@
   border-radius: 999rpx;
   font-size: 44rpx;
   font-weight: 700;
-}
-
-.edit-dot {
-  position: absolute;
-  right: -4rpx;
-  bottom: -4rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36rpx;
-  height: 36rpx;
-  color: #ffffff;
-  background: #006b58;
-  border: 4rpx solid #ffffff;
-  border-radius: 999rpx;
-  font-size: 20rpx;
-  line-height: 1;
 }
 
 .profile-name {
@@ -158,31 +142,6 @@
   line-height: 32rpx;
 }
 
-.child-progress {
-  margin-top: 24rpx;
-}
-
-.progress-track {
-  height: 16rpx;
-  overflow: hidden;
-  background: #e4e9e6;
-  border-radius: 999rpx;
-}
-
-.progress-fill {
-  width: 75%;
-  height: 16rpx;
-  background: #006b58;
-  border-radius: 999rpx;
-}
-
-.child-tip {
-  margin-top: 12rpx;
-  color: #6e7a75;
-  font-size: 24rpx;
-  line-height: 34rpx;
-}
-
 .family-section {
   margin-top: 32rpx;
 }
@@ -206,21 +165,6 @@
   font-size: 24rpx;
   font-weight: 700;
   line-height: 34rpx;
-}
-
-.family-add {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48rpx;
-  height: 48rpx;
-  color: #006b58;
-  line-height: 48rpx;
-}
-
-.family-add text {
-  font-size: 40rpx;
-  line-height: 1;
 }
 
 .family-members-card {
@@ -337,44 +281,4 @@
 .menu-item-disabled {
   color: #9aa49f;
   opacity: 0.55;
-}
-
-.settings-list {
-  margin-top: 28rpx;
-  overflow: hidden;
-  background: #ffffff;
-  border-radius: 24rpx;
-  box-shadow: 0 8rpx 30rpx rgba(0, 107, 88, 0.05);
-}
-
-.settings-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 96rpx;
-  padding: 0 28rpx;
-  color: #191c1b;
-  border-bottom: 2rpx solid #eef1ef;
-  font-size: 26rpx;
-  font-weight: 600;
-}
-
-.settings-item:last-child {
-  border-bottom: 0;
-}
-
-.settings-left {
-  display: flex;
-  align-items: center;
-}
-
-.settings-icon {
-  margin-right: 18rpx;
-  color: #3e4945;
-  font-size: 34rpx;
-}
-
-.settings-chevron {
-  color: #a9b4af;
-  font-size: 36rpx;
 }

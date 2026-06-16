@@ -5,6 +5,7 @@ const {
   listTodayHabits,
 } = require("../../services/checkin-service.js");
 const { normalizeAssetPath } = require("../../utils/asset-path.js");
+const { buildNavState } = require("../../utils/navigation-bar.js");
 const { syncCustomTabBar } = require("../../utils/tab-bar.js");
 
 Page({
@@ -19,14 +20,14 @@ Page({
     completedCount: 0,
     progressPercent: 0,
     progressText: "0%",
+    progressRingStyle: "",
     progressHint: "先配置一个习惯，开始今天的成长记录",
     checkingHabitId: "",
     icons: {
-      arrowBack: "\ue5e0",
-      moreHoriz: "\ue5d3",
       addCircle: "\ue147",
     },
     errorText: "",
+    ...buildNavState({ title: "今日打卡" }),
   },
 
   async onShow() {
@@ -47,6 +48,7 @@ Page({
       completedCount: 0,
       progressPercent: 0,
       progressText: "0%",
+      progressRingStyle: buildProgressRingStyle(0),
       progressHint: "先配置一个习惯，开始今天的成长记录",
       checkingHabitId: "",
     });
@@ -75,10 +77,12 @@ Page({
       const completedCount = habitCards.filter((item) => item.checked).length;
       const progressPercent = habitCards.length > 0 ? Math.round((completedCount / habitCards.length) * 100) : 0;
       this.setData({
+        navTitle: `${bootstrap.defaultChild.nickname}今日打卡`,
         currentDateText: formatTodayText(),
         completedCount,
         progressPercent,
         progressText: `${progressPercent}%`,
+        progressRingStyle: buildProgressRingStyle(progressPercent),
         progressHint: buildProgressHint(habitCards.length, completedCount),
         todayHabits: habitCards,
         hasNoHabits: habitCards.length === 0,
@@ -179,4 +183,9 @@ function buildProgressHint(total, completed) {
     return "今天的习惯都完成了，继续保持";
   }
   return `再完成${remaining}个习惯就能完成今日打卡`;
+}
+
+function buildProgressRingStyle(progressPercent) {
+  const percent = Math.max(0, Math.min(100, Number(progressPercent || 0)));
+  return `background: radial-gradient(circle, #ffffff 0 57%, transparent 58%), conic-gradient(#006b58 0%, #006b58 ${percent}%, #f2f4f2 ${percent}%, #f2f4f2 100%);`;
 }

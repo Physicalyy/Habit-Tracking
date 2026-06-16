@@ -67,6 +67,13 @@ function childHabit(childId, childHabitId) {
   });
 }
 
+function deleteChildHabit(childId, childHabitId) {
+  return Object.freeze({
+    method: "DELETE",
+    path: `/api/children/${childId}/habits/${childHabitId}`,
+  });
+}
+
 function childHabitStatus(childId, childHabitId) {
   return Object.freeze({
     method: "PATCH",
@@ -117,6 +124,7 @@ module.exports = {
   childHabits,
   addChildHabit,
   childHabit,
+  deleteChildHabit,
   childHabitStatus,
   childHabitPermissions,
   todayHabits,

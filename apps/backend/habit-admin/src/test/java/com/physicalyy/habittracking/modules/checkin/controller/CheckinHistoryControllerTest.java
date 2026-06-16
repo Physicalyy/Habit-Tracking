@@ -43,7 +43,7 @@ class CheckinHistoryControllerTest {
                         .header("X-Test-Nickname", "Owner"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(1))
-                .andExpect(jsonPath("$.data[0].childHabitId").value(childHabitId))
+                .andExpect(jsonPath("$.data[0].childHabitId").value(String.valueOf(childHabitId)))
                 .andExpect(jsonPath("$.data[0].habitName").value("主动喝水"))
                 .andExpect(jsonPath("$.data[0].iconKey").value("water_drop"))
                 .andExpect(jsonPath("$.data[0].checkinDate").isString());
@@ -54,7 +54,7 @@ class CheckinHistoryControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.totalCheckinCount").value(1))
                 .andExpect(jsonPath("$.data.totalCheckinDays").value(1))
-                .andExpect(jsonPath("$.data.childId").value(childId));
+                .andExpect(jsonPath("$.data.childId").value(String.valueOf(childId)));
     }
 
     @Test

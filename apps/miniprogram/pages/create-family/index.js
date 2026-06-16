@@ -1,5 +1,6 @@
 const { ROUTES } = require("../../core/routes.js");
 const { createFamily } = require("../../services/family-service.js");
+const { buildNavState, goBackWithFallback } = require("../../utils/navigation-bar.js");
 
 Page({
   data: {
@@ -17,10 +18,11 @@ Page({
       groupAdd: "\ue7fe",
       verified: "\ue8e8",
     },
+    ...buildNavState({ title: "创建家庭", showBack: true }),
   },
 
   goBack() {
-    wx.navigateBack({ delta: 1 });
+    goBackWithFallback(ROUTES.START);
   },
 
   onFamilyNameInput(event) {

@@ -3,10 +3,7 @@
 }
 
 .permission-top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 64rpx;
+  display: block;
 }
 
 .top-icon-button {
@@ -27,71 +24,8 @@
   line-height: 42rpx;
 }
 
-.habit-edit-section {
-  margin-top: 30rpx;
-}
-
-.field-label {
-  margin-bottom: 12rpx;
-  color: #3e4945;
-  font-size: 24rpx;
-  font-weight: 600;
-  line-height: 34rpx;
-}
-
-.habit-name-field,
-.description-field {
-  width: 100%;
-  color: #191c1b;
-  background: #f2f4f2;
-  border-radius: 16rpx;
-  font-size: 28rpx;
-  line-height: 40rpx;
-}
-
-.habit-name-field {
-  min-height: 88rpx;
-  padding: 24rpx;
-}
-
-.description-field {
-  min-height: 144rpx;
-  padding: 24rpx;
-  color: #7a8580;
-}
-
-.icon-row {
-  display: flex;
-  align-items: center;
-  margin: 24rpx 0 28rpx;
-}
-
-.habit-icon-shell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 104rpx;
-  height: 104rpx;
-  color: #745c00;
-  background: #fcd664;
-  border-radius: 999rpx;
-  font-size: 46rpx;
-  line-height: 1;
-}
-
-.change-icon-pill {
-  margin-left: 24rpx;
-  padding: 10rpx 28rpx;
-  color: #006b58;
-  border: 2rpx solid #006b58;
-  border-radius: 999rpx;
-  font-size: 24rpx;
-  font-weight: 700;
-  line-height: 34rpx;
-}
-
 .permission-panel {
-  margin-top: 28rpx;
+  margin-top: 30rpx;
   padding: 22rpx;
   background: #f2f4f2;
   border-radius: 24rpx;
@@ -225,7 +159,6 @@
   line-height: 34rpx;
 }
 
-.permission-save-inline,
 .save-action {
   display: flex;
   align-items: center;
@@ -239,22 +172,9 @@
   font-weight: 700;
 }
 
-.permission-save-inline {
-  margin-top: 24rpx;
-}
-
 .save-action {
   height: 88rpx;
   font-size: 30rpx;
-}
-
-.delete-action {
-  margin-top: 22rpx;
-  color: #ba1a1a;
-  font-size: 24rpx;
-  font-weight: 600;
-  line-height: 34rpx;
-  text-align: center;
 }
 
 .action-disabled {

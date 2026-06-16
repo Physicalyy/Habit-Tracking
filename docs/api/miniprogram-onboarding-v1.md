@@ -12,6 +12,17 @@
 }
 ```
 
+## ID Field Format
+
+All backend `Long` identifier fields are JSON strings in responses, including
+`id`, `familyId`, `childId`, `childHabitId`, `checkinId`, `memberId`, `userId`,
+`createdByMemberId`, `checkedByMemberId`, and `allowedMemberIds`.
+
+The miniprogram must keep these values as strings when building API paths or
+request bodies. Do not coerce them with `Number(...)`; Snowflake IDs can exceed
+JavaScript's safe integer range. Count fields such as `totalCheckinCount` and
+`totalCheckinDays` remain JSON numbers.
+
 ## POST /api/auth/wechat-login
 
 用途：用微信登录 code 换取应用登录态。
@@ -183,6 +194,10 @@ Response `data`:
 
 用途：通过 6 位邀请码加入家庭。
 
+加入页支持 URL 参数 `inviteCode` 预填，例如：
+`/pages/join-family/index?inviteCode=123456`。扫码内容可以是 6 位数字，
+也可以是包含该参数的小程序路径。
+
 请求：
 
 ```json
@@ -271,7 +286,7 @@ Response `data`:
     "ageMin": 3,
     "ageMax": 12,
     "iconKey": "water_drop",
-    "imageUrl": "",
+    "imageUrl": "/assets/habits/drink-water.png",
     "sourceType": "SYSTEM",
     "status": "active"
   }
@@ -300,7 +315,7 @@ Response `data`:
     "name": "主动喝水",
     "description": "白天主动喝水，保持身体水分充足。",
     "iconKey": "water_drop",
-    "imageUrl": "",
+    "imageUrl": "/assets/habits/drink-water.png",
     "permissionType": "ALL_PARENTS",
     "createdByMemberId": 4001,
     "status": "active",
@@ -339,7 +354,7 @@ Response `data`:
     "name": "Drink Water",
     "description": "Drink water during the day.",
     "iconKey": "water_drop",
-    "imageUrl": "",
+    "imageUrl": "/assets/habits/drink-water.png",
     "permissionType": "ALL_PARENTS",
     "canCheckin": true,
     "checked": false,
@@ -375,7 +390,7 @@ Response `data`:
     "habitName": "主动喝水",
     "description": "白天主动喝水，保持身体水分充足。",
     "iconKey": "water_drop",
-    "imageUrl": "",
+    "imageUrl": "/assets/habits/drink-water.png",
     "checkinDate": "2026-06-13",
     "checkedTime": "2026-06-13T12:00:00",
     "checkedByMemberId": 4001,
@@ -386,7 +401,9 @@ Response `data`:
 
 ## GET /api/children/{childId}/checkins/summary
 
-Purpose: return V1 basic summary for the records page.
+Purpose: return V1 basic summary for the records page and profile growth
+points. The miniprogram uses `totalCheckinCount` as growth points, with
+1 check-in = 1 point.
 
 Response `data`:
 
@@ -397,6 +414,15 @@ Response `data`:
   "totalCheckinDays": 5
 }
 ```
+
+## DELETE /api/children/{childId}/habits/{childHabitId}
+
+Purpose: soft-delete a configured child habit. The habit no longer appears in
+management or today's check-in list, historical check-in records remain
+visible, permission relations are cleared, and the same system template can be
+added again later.
+
+Response `data`: `null`.
 
 ## PATCH /api/children/{childId}/habits/{childHabitId}
 
@@ -409,7 +435,7 @@ Request:
   "name": "每天主动喝水",
   "description": "早中晚提醒喝水",
   "iconKey": "water_drop",
-  "imageUrl": ""
+  "imageUrl": "/assets/habits/drink-water.png"
 }
 ```
 
@@ -444,7 +470,7 @@ Request:
   "description": "每天十分钟",
   "category": "CUSTOM",
   "iconKey": "piano",
-  "imageUrl": ""
+  "imageUrl": "/assets/habits/drink-water.png"
 }
 ```
 
@@ -459,7 +485,7 @@ Response `data`:
     "category": "CUSTOM",
     "description": "每天十分钟",
     "iconKey": "piano",
-    "imageUrl": "",
+    "imageUrl": "/assets/habits/drink-water.png",
     "sourceType": "CUSTOM",
     "familyId": 2001,
     "createdByMemberId": 4001,
@@ -473,7 +499,7 @@ Response `data`:
     "name": "练习钢琴",
     "description": "每天十分钟",
     "iconKey": "piano",
-    "imageUrl": "",
+    "imageUrl": "/assets/habits/drink-water.png",
     "permissionType": "ALL_PARENTS",
     "createdByMemberId": 4001,
     "status": "active",

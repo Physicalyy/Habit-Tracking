@@ -1,14 +1,13 @@
-<view class="page me-page">
-  <view class="top-bar me-top">
-    <view class="icon-button material-symbols-outlined">{{icons.arrowBack}}</view>
-    <view class="top-title">我的</view>
-    <view class="icon-button material-symbols-outlined">{{icons.moreHoriz}}</view>
+<view class="page me-page" style="{{pageTopStyle}}">
+  <view class="top-bar me-top" style="{{navBarStyle}}">
+    <view class="nav-content" style="{{navContentStyle}}">
+      <view class="top-title" style="{{navTitleStyle}}">{{navTitle}}</view>
+    </view>
   </view>
 
   <view class="profile-section">
     <view class="avatar-wrap">
       <view class="avatar">{{avatarText}}</view>
-      <view class="edit-dot material-symbols-outlined">{{icons.edit}}</view>
     </view>
     <view class="profile-info">
       <view class="profile-name">{{nickname}}</view>
@@ -30,12 +29,6 @@
         <view class="child-score-label">{{growthPointsLabel}}</view>
       </view>
     </view>
-    <view class="child-progress">
-      <view class="progress-track">
-        <view class="progress-fill"></view>
-      </view>
-      <view class="child-tip">距离下一个成长徽章还差一点点</view>
-    </view>
   </view>
 
   <view class="family-section">
@@ -44,14 +37,11 @@
         <view class="family-title">家庭成员 - {{familyName}}</view>
         <view class="family-role">我的角色：{{roleText}}</view>
       </view>
-      <view class="{{familyAddClass}}" bindtap="goFamilyMembers">
-        <text class="material-symbols-outlined">{{icons.groupAdd}}</text>
-      </view>
     </view>
     <view class="{{familyCardClass}}" bindtap="goFamilyMembers">
       <view class="member-bubble admin">{{avatarText}}</view>
       <view class="member-copy">
-        <view class="member-title">家庭成员</view>
+        <view class="member-title">家庭组管理</view>
         <view class="member-desc">{{familyMemberText}}</view>
       </view>
       <text class="material-symbols-outlined member-chevron">{{icons.chevronRight}}</text>
@@ -66,38 +56,6 @@
     <view class="{{habitLibraryEntryClass}}" bindtap="goHabitLibrary">
       <view class="bento-icon tertiary"><text class="material-symbols-outlined">{{icons.libraryBooks}}</text></view>
       <view class="bento-text">习惯库</view>
-    </view>
-    <view class="{{inviteEntryClass}}" bindtap="goFamilyInvite">
-      <view class="bento-icon secondary"><text class="material-symbols-outlined">{{icons.qrCode}}</text></view>
-      <view class="bento-text">家庭邀请码</view>
-    </view>
-    <view class="{{familyMembersEntryClass}}" bindtap="goFamilyMembers">
-      <view class="bento-icon neutral"><text class="material-symbols-outlined">{{icons.groupAdd}}</text></view>
-      <view class="bento-text">成员管理</view>
-    </view>
-  </view>
-
-  <view class="settings-list">
-    <view class="settings-item">
-      <view class="settings-left">
-        <text class="material-symbols-outlined settings-icon">{{icons.settings}}</text>
-        <text>通用设置</text>
-      </view>
-      <text class="material-symbols-outlined settings-chevron">{{icons.chevronRight}}</text>
-    </view>
-    <view class="settings-item">
-      <view class="settings-left">
-        <text class="material-symbols-outlined settings-icon">{{icons.help}}</text>
-        <text>帮助与反馈</text>
-      </view>
-      <text class="material-symbols-outlined settings-chevron">{{icons.chevronRight}}</text>
-    </view>
-    <view class="settings-item">
-      <view class="settings-left">
-        <text class="material-symbols-outlined settings-icon">{{icons.info}}</text>
-        <text>关于我们</text>
-      </view>
-      <text class="material-symbols-outlined settings-chevron">{{icons.chevronRight}}</text>
     </view>
   </view>
 </view>

@@ -1,8 +1,8 @@
-<view class="page today-page">
-  <view class="top-bar today-top">
-    <view class="icon-button material-symbols-outlined">{{icons.arrowBack}}</view>
-    <view class="top-title">{{childNickname}}今日打卡</view>
-    <view class="icon-button material-symbols-outlined">{{icons.moreHoriz}}</view>
+<view class="page today-page" style="{{pageTopStyle}}">
+  <view class="top-bar today-top" style="{{navBarStyle}}">
+    <view class="nav-content" style="{{navContentStyle}}">
+      <view class="top-title" style="{{navTitleStyle}}">{{navTitle}}</view>
+    </view>
   </view>
 
   <view wx:if="{{loading}}" class="muted-text today-state">加载中...</view>
@@ -34,7 +34,7 @@
     </view>
 
     <view class="progress-card card">
-      <view class="progress-ring">
+      <view class="progress-ring" style="{{progressRingStyle}}">
         <view class="progress-percent">{{progressText}}</view>
         <view class="progress-label">进度</view>
       </view>

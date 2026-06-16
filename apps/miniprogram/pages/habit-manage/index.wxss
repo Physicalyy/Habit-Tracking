@@ -3,10 +3,7 @@
 }
 
 .manage-top-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 64rpx;
+  display: block;
 }
 
 .top-icon-button {
@@ -82,15 +79,43 @@
   margin-top: 32rpx;
 }
 
+.habit-swipe-scroll {
+  width: 100%;
+  height: 156rpx;
+  margin-bottom: 24rpx;
+}
+
+.habit-swipe-content {
+  display: flex;
+  width: 100%;
+  height: 156rpx;
+}
+
 .habit-card {
   display: flex;
+  flex: none;
   align-items: center;
-  margin-bottom: 24rpx;
+  width: 100%;
+  min-height: 156rpx;
   padding: 26rpx;
   background: #ffffff;
   border-left: 8rpx solid #76d6bc;
   border-radius: 20rpx;
   box-shadow: 0 8rpx 30rpx rgba(0, 107, 88, 0.05);
+}
+
+.delete-swipe-action {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 152rpx;
+  height: 156rpx;
+  color: #ffffff;
+  background: #ba1a1a;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+  font-weight: 800;
 }
 
 .habit-card.disabled {

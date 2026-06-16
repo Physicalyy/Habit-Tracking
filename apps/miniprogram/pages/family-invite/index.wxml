@@ -1,8 +1,10 @@
-<view class="page family-invite-page">
-  <view class="top-bar">
-    <view class="icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
-    <view class="top-title">邀请家长加入</view>
-    <view class="icon-button"></view>
+<view class="page family-invite-page" style="{{pageTopStyle}}">
+  <view class="top-bar page-nav" style="{{navBarStyle}}">
+    <view class="nav-content" style="{{navContentStyle}}">
+      <view wx:if="{{showNavBack}}" class="icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
+      <view class="top-title" style="{{navTitleStyle}}">{{navTitle}}</view>
+      <view class="icon-button"></view>
+    </view>
   </view>
 
   <view wx:if="{{loading}}" class="muted-text invite-state">加载中...</view>
@@ -47,13 +49,9 @@
         <text>面对面扫码</text>
       </view>
       <view class="qr-box">
-        <view class="qr-placeholder">{{inviteCode}}</view>
+        <canvas class="qr-canvas" canvas-id="inviteQr"></canvas>
       </view>
       <view class="muted-text qr-copy">扫码加入家庭</view>
-      <view class="share-action">
-        <text class="material-symbols-outlined action-icon">{{icons.share}}</text>
-        <text>分享邀请</text>
-      </view>
     </view>
 
     <view class="invite-footer-hint">

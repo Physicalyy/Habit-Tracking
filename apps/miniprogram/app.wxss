@@ -115,10 +115,34 @@ button {
   height: 64rpx;
 }
 
+.page-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 40;
+  padding-left: 24rpx;
+  padding-right: 24rpx;
+  background: #f8faf8;
+}
+
+.nav-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .top-title {
+  flex: 1;
+  min-width: 0;
   color: #006b58;
   font-size: 32rpx;
   font-weight: 700;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .icon-button {

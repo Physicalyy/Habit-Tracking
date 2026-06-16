@@ -106,7 +106,7 @@ class FamilyControllerTest {
                                 """.formatted(inviteCode)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.family.id").value(familyId))
+                .andExpect(jsonPath("$.data.family.id").value(String.valueOf(familyId)))
                 .andExpect(jsonPath("$.data.family.name").value("星星之家"))
                 .andExpect(jsonPath("$.data.family.admin").value(false))
                 .andExpect(jsonPath("$.data.child.nickname").value("星星"))
@@ -120,7 +120,7 @@ class FamilyControllerTest {
                         .header("X-Test-Nickname", "外婆"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.needOnboarding").value(false))
-                .andExpect(jsonPath("$.data.defaultFamily.id").value(familyId))
+                .andExpect(jsonPath("$.data.defaultFamily.id").value(String.valueOf(familyId)))
                 .andExpect(jsonPath("$.data.defaultFamily.admin").value(false))
                 .andExpect(jsonPath("$.data.defaultChild.nickname").value("星星"));
     }
@@ -202,7 +202,7 @@ class FamilyControllerTest {
                                 }
                                 """.formatted(newCode)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.family.id").value(familyId))
+                .andExpect(jsonPath("$.data.family.id").value(String.valueOf(familyId)))
                 .andExpect(jsonPath("$.data.family.admin").value(false));
     }
 
@@ -229,7 +229,7 @@ class FamilyControllerTest {
                         .header("X-Test-Nickname", "Owner Parent"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(2))
-                .andExpect(jsonPath("$.data[0].familyId").value(familyId))
+                .andExpect(jsonPath("$.data[0].familyId").value(String.valueOf(familyId)))
                 .andExpect(jsonPath("$.data[*].admin").value(org.hamcrest.Matchers.hasItem(true)))
                 .andExpect(jsonPath("$.data[*].admin").value(org.hamcrest.Matchers.hasItem(false)))
                 .andExpect(jsonPath("$.data[*].displayName").value(org.hamcrest.Matchers.hasItem("Member Parent")));

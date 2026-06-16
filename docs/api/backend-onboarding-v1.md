@@ -16,6 +16,18 @@ All public API responses use the same envelope:
 }
 ```
 
+## ID Field Format
+
+All database-backed `Long` identifier fields in API responses are serialized as
+JSON strings. This includes fields such as `id`, `familyId`, `childId`,
+`childHabitId`, `checkinId`, `memberId`, `userId`, `createdByMemberId`,
+`checkedByMemberId`, and `allowedMemberIds`.
+
+Reason: MyBatis-Plus Snowflake IDs can exceed JavaScript's safe integer range,
+and the WeChat miniprogram runtime would otherwise lose precision before using
+the ID in a later request path. Count fields such as `totalCheckinCount` and
+`totalCheckinDays` remain JSON numbers.
+
 Error responses keep the same shape:
 
 ```json
@@ -378,7 +390,7 @@ Lists enabled habit templates for the V1 miniprogram habit library.
       "ageMin": 3,
       "ageMax": 12,
       "iconKey": "water_drop",
-      "imageUrl": "",
+      "imageUrl": "/assets/habits/drink-water.png",
       "sourceType": "SYSTEM",
       "status": "active"
     }
@@ -430,7 +442,7 @@ Request:
   "name": "每天主动喝水",
   "description": "早中晚提醒喝水",
   "iconKey": "water_drop",
-  "imageUrl": ""
+  "imageUrl": "/assets/habits/drink-water.png"
 }
 ```
 
@@ -504,7 +516,7 @@ Request:
   "description": "Practice for ten minutes.",
   "category": "LEARNING",
   "iconKey": "piano",
-  "imageUrl": ""
+  "imageUrl": "/assets/habits/drink-water.png"
 }
 ```
 
@@ -514,6 +526,31 @@ Behavior:
   member, generated slug, and `status=active`.
 - Creates the linked child habit snapshot in the same transaction.
 - Sets child-habit `permissionType=ALL_PARENTS` and `status=active`.
+
+### Delete Child Habit
+
+`DELETE /api/children/{childId}/habits/{childHabitId}`
+
+Only the family admin can delete a configured child habit.
+
+Behavior:
+
+- Soft-deletes `habit_child_config`; historical check-in records stay intact.
+- Clears `habit_child_allowed_member` rows for this child habit.
+- Excludes the deleted habit from management and today's check-in lists.
+- Releases the active child/template uniqueness slot, so the same system
+  template can be added to the child again.
+
+Success response:
+
+```json
+{
+  "success": true,
+  "code": "OK",
+  "message": "ok",
+  "data": null
+}
+```
 
 ### Child Habit Response Shape
 
@@ -530,7 +567,7 @@ Behavior:
     "name": "主动喝水",
     "description": "白天主动喝水，保持身体水分充足。",
     "iconKey": "water_drop",
-    "imageUrl": "",
+    "imageUrl": "/assets/habits/drink-water.png",
     "permissionType": "ALL_PARENTS",
     "createdByMemberId": 4001,
     "status": "active",
@@ -572,7 +609,7 @@ Response `data`:
     "name": "Drink Water",
     "description": "Drink water during the day.",
     "iconKey": "water_drop",
-    "imageUrl": "",
+    "imageUrl": "/assets/habits/drink-water.png",
     "permissionType": "ALL_PARENTS",
     "canCheckin": true,
     "checked": false,
@@ -627,7 +664,7 @@ Response `data`:
     "habitName": "Drink Water",
     "description": "Drink water during the day.",
     "iconKey": "water_drop",
-    "imageUrl": "",
+    "imageUrl": "/assets/habits/drink-water.png",
     "checkinDate": "2026-06-13",
     "checkedTime": "2026-06-13T12:00:00",
     "checkedByMemberId": 4001,
@@ -640,7 +677,8 @@ Response `data`:
 
 `GET /api/children/{childId}/checkins/summary`
 
-Returns V1 basic summary fields for the child.
+Returns V1 basic summary fields for the child. The miniprogram profile page
+uses `totalCheckinCount` as growth points, with 1 check-in = 1 point.
 
 Response `data`:
 

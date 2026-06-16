@@ -1,8 +1,10 @@
-<view class="page habit-manage-page">
-  <view class="manage-top-bar">
-    <view class="top-icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
-    <view class="top-title">习惯管理</view>
-    <view class="top-icon-button material-symbols-outlined">{{icons.moreHoriz}}</view>
+<view class="page habit-manage-page" style="{{pageTopStyle}}">
+  <view class="manage-top-bar page-nav" style="{{navBarStyle}}">
+    <view class="nav-content" style="{{navContentStyle}}">
+      <view wx:if="{{showNavBack}}" class="top-icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
+      <view class="top-title" style="{{navTitleStyle}}">{{navTitle}}</view>
+      <view class="top-icon-button"></view>
+    </view>
   </view>
 
   <view class="manage-header">
@@ -10,7 +12,7 @@
       <view class="manage-title">习惯管理</view>
       <view class="page-subtitle">长按拖动可调整展示顺序</view>
     </view>
-    <view class="{{addActionClass}}" bindtap="goCustomHabit">
+    <view class="{{addActionClass}}" bindtap="goHabitLibrary">
       <text class="material-symbols-outlined add-icon">{{icons.add}}</text>
       <text>添加习惯</text>
     </view>
@@ -28,41 +30,52 @@
   </view>
 
   <view wx:else class="habit-list">
-    <view wx:for="{{habits}}" wx:key="id" class="habit-card {{item.activeClass}}">
-      <view class="drag-handle material-symbols-outlined">{{icons.drag}}</view>
-      <view class="habit-icon">
-        <image wx:if="{{item.imageUrl}}" class="habit-image" mode="aspectFill" src="{{item.imageUrl}}" />
-        <text wx:else>{{item.fallbackIcon}}</text>
-      </view>
-      <view class="habit-main">
-        <view class="habit-title-row">
-          <view class="habit-name">{{item.name}}</view>
-          <view wx:if="{{item.showSourceBadge}}" class="{{item.sourceBadgeClass}}">{{item.sourceBadgeText}}</view>
+    <scroll-view wx:for="{{habits}}" wx:key="id" class="habit-swipe-scroll" scroll-x="true" enhanced="true" show-scrollbar="false">
+      <view class="habit-swipe-content">
+        <view class="habit-card {{item.activeClass}}">
+          <view class="drag-handle material-symbols-outlined">{{icons.drag}}</view>
+          <view class="habit-icon">
+            <image wx:if="{{item.imageUrl}}" class="habit-image" mode="aspectFill" src="{{item.imageUrl}}" />
+            <text wx:else>{{item.fallbackIcon}}</text>
+          </view>
+          <view class="habit-main">
+            <view class="habit-title-row">
+              <view class="habit-name">{{item.name}}</view>
+              <view wx:if="{{item.showSourceBadge}}" class="{{item.sourceBadgeClass}}">{{item.sourceBadgeText}}</view>
+            </view>
+            <view class="habit-status">{{item.permissionTypeText}}可打卡</view>
+            <view
+              class="{{item.permissionActionClass}}"
+              data-habit-id="{{item.id}}"
+              data-habit-name="{{item.name}}"
+              data-permission-type="{{item.permissionType}}"
+              data-allowed-member-ids="{{item.allowedMemberIdsText}}"
+              bindtap="goHabitPermission"
+            >
+              权限设置
+            </view>
+          </view>
+          <view class="habit-actions">
+            <view
+              class="{{item.toggleSwitchClass}}"
+              data-habit-id="{{item.id}}"
+              data-next-status="{{item.nextStatus}}"
+              bindtap="toggleHabitStatus"
+            >
+              <view class="toggle-dot"></view>
+            </view>
+            <view class="toggle-text">{{item.statusText}}</view>
+          </view>
         </view>
-        <view class="habit-status">{{item.permissionTypeText}}可打卡</view>
         <view
-          class="{{item.permissionActionClass}}"
+          class="{{item.deleteActionClass}}"
           data-habit-id="{{item.id}}"
-          data-habit-name="{{item.name}}"
-          data-permission-type="{{item.permissionType}}"
-          data-allowed-member-ids="{{item.allowedMemberIdsText}}"
-          bindtap="goHabitPermission"
+          bindtap="deleteHabitTap"
         >
-          权限设置
+          删除
         </view>
       </view>
-      <view class="habit-actions">
-        <view
-          class="{{item.toggleSwitchClass}}"
-          data-habit-id="{{item.id}}"
-          data-next-status="{{item.nextStatus}}"
-          bindtap="toggleHabitStatus"
-        >
-          <view class="toggle-dot"></view>
-        </view>
-        <view class="toggle-text">{{item.statusText}}</view>
-      </view>
-    </view>
+    </scroll-view>
 
     <view class="tip-card">
       <text class="material-symbols-outlined tip-icon">{{icons.lightbulb}}</text>

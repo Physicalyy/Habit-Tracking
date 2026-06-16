@@ -4,6 +4,7 @@ const {
   getCheckinSummary,
   listCheckinHistory,
 } = require("../../services/checkin-service.js");
+const { buildNavState } = require("../../utils/navigation-bar.js");
 const { syncCustomTabBar } = require("../../utils/tab-bar.js");
 
 Page({
@@ -18,14 +19,13 @@ Page({
     historyGroups: [],
     hasNoRecords: false,
     icons: {
-      arrowBack: "\ue5e0",
-      moreHoriz: "\ue5d3",
       historyEdu: "\uea3e",
       eco: "\uea35",
       checkCircle: "\ue86c",
       chevronRight: "\ue5cc",
     },
     errorText: "",
+    ...buildNavState({ title: "打卡记录" }),
   },
 
   async onShow() {
@@ -58,6 +58,7 @@ Page({
       const records = await listCheckinHistory(childId);
       const historyGroups = groupByDate(records);
       this.setData({
+        navTitle: `${bootstrap.defaultChild.nickname}的打卡记录`,
         familyName: bootstrap.defaultFamily ? bootstrap.defaultFamily.name : "",
         childNickname: bootstrap.defaultChild.nickname,
         childId,

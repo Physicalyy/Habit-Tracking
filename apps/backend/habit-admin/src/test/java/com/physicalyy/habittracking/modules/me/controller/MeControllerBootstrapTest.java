@@ -69,10 +69,15 @@ class MeControllerBootstrapTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.needOnboarding").value(false))
+                .andExpect(jsonPath("$.data.currentUser.id").isString())
+                .andExpect(jsonPath("$.data.defaultFamily.id").isString())
                 .andExpect(jsonPath("$.data.defaultFamily.name").value("小宝的家庭"))
                 .andExpect(jsonPath("$.data.defaultFamily.admin").value(true))
+                .andExpect(jsonPath("$.data.defaultChild.id").isString())
+                .andExpect(jsonPath("$.data.defaultChild.familyId").isString())
                 .andExpect(jsonPath("$.data.defaultChild.nickname").value("小宝"))
                 .andExpect(jsonPath("$.data.families[0].name").value("小宝的家庭"))
+                .andExpect(jsonPath("$.data.families[0].id").isString())
                 .andExpect(jsonPath("$.data.families[0].admin").value(true));
     }
 }

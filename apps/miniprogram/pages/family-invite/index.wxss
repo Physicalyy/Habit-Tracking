@@ -166,50 +166,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 320rpx;
-  height: 320rpx;
+  width: 360rpx;
+  height: 360rpx;
   margin: 28rpx auto 18rpx;
-  background: #2b5a52;
+  background: #ffffff;
   border: 2rpx solid #bdc9c4;
   border-radius: 16rpx;
 }
 
-.qr-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 140rpx;
-  height: 140rpx;
-  color: #006b58;
-  background: #ffffff;
-  border-radius: 10rpx;
-  font-size: 22rpx;
-  font-weight: 800;
-  letter-spacing: 2rpx;
-}
-
-.qr-copy {
-  text-align: center;
-}
-
-.share-action {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 88rpx;
-  margin-top: 26rpx;
-  color: #006b58;
-  background: #edf7f4;
-  border: 2rpx solid #76d6bc;
-  border-radius: 16rpx;
-  font-size: 26rpx;
-  font-weight: 700;
-}
-
-.action-icon {
-  margin-right: 8rpx;
-  font-size: 30rpx;
-  line-height: 1;
+.qr-canvas {
+  width: 220px;
+  height: 220px;
 }
 
 .invite-footer-hint {

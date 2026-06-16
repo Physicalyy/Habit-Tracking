@@ -10,6 +10,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -45,8 +47,8 @@ class ChildHabitControllerTest {
                                 """.formatted(templateId)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.childId").value(childId))
-                .andExpect(jsonPath("$.data.templateId").value(templateId))
+                .andExpect(jsonPath("$.data.childId").value(String.valueOf(childId)))
+                .andExpect(jsonPath("$.data.templateId").value(String.valueOf(templateId)))
                 .andExpect(jsonPath("$.data.name").value("主动喝水"))
                 .andExpect(jsonPath("$.data.description").value("白天主动喝水，保持身体水分充足。"))
                 .andExpect(jsonPath("$.data.iconKey").value("water_drop"))
@@ -60,7 +62,7 @@ class ChildHabitControllerTest {
                         .header("X-Test-Openid", openid)
                         .header("X-Test-Nickname", "Owner"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[*].id").value(hasItem(childHabitId)))
+                .andExpect(jsonPath("$.data[*].id").value(hasItem(String.valueOf(childHabitId))))
                 .andExpect(jsonPath("$.data[*].name").value(hasItem("主动喝水")))
                 .andExpect(jsonPath("$.data[*].permissionType").value(hasItem("ALL_PARENTS")));
 
@@ -102,8 +104,8 @@ class ChildHabitControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.template.sourceType").value("CUSTOM"))
-                .andExpect(jsonPath("$.data.template.familyId").value(familyId))
-                .andExpect(jsonPath("$.data.childHabit.childId").value(childId))
+                .andExpect(jsonPath("$.data.template.familyId").value(String.valueOf(familyId)))
+                .andExpect(jsonPath("$.data.childHabit.childId").value(String.valueOf(childId)))
                 .andExpect(jsonPath("$.data.childHabit.name").value("Practice Piano"))
                 .andExpect(jsonPath("$.data.childHabit.permissionType").value("ALL_PARENTS"))
                 .andExpect(jsonPath("$.data.childHabit.status").value("active"));
@@ -171,7 +173,7 @@ class ChildHabitControllerTest {
                                 }
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.id").value(childHabitId))
+                .andExpect(jsonPath("$.data.id").value(String.valueOf(childHabitId)))
                 .andExpect(jsonPath("$.data.name").value("Make Bed Carefully"))
                 .andExpect(jsonPath("$.data.description").value("Flatten the sheet and pillow."))
                 .andExpect(jsonPath("$.data.iconKey").value("bed"))
@@ -218,8 +220,8 @@ class ChildHabitControllerTest {
                 """.formatted(memberId, secondMemberId)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.permissionType").value("SPECIFIC_PARENTS"))
-                .andExpect(jsonPath("$.data.allowedMemberIds[0]").value(memberId))
-                .andExpect(jsonPath("$.data.allowedMemberIds[1]").value(secondMemberId));
+                .andExpect(jsonPath("$.data.allowedMemberIds[0]").value(String.valueOf(memberId)))
+                .andExpect(jsonPath("$.data.allowedMemberIds[1]").value(String.valueOf(secondMemberId)));
 
         assertThat(allowedMemberCount(childHabitId)).isEqualTo(2);
 
@@ -234,7 +236,7 @@ class ChildHabitControllerTest {
                                 }
                                 """.formatted(ownerMemberId)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.allowedMemberIds[0]").value(ownerMemberId));
+                .andExpect(jsonPath("$.data.allowedMemberIds[0]").value(String.valueOf(ownerMemberId)));
 
         assertThat(allowedMemberCount(childHabitId)).isEqualTo(1);
 
@@ -273,6 +275,80 @@ class ChildHabitControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.code").value("BAD_REQUEST"));
+    }
+
+    @Test
+    void admin_deletes_child_habit_softly_clears_permissions_and_allows_readding_template() throws Exception {
+        String ownerOpenid = "del-owner-" + System.nanoTime();
+        String memberOpenid = "del-member-" + System.nanoTime();
+        Long familyId = createFamilyAndReturnId(ownerOpenid, "Delete Family", "Little Delete");
+        Long childId = defaultChildId(familyId);
+        Long templateId = templateId("drink-water");
+        Long childHabitId = addTemplate(ownerOpenid, childId, templateId);
+        joinFamily(memberOpenid, familyId);
+        Long memberId = memberId(familyId, memberOpenid);
+
+        mockMvc.perform(put("/api/children/{childId}/habits/{childHabitId}/permissions", childId, childHabitId)
+                        .header("X-Test-Openid", ownerOpenid)
+                        .header("X-Test-Nickname", "Owner")
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "permissionType": "SPECIFIC_PARENTS",
+                                  "allowedMemberIds": [%d]
+                                }
+                                """.formatted(memberId)))
+                .andExpect(status().isOk());
+        assertThat(allowedMemberCount(childHabitId)).isEqualTo(1);
+
+        mockMvc.perform(post("/api/children/{childId}/habits/{childHabitId}/checkins", childId, childHabitId)
+                        .header("X-Test-Openid", memberOpenid)
+                        .header("X-Test-Nickname", "Member"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(delete("/api/children/{childId}/habits/{childHabitId}", childId, childHabitId)
+                        .header("X-Test-Openid", ownerOpenid)
+                        .header("X-Test-Nickname", "Owner"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        mockMvc.perform(get("/api/children/{childId}/habits", childId)
+                        .header("X-Test-Openid", ownerOpenid)
+                        .header("X-Test-Nickname", "Owner"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[*].id").value(not(hasItem(String.valueOf(childHabitId)))));
+
+        mockMvc.perform(get("/api/children/{childId}/checkins", childId)
+                        .header("X-Test-Openid", ownerOpenid)
+                        .header("X-Test-Nickname", "Owner"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].childHabitId").value(String.valueOf(childHabitId)));
+
+        assertThat(countDeletedChildHabit(childId, templateId)).isEqualTo(1);
+        assertThat(allowedMemberCount(childHabitId)).isZero();
+
+        Long nextChildHabitId = addTemplate(ownerOpenid, childId, templateId);
+        assertThat(nextChildHabitId).isNotEqualTo(childHabitId);
+        assertThat(countChildHabit(childId, templateId)).isEqualTo(1);
+    }
+
+    @Test
+    void member_parent_cannot_delete_child_habit() throws Exception {
+        String ownerOpenid = "dd-owner-" + System.nanoTime();
+        String memberOpenid = "dd-member-" + System.nanoTime();
+        Long familyId = createFamilyAndReturnId(ownerOpenid, "Delete Deny Family", "Little Deny");
+        Long childId = defaultChildId(familyId);
+        Long childHabitId = addTemplate(ownerOpenid, childId, templateId("brush-teeth"));
+        joinFamily(memberOpenid, familyId);
+
+        mockMvc.perform(delete("/api/children/{childId}/habits/{childHabitId}", childId, childHabitId)
+                        .header("X-Test-Openid", memberOpenid)
+                        .header("X-Test-Nickname", "Member"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"));
+
+        assertThat(countChildHabit(childId, templateId("brush-teeth"))).isEqualTo(1);
     }
 
     private Long createFamilyAndReturnId(String ownerOpenid, String familyName, String childNickname) throws Exception {
@@ -377,6 +453,15 @@ class ChildHabitControllerTest {
     private Long countChildHabit(Long childId, Long templateId) {
         return jdbcTemplate.queryForObject(
                 "select count(*) from habit_child_config where child_id = ? and template_id = ? and del_flag = '0'",
+                Long.class,
+                childId,
+                templateId
+        );
+    }
+
+    private Long countDeletedChildHabit(Long childId, Long templateId) {
+        return jdbcTemplate.queryForObject(
+                "select count(*) from habit_child_config where child_id = ? and template_id = ? and del_flag = '1'",
                 Long.class,
                 childId,
                 templateId
