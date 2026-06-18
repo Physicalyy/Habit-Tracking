@@ -42,6 +42,18 @@
   background: #ffffff;
 }
 
+.scan-confirm-card {
+  margin-top: 20rpx;
+  padding: 18rpx 24rpx;
+  color: #005d4c;
+  background: #d9f7ee;
+  border: 2rpx solid rgba(0, 107, 88, 0.16);
+  border-radius: 18rpx;
+  font-size: 26rpx;
+  font-weight: 700;
+  line-height: 36rpx;
+}
+
 .scan-button {
   margin-top: 24rpx;
 }

@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import vm from "node:vm";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(scriptDir, "..");
@@ -222,6 +223,42 @@ function assertFixedActionSafeArea(pagePath) {
     wxmlSource.includes("fixed-action-spacer"),
     `${pagePath}.wxml must include fixed-action-spacer before fixed bottom actions`,
   );
+}
+
+function assertJoinFamilyInviteParsing(joinJs) {
+  const context = {
+    require(modulePath) {
+      if (modulePath.includes("routes")) {
+        return { ROUTES: { START: "/pages/start/index", TODAY: "/pages/today/index" } };
+      }
+      if (modulePath.includes("family-service")) {
+        return { joinFamily: async () => ({}) };
+      }
+      if (modulePath.includes("navigation-bar")) {
+        return {
+          buildNavState: () => ({}),
+          goBackWithFallback: () => {},
+        };
+      }
+      throw new Error(`Unexpected require in join-family validation: ${modulePath}`);
+    },
+    Page() {},
+  };
+  vm.runInNewContext(`${joinJs}\nthis.__parseInviteCode = parseInviteCode;`, context);
+  const { __parseInviteCode: parseInviteCode } = context;
+  assert.equal(parseInviteCode("123456"), "123456", "join-family must parse direct six-digit invite code");
+  assert.equal(
+    parseInviteCode("/pages/join-family/index?inviteCode=123456"),
+    "123456",
+    "join-family must parse inviteCode from QR page query",
+  );
+  assert.equal(
+    parseInviteCode("inviteCode%3D123456"),
+    "123456",
+    "join-family must parse URL-encoded inviteCode query",
+  );
+  assert.equal(parseInviteCode("no-invite"), "", "join-family must reject QR payloads without a six-digit invite code");
+  assert.equal(parseInviteCode("bad%payload"), "", "join-family must reject malformed URL-encoded QR payloads");
 }
 
 function assertTopBarBugfixGuard() {
@@ -905,6 +942,27 @@ function assertSecondaryVisualPrototypeGuard() {
   );
   assert.ok(joinJs.includes("/^\\d{6}$/"), "join-family must validate six-digit invite code before submit");
   assert.ok(joinJs.includes('"请输入 6 位数字邀请码"'), "join-family must show clear invite code validation message");
+  assert.ok(
+    joinJs.includes("scanConfirmText") && joinWxml.includes("{{scanConfirmText}}"),
+    "join-family must show a confirmation state after scanning an invite QR",
+  );
+  assert.ok(
+    joinJs.includes("submitText") && joinWxml.includes("{{submitText}}") && joinJs.includes('"确认加入家庭"'),
+    "join-family submit action must switch to explicit confirmation text after scan",
+  );
+  assert.ok(
+    /scanInviteCode\(\)\s*\{[\s\S]*wx\.scanCode\(\{[\s\S]*success:\s*\(result\)\s*=>\s*\{[\s\S]*parseInviteCode\((result\.result[\s\S]*result\.path)[\s\S]*scanConfirmText:[\s\S]*submitText:\s*"确认加入家庭"/.test(joinJs),
+    "join-family scan success must parse QR payload and wait for explicit user confirmation",
+  );
+  assert.ok(
+    !/scanInviteCode\(\)\s*\{[\s\S]*success:\s*\(result\)\s*=>\s*\{[\s\S]*joinFamily[\s\S]*\n\s*fail:/.test(joinJs),
+    "join-family scan success must not join automatically before explicit user confirmation",
+  );
+  assert.ok(
+    /function parseInviteCode\(value\)\s*\{[\s\S]*\^\\d\{6\}\$[\s\S]*inviteCode=\(\\d\{6\}\)[\s\S]*inviteCode%3D\(\\d\{6\}\)/.test(joinJs),
+    "join-family parseInviteCode must support direct, query, and encoded invite payloads",
+  );
+  assertJoinFamilyInviteParsing(joinJs);
   assert.ok(
     /submitJoinFamily\(\)\s*\{[\s\S]*if\s*\(\s*this\.data\.submitting\s*\)[\s\S]*submitClass:\s*"primary-button visual-action action-disabled"[\s\S]*await joinFamily[\s\S]*finally\s*\{[\s\S]*submitting:\s*false[\s\S]*submitClass:\s*"primary-button visual-action"/.test(joinJs),
     "join-family must prevent repeated submits and restore submit visual state",

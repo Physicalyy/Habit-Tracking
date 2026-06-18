@@ -7,6 +7,8 @@ Page({
     inviteCode: "",
     submitting: false,
     submitClass: "primary-button visual-action",
+    submitText: "加入家庭",
+    scanConfirmText: "",
     errorMessage: "",
     icons: {
       arrowBack: "\ue5c4",
@@ -24,24 +26,33 @@ Page({
   onLoad(options) {
     const inviteCode = parseInviteCode(options && options.inviteCode);
     if (inviteCode) {
-      this.setData({ inviteCode });
+      this.setData(buildScanConfirmState(inviteCode));
     }
   },
 
   onInviteCodeInput(event) {
-    this.setData({ inviteCode: event.detail.value, errorMessage: "" });
+    this.setData({
+      inviteCode: event.detail.value,
+      errorMessage: "",
+      scanConfirmText: "",
+      submitText: "加入家庭",
+    });
   },
 
   scanInviteCode() {
     wx.scanCode({
       onlyFromCamera: false,
       success: (result) => {
-        const inviteCode = parseInviteCode(result.result || result.path || result.scanType || "");
+        const inviteCode = parseInviteCode(result.result || result.path || "");
         if (!inviteCode) {
-          this.setData({ errorMessage: "未识别到有效邀请码" });
+          this.setData({
+            errorMessage: "未识别到有效邀请码",
+            scanConfirmText: "",
+            submitText: "加入家庭",
+          });
           return;
         }
-        this.setData({ inviteCode, errorMessage: "" });
+        this.setData(buildScanConfirmState(inviteCode));
       },
       fail: () => {
       },
@@ -58,7 +69,11 @@ Page({
       return;
     }
 
-    this.setData({ submitting: true, submitClass: "primary-button visual-action action-disabled", errorMessage: "" });
+    this.setData({
+      submitting: true,
+      submitClass: "primary-button visual-action action-disabled",
+      errorMessage: "",
+    });
 
     try {
       await joinFamily({ inviteCode });
@@ -71,13 +86,28 @@ Page({
   },
 });
 
+function buildScanConfirmState(inviteCode) {
+  return {
+    inviteCode,
+    errorMessage: "",
+    scanConfirmText: "已识别邀请码，确认后加入家庭",
+    submitText: "确认加入家庭",
+  };
+}
+
 function parseInviteCode(value) {
-  const text = decodeURIComponent(String(value || "").trim());
+  const rawText = String(value || "").trim();
+  let text = rawText;
+  try {
+    text = decodeURIComponent(rawText);
+  } catch (error) {
+    text = rawText;
+  }
   const directMatch = text.match(/^\d{6}$/);
   if (directMatch) {
     return directMatch[0];
   }
-  const paramMatch = text.match(/[?&]inviteCode=(\d{6})/);
+  const paramMatch = text.match(/(?:^|[?&])inviteCode=(\d{6})/);
   if (paramMatch) {
     return paramMatch[1];
   }

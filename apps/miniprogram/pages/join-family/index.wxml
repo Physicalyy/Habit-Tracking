@@ -26,13 +26,15 @@
       <view class="muted-text">加入后，你将成为成员家长。你可以查看记录，并根据习惯权限参与打卡。</view>
     </view>
 
+    <view wx:if="{{scanConfirmText}}" class="scan-confirm-card">{{scanConfirmText}}</view>
+
     <view wx:if="{{errorMessage}}" class="error-text">{{errorMessage}}</view>
   </view>
 
   <view class="fixed-action-spacer join-action-spacer"></view>
 
   <view class="fixed-action">
-    <view class="{{submitClass}}" bindtap="submitJoinFamily" hover-class="tap-active">加入家庭</view>
+    <view class="{{submitClass}}" bindtap="submitJoinFamily" hover-class="tap-active">{{submitText}}</view>
     <view class="secondary-button visual-action scan-button" bindtap="scanInviteCode">
       <text class="material-symbols-outlined visual-action-icon-left">{{icons.qrCodeScanner}}</text>
       <text>扫码加入家庭</text>
