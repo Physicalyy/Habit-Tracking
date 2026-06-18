@@ -3,7 +3,6 @@
     <view class="nav-content" style="{{navContentStyle}}">
       <view wx:if="{{showNavBack}}" class="library-icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
       <view class="library-title" style="{{navTitleStyle}}">{{navTitle}}</view>
-      <view class="library-header-spacer"></view>
     </view>
   </view>
 

@@ -156,19 +156,26 @@ button {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  width: 100%;
 }
 
 .top-title {
-  flex: 1;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-width: 0;
   color: #006b58;
   font-size: 32rpx;
   font-weight: 700;
-  text-align: center;
+  line-height: inherit;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: center;
 }
 
 .icon-button {

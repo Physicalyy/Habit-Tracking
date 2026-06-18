@@ -22,11 +22,10 @@
 .library-header .nav-content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
 }
 
-.library-icon-button,
-.library-header-spacer {
+.library-icon-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -40,11 +39,20 @@
 }
 
 .library-title {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #191c1b;
   font-size: 40rpx;
   font-weight: 600;
   line-height: 56rpx;
+  overflow: hidden;
   text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .library-main {

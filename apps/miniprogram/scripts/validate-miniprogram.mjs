@@ -226,8 +226,12 @@ function assertFixedActionSafeArea(pagePath) {
 
 function assertTopBarBugfixGuard() {
   const navUtilSource = readFileSync(join(rootDir, "utils/navigation-bar.js"), "utf8");
+  const appWxssSource = readFileSync(join(rootDir, "app.wxss"), "utf8");
   assert.ok(navUtilSource.includes("getMenuButtonBoundingClientRect"), "navigation bar utility must align with WeChat capsule metrics");
   assert.ok(navUtilSource.includes("navBarStyle") && navUtilSource.includes("navContentStyle") && navUtilSource.includes("navTitleStyle"), "navigation bar utility must expose shared top-bar styles");
+  assert.ok(navUtilSource.includes("titleInset") && navUtilSource.includes("left:${titleInset}px;right:${titleInset}px;"), "navigation title must use absolute left/right inset instead of padding-based centering");
+  assert.ok(!/navTitleStyle:\s*`[^`]*padding-left/.test(navUtilSource), "navigation title must not use padding-left to fake centering");
+  assert.ok(/\.top-title\s*\{[\s\S]*position:\s*absolute;[\s\S]*text-align:\s*center;/.test(appWxssSource), "global top-title must be absolutely centered in the navigation bar");
 
   for (const page of tabPages) {
     const jsPath = join(rootDir, page + ".js");
@@ -241,6 +245,8 @@ function assertTopBarBugfixGuard() {
     const jsSource = readFileSync(join(rootDir, page + ".js"), "utf8");
     const wxmlSource = readFileSync(join(rootDir, page + ".wxml"), "utf8");
     assert.ok(!jsSource.includes("moreHoriz") && !wxmlSource.includes("moreHoriz"), `${page} must not render static more menu placeholder`);
+    assert.ok(!wxmlSource.includes("top-spacer") && !wxmlSource.includes("library-header-spacer"), `${page} must not use right-side placeholder views to fake title centering`);
+    assert.ok(!wxmlSource.includes('<view class="top-icon-button"></view>') && !wxmlSource.includes('<view class="icon-button"></view>'), `${page} must not keep empty right-side icon placeholders`);
   }
 
   for (const page of requiredPages.filter((item) => item !== "pages/start/index")) {

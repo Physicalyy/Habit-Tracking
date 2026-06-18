@@ -3,7 +3,6 @@
     <view class="nav-content" style="{{navContentStyle}}">
       <view wx:if="{{showNavBack}}" class="top-icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
       <view class="top-title" style="{{navTitleStyle}}">{{navTitle}}</view>
-      <view class="top-icon-button"></view>
     </view>
   </view>
 

@@ -3,10 +3,9 @@
     <view class="nav-content" style="{{navContentStyle}}">
       <view wx:if="{{showNavBack}}" class="top-back material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
       <view class="top-heading" style="{{navTitleStyle}}">
-      <text class="material-symbols-outlined top-icon">{{icons.bubbleChart}}</text>
-        <text class="top-title">{{navTitle}}</text>
+        <text class="material-symbols-outlined top-icon">{{icons.bubbleChart}}</text>
+        <text class="top-heading-title">{{navTitle}}</text>
       </view>
-      <view class="top-spacer"></view>
     </view>
   </view>
 

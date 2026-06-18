@@ -8,14 +8,15 @@ function buildNavState(options = {}) {
   const topOffset = Math.max(0, (capsule.top || statusBarHeight + 6) - statusBarHeight);
   const navHeight = statusBarHeight + topOffset * 2 + contentHeight;
   const rightReserve = capsule.width ? system.windowWidth - capsule.left + 8 : 96;
-  const leftReserve = showBack ? 56 : rightReserve;
+  const leftReserve = showBack ? 56 : 24;
+  const titleInset = Math.max(leftReserve, rightReserve);
 
   return {
     navTitle: title,
     showNavBack: showBack,
     navBarStyle: `height:${navHeight}px;padding-top:${statusBarHeight}px;`,
     navContentStyle: `height:${contentHeight}px;line-height:${contentHeight}px;`,
-    navTitleStyle: `padding-left:${leftReserve}px;padding-right:${rightReserve}px;`,
+    navTitleStyle: `left:${titleInset}px;right:${titleInset}px;`,
     pageTopStyle: `padding-top:${navHeight}px;`,
   };
 }
