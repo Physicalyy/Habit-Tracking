@@ -1,5 +1,7 @@
 package com.physicalyy.habittracking.modules.habit.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.physicalyy.habittracking.common.entity.BaseEntity;
 
@@ -9,6 +11,8 @@ public class HabitChildConfig extends BaseEntity {
     private Long familyId;
     private Long childId;
     private Long templateId;
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private Long activeTemplateId;
     private String name;
     private String description;
     private String iconKey;
@@ -40,6 +44,14 @@ public class HabitChildConfig extends BaseEntity {
 
     public void setTemplateId(Long templateId) {
         this.templateId = templateId;
+    }
+
+    public Long getActiveTemplateId() {
+        return activeTemplateId;
+    }
+
+    public void setActiveTemplateId(Long activeTemplateId) {
+        this.activeTemplateId = activeTemplateId;
     }
 
     public String getName() {

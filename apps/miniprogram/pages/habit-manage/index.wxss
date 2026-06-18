@@ -1,0 +1,299 @@
+.habit-manage-page {
+  padding-bottom: 56rpx;
+}
+
+.manage-top-bar {
+  display: block;
+}
+
+.top-icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56rpx;
+  height: 56rpx;
+  color: #006b58;
+  font-size: 34rpx;
+  line-height: 1;
+}
+
+.top-title {
+  color: #006b58;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 42rpx;
+}
+
+.manage-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 32rpx;
+}
+
+.manage-title {
+  color: #191c1b;
+  font-size: 44rpx;
+  font-weight: 800;
+  line-height: 60rpx;
+}
+
+.add-habit-action {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  padding: 14rpx 22rpx;
+  color: #ffffff;
+  background: #006b58;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.add-icon {
+  margin-right: 6rpx;
+  font-size: 28rpx;
+  line-height: 1;
+}
+
+.manage-state {
+  margin-top: 36rpx;
+  text-align: center;
+}
+
+.empty-card {
+  margin-top: 28rpx;
+  padding: 36rpx;
+}
+
+.empty-title {
+  color: #191c1b;
+  font-size: 32rpx;
+  font-weight: 700;
+  line-height: 44rpx;
+}
+
+.habit-list {
+  margin-top: 32rpx;
+}
+
+.habit-swipe-scroll {
+  width: 100%;
+  height: 156rpx;
+  margin-bottom: 24rpx;
+}
+
+.habit-swipe-content {
+  display: flex;
+  width: 100%;
+  height: 156rpx;
+}
+
+.habit-card {
+  display: flex;
+  flex: none;
+  align-items: center;
+  width: 100%;
+  min-height: 156rpx;
+  padding: 26rpx;
+  background: #ffffff;
+  border-left: 8rpx solid #76d6bc;
+  border-radius: 20rpx;
+  box-shadow: 0 8rpx 30rpx rgba(0, 107, 88, 0.05);
+}
+
+.delete-swipe-action {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 152rpx;
+  height: 156rpx;
+  color: #ffffff;
+  background: #ba1a1a;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+.delete-swipe-confirm {
+  background: #7c2d12;
+}
+
+.habit-card.disabled {
+  opacity: 0.7;
+}
+
+.drag-handle {
+  flex: none;
+  margin-right: 18rpx;
+  color: #6e7a75;
+  font-size: 32rpx;
+  line-height: 1;
+}
+
+.habit-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 88rpx;
+  height: 88rpx;
+  color: #006b58;
+  background: #d9f7ee;
+  border-radius: 999rpx;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.habit-image {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 999rpx;
+}
+
+.habit-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: 22rpx;
+}
+
+.habit-title-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.habit-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #191c1b;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 42rpx;
+}
+
+.source-badge {
+  flex: none;
+  margin-left: 12rpx;
+  padding: 2rpx 12rpx;
+  color: #574500;
+  background: #ffe088;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  font-weight: 700;
+  line-height: 30rpx;
+}
+
+.source-badge-custom {
+  color: #574500;
+  background: #ffe088;
+}
+
+.habit-desc {
+  margin-top: 6rpx;
+  color: #56625d;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.habit-status {
+  margin-top: 6rpx;
+  color: #56625d;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.habit-actions {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: 16rpx;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 78rpx;
+  height: 42rpx;
+  background: #e1e3e1;
+  border-radius: 999rpx;
+}
+
+.toggle-switch.active {
+  background: #006b58;
+}
+
+.toggle-dot {
+  position: absolute;
+  left: 4rpx;
+  top: 4rpx;
+  width: 34rpx;
+  height: 34rpx;
+  background: #ffffff;
+  border-radius: 999rpx;
+  transition: all 0.2s ease;
+}
+
+.toggle-switch.active .toggle-dot {
+  left: 40rpx;
+}
+
+.toggle-text {
+  margin-top: 8rpx;
+  color: #56625d;
+  font-size: 22rpx;
+  line-height: 30rpx;
+}
+
+.permission-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 12rpx;
+  padding: 8rpx 18rpx;
+  color: #005d4c;
+  background: #d9f7ee;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+  line-height: 30rpx;
+}
+
+.tip-card {
+  display: flex;
+  margin-top: 32rpx;
+  padding: 28rpx;
+  color: #005d4c;
+  background: #d9f7ee;
+  border-radius: 24rpx;
+}
+
+.tip-icon {
+  flex: none;
+  margin-right: 18rpx;
+  color: #006b58;
+  font-size: 34rpx;
+  line-height: 1;
+}
+
+.tip-title {
+  font-size: 26rpx;
+  font-weight: 800;
+  line-height: 36rpx;
+}
+
+.tip-text {
+  margin-top: 6rpx;
+  color: #3e4945;
+  font-size: 24rpx;
+  line-height: 36rpx;
+}
+
+.action-disabled {
+  color: #a7b0ab;
+  background: #eef1ef;
+}

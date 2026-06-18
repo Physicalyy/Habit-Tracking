@@ -1,0 +1,89 @@
+<view class="page habit-manage-page" style="{{pageTopStyle}}">
+  <view class="manage-top-bar page-nav" style="{{navBarStyle}}">
+    <view class="nav-content" style="{{navContentStyle}}">
+      <view wx:if="{{showNavBack}}" class="top-icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
+      <view class="top-title" style="{{navTitleStyle}}">{{navTitle}}</view>
+    </view>
+  </view>
+
+  <view class="manage-header">
+    <view>
+      <view class="manage-title">习惯管理</view>
+      <view class="page-subtitle">长按拖动可调整展示顺序</view>
+    </view>
+    <view class="{{addActionClass}}" bindtap="goHabitLibrary">
+      <text class="material-symbols-outlined add-icon">{{icons.add}}</text>
+      <text>添加习惯</text>
+    </view>
+  </view>
+
+  <view wx:if="{{feedbackVisible}}" class="{{feedbackClass}}">{{feedbackText}}</view>
+
+  <view wx:if="{{loading}}" class="muted-text manage-state">加载中...</view>
+  <view wx:elif="{{errorText}}" class="error-text manage-state">{{errorText}}</view>
+  <view wx:elif="{{!childId}}" class="card empty-card">
+    <view class="empty-title">还没有家庭</view>
+    <view class="muted-text">创建或加入家庭后可以配置孩子习惯</view>
+  </view>
+  <view wx:elif="{{hasNoHabits}}" class="card empty-card">
+    <view class="empty-title">还没有习惯</view>
+    <view class="muted-text">从习惯库添加，或创建自定义习惯</view>
+  </view>
+
+  <view wx:else class="habit-list">
+    <scroll-view wx:for="{{habits}}" wx:key="id" class="habit-swipe-scroll" scroll-x="true" enhanced="true" show-scrollbar="false">
+      <view class="habit-swipe-content">
+        <view class="habit-card {{item.activeClass}}">
+          <view class="drag-handle material-symbols-outlined">{{icons.drag}}</view>
+          <view class="habit-icon">
+            <image wx:if="{{item.imageUrl}}" class="habit-image" mode="aspectFill" src="{{item.imageUrl}}" />
+            <text wx:else>{{item.fallbackIcon}}</text>
+          </view>
+          <view class="habit-main">
+            <view class="habit-title-row">
+              <view class="habit-name">{{item.name}}</view>
+              <view wx:if="{{item.showSourceBadge}}" class="{{item.sourceBadgeClass}}">{{item.sourceBadgeText}}</view>
+            </view>
+            <view class="habit-status">{{item.permissionTypeText}}可打卡</view>
+            <view
+              class="{{item.permissionActionClass}}"
+              data-habit-id="{{item.id}}"
+              data-habit-name="{{item.name}}"
+              data-permission-type="{{item.permissionType}}"
+              data-allowed-member-ids="{{item.allowedMemberIdsText}}"
+              bindtap="goHabitPermission"
+            >
+              权限设置
+            </view>
+          </view>
+          <view class="habit-actions">
+            <view
+              class="{{item.toggleSwitchClass}}"
+              data-habit-id="{{item.id}}"
+              data-next-status="{{item.nextStatus}}"
+              bindtap="toggleHabitStatus"
+            >
+              <view class="toggle-dot"></view>
+            </view>
+            <view class="toggle-text">{{item.statusText}}</view>
+          </view>
+        </view>
+        <view
+          class="{{item.deleteActionClass}}"
+          data-habit-id="{{item.id}}"
+          bindtap="deleteHabitTap"
+        >
+          {{item.deleteActionText}}
+        </view>
+      </view>
+    </scroll-view>
+
+    <view class="tip-card">
+      <text class="material-symbols-outlined tip-icon">{{icons.lightbulb}}</text>
+      <view>
+        <view class="tip-title">温馨提示</view>
+        <view class="tip-text">给孩子设置习惯时，建议每次不超过3个，从简单的小目标开始更有成就感哦。</view>
+      </view>
+    </view>
+  </view>
+</view>

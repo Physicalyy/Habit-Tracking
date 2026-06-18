@@ -1,0 +1,52 @@
+<view class="page habit-permission-page" style="{{pageTopStyle}}">
+  <view class="permission-top-bar page-nav" style="{{navBarStyle}}">
+    <view class="nav-content" style="{{navContentStyle}}">
+      <view wx:if="{{showNavBack}}" class="top-icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
+      <view class="top-title" style="{{navTitleStyle}}">{{navTitle}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{feedbackVisible}}" class="{{feedbackClass}}">{{feedbackText}}</view>
+
+  <view class="permission-panel">
+    <view class="permission-panel-head">
+      <view class="panel-title-wrap">
+        <text class="material-symbols-outlined panel-icon">{{icons.verifiedUser}}</text>
+        <text class="panel-title">{{habitName}}</text>
+      </view>
+      <text class="material-symbols-outlined expand-icon">{{icons.expandMore}}</text>
+    </view>
+    <view
+      wx:for="{{permissionOptions}}"
+      wx:key="value"
+      class="{{item.optionClass}}"
+      data-value="{{item.value}}"
+      bindtap="choosePermission"
+    >
+      <view class="option-label">{{item.label}}</view>
+      <view class="{{item.radioClass}}"></view>
+    </view>
+
+    <view wx:if="{{showSpecificParents}}" class="member-check-card">
+      <view wx:if="{{loading}}" class="muted-text member-state">加载中...</view>
+      <view wx:elif="{{errorText}}" class="error-text member-state">{{errorText}}</view>
+      <checkbox-group wx:else bindchange="onMemberChange">
+        <label wx:for="{{members}}" wx:key="id" class="member-check">
+          <view class="member-avatar">{{item.avatarText}}</view>
+          <view class="member-text">
+            <view class="member-name">{{item.displayName}}（{{item.roleText}}）</view>
+          </view>
+          <checkbox class="member-checkbox" value="{{item.id}}" checked="{{item.checked}}" />
+        </label>
+      </checkbox-group>
+      <view class="permission-tip">未勾选的家长仍可查看记录，但不能为该习惯打卡。</view>
+    </view>
+
+  </view>
+
+  <view class="fixed-action-spacer"></view>
+
+  <view class="fixed-action">
+    <view class="{{saveClass}}" bindtap="savePermission" hover-class="tap-active">保存权限</view>
+  </view>
+</view>

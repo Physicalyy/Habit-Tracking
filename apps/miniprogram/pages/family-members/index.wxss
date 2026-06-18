@@ -1,0 +1,269 @@
+.family-members-page {
+  padding-bottom: 0;
+}
+
+.top-bar {
+  display: block;
+}
+
+.top-heading {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.top-icon {
+  margin-right: 12rpx;
+  color: #006b58;
+  font-size: 34rpx;
+  line-height: 1;
+}
+
+.top-heading-title {
+  min-width: 0;
+  overflow: hidden;
+  color: #006b58;
+  font-size: 32rpx;
+  font-weight: 700;
+  text-overflow: ellipsis;
+}
+
+.top-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56rpx;
+  height: 56rpx;
+}
+
+.top-back {
+  color: #006b58;
+  font-size: 34rpx;
+  line-height: 1;
+}
+
+.members-state {
+  margin-top: 36rpx;
+  text-align: center;
+}
+
+.empty-card {
+  margin-top: 28rpx;
+  padding: 36rpx;
+}
+
+.empty-title {
+  color: #191c1b;
+  font-size: 32rpx;
+  font-weight: 700;
+  line-height: 44rpx;
+}
+
+.family-hero {
+  position: relative;
+  margin-top: 30rpx;
+  padding: 32rpx;
+  overflow: hidden;
+  color: #ffffff;
+  background: linear-gradient(180deg, #006b58 0%, #008972 100%);
+  border-radius: 24rpx;
+  box-shadow: 0 12rpx 32rpx rgba(0, 107, 88, 0.18);
+}
+
+.family-orbit {
+  position: absolute;
+  right: -62rpx;
+  top: -70rpx;
+  width: 220rpx;
+  height: 220rpx;
+  background: rgba(148, 244, 217, 0.2);
+  border-radius: 999rpx;
+}
+
+.family-hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.family-hero-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.family-name {
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 44rpx;
+}
+
+.child-pill {
+  display: flex;
+  flex: none;
+  align-items: center;
+  max-width: 320rpx;
+  margin-top: 12rpx;
+  padding: 8rpx 18rpx;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  line-height: 30rpx;
+}
+
+.child-icon {
+  margin-right: 8rpx;
+  font-size: 24rpx;
+  line-height: 1;
+}
+
+.role-pill {
+  flex: none;
+  max-width: 220rpx;
+  padding: 8rpx 16rpx;
+  color: #574500;
+  background: #fcd664;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+  line-height: 30rpx;
+  text-align: center;
+}
+
+.member-section-title {
+  margin-top: 32rpx;
+  color: #191c1b;
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 44rpx;
+}
+
+.member-list {
+  margin-top: 16rpx;
+}
+
+.member-card {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24rpx;
+  padding: 28rpx;
+  background: #ffffff;
+  border-left: 8rpx solid #006b58;
+  border-radius: 20rpx;
+  box-shadow: 0 8rpx 30rpx rgba(0, 107, 88, 0.05);
+}
+
+.member-card.member {
+  border-left-color: #735c00;
+}
+
+.member-avatar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 88rpx;
+  height: 88rpx;
+  color: #005d4c;
+  background: #dff7ee;
+  border: 4rpx solid #76d6bc;
+  border-radius: 999rpx;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.member-card.member .member-avatar {
+  color: #745c00;
+  background: #fff2c7;
+  border-color: #fcd664;
+}
+
+.member-main {
+  flex: 1;
+  min-width: 0;
+  margin-left: 22rpx;
+}
+
+.member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.member-name {
+  flex: 1;
+  min-width: 0;
+  color: #191c1b;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 42rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member-role {
+  flex: none;
+  margin-left: 12rpx;
+  padding: 4rpx 12rpx;
+  color: #005142;
+  background: #94f4d9;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  font-weight: 700;
+  line-height: 30rpx;
+}
+
+.member-role.member {
+  color: #574500;
+  background: #fcd664;
+}
+
+.member-desc {
+  margin-top: 8rpx;
+  color: #56625d;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.family-helper {
+  margin-top: 54rpx;
+  color: #87918d;
+  font-size: 24rpx;
+  line-height: 36rpx;
+  text-align: center;
+}
+
+.invite-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 96rpx;
+  color: #ffffff;
+  background: linear-gradient(180deg, #008972 0%, #006b58 100%);
+  border-radius: 14rpx;
+  box-shadow: 0 10rpx 30rpx rgba(0, 107, 88, 0.18);
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.invite-primary-icon {
+  margin-right: 10rpx;
+  font-size: 32rpx;
+  line-height: 1;
+}
+
+.action-disabled {
+  color: #8a938f;
+  background: #e5e9e6;
+  box-shadow: none;
+}

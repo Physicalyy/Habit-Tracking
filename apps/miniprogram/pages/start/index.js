@@ -31,10 +31,16 @@ Page({
   },
 
   goCreateFamily() {
+    if (this.data.loading) {
+      return;
+    }
     wx.navigateTo({ url: ROUTES.CREATE_FAMILY });
   },
 
   goJoinFamily() {
+    if (this.data.loading) {
+      return;
+    }
     wx.navigateTo({ url: ROUTES.JOIN_FAMILY });
   }
 });

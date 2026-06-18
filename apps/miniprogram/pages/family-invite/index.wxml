@@ -1,0 +1,63 @@
+<view class="page family-invite-page" style="{{pageTopStyle}}">
+  <view class="top-bar page-nav" style="{{navBarStyle}}">
+    <view class="nav-content" style="{{navContentStyle}}">
+      <view wx:if="{{showNavBack}}" class="icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
+      <view class="top-title" style="{{navTitleStyle}}">{{navTitle}}</view>
+    </view>
+  </view>
+
+  <view wx:if="{{feedbackVisible}}" class="{{feedbackClass}}">{{feedbackText}}</view>
+
+  <view wx:if="{{loading}}" class="muted-text invite-state">加载中...</view>
+  <view wx:elif="{{errorText}}" class="error-text invite-state">{{errorText}}</view>
+  <view wx:elif="{{!familyId}}" class="card empty-card">
+    <view class="empty-title">还没有家庭</view>
+    <view class="muted-text">创建或加入家庭后，主家长可以邀请另一位家长加入</view>
+  </view>
+  <view wx:elif="{{!isFamilyAdmin}}" class="card empty-card">
+    <view class="empty-title">仅主家长可管理邀请码</view>
+    <view class="muted-text">成员家长可以查看家庭信息，但不能刷新邀请码</view>
+  </view>
+
+  <view wx:else>
+    <view class="invite-family-head">
+      <view class="family-icon material-symbols-outlined">{{icons.family}}</view>
+      <view class="invite-family-name">{{familyName}}</view>
+      <view class="page-subtitle">邀请另一位家长加入家庭，一起为{{childNickname}}打卡</view>
+    </view>
+
+    <view class="invite-code-card">
+      <view class="card-label">
+        <text class="material-symbols-outlined card-label-icon">{{icons.key}}</text>
+        <text>专属邀请码</text>
+      </view>
+      <view class="code-row">
+        <view class="invite-code">{{inviteCode}}</view>
+        <view class="{{copyActionClass}}" bindtap="copyInviteCode">{{copyActionText}}</view>
+      </view>
+      <view class="refresh-row">
+        <view class="refresh-hint">刷新后，旧邀请码将失效。</view>
+        <view class="{{refreshActionClass}}" bindtap="refreshInvite">
+          <text class="material-symbols-outlined refresh-icon">{{icons.refresh}}</text>
+          <text>刷新邀请码</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="qr-card">
+      <view class="card-label">
+        <text class="material-symbols-outlined card-label-icon">{{icons.qrCode}}</text>
+        <text>面对面扫码</text>
+      </view>
+      <view class="qr-box">
+        <canvas class="qr-canvas" canvas-id="inviteQr"></canvas>
+      </view>
+      <view class="muted-text qr-copy">扫码加入家庭</view>
+    </view>
+
+    <view class="invite-footer-hint">
+      <text class="material-symbols-outlined footer-info">{{icons.info}}</text>
+      <text>加入后，成员家长可查看记录，并根据习惯权限参与打卡。</text>
+    </view>
+  </view>
+</view>

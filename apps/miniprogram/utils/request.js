@@ -1,7 +1,15 @@
 const { handleMockRequest } = require("./mock-api.js");
 
-const USE_MOCK_API = true;
-const API_BASE_URL = "";
+const requestConfig = {
+  useMockApi: false,
+  apiBaseUrl: "",
+  testOpenid: "",
+  testNickname: "",
+};
+
+function setRequestConfig(nextConfig = {}) {
+  Object.assign(requestConfig, nextConfig);
+}
 
 function assertOk(response) {
   if (response.code !== "OK") {
@@ -11,16 +19,28 @@ function assertOk(response) {
   return response;
 }
 
+function buildHeaders() {
+  const header = {};
+  if (requestConfig.testOpenid) {
+    header["X-Test-Openid"] = requestConfig.testOpenid;
+  }
+  if (requestConfig.testNickname) {
+    header["X-Test-Nickname"] = requestConfig.testNickname;
+  }
+  return header;
+}
+
 async function request(endpoint, data = {}) {
-  if (USE_MOCK_API) {
+  if (requestConfig.useMockApi) {
     return assertOk(await handleMockRequest({ endpoint, data }));
   }
 
   return new Promise((resolve, reject) => {
     wx.request({
-      url: API_BASE_URL + endpoint.path,
+      url: requestConfig.apiBaseUrl + endpoint.path,
       method: endpoint.method,
       data,
+      header: buildHeaders(),
       success: (response) => {
         try {
           resolve(assertOk(response.data));
@@ -35,4 +55,5 @@ async function request(endpoint, data = {}) {
 
 module.exports = {
   request,
+  setRequestConfig,
 };

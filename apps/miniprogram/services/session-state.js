@@ -4,8 +4,8 @@ let memorySession = null;
 
 const mockUser = Object.freeze({
   id: "user_mock_parent",
+  openid: "mock-openid",
   nickname: "新手家长",
-  avatarUrl: "",
 });
 
 function clone(value) {
@@ -27,6 +27,11 @@ function createEmptySession() {
     family: null,
     child: null,
     member: null,
+    inviteCode: null,
+    familyMembers: [],
+    childHabits: [],
+    checkins: [],
+    customTemplates: [],
   };
 }
 

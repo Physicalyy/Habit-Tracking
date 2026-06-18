@@ -5,7 +5,13 @@
     "pages/join-family/index",
     "pages/today/index",
     "pages/records/index",
-    "pages/me/index"
+    "pages/me/index",
+    "pages/habit-library/index",
+    "pages/habit-manage/index",
+    "pages/custom-habit/index",
+    "pages/family-members/index",
+    "pages/family-invite/index",
+    "pages/habit-permission/index"
   ],
   "window": {
     "navigationBarTitleText": "小小习惯",
@@ -15,6 +21,7 @@
     "backgroundTextStyle": "light"
   },
   "tabBar": {
+    "custom": true,
     "color": "#6e7a75",
     "selectedColor": "#006b58",
     "backgroundColor": "#ffffff",

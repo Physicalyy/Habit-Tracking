@@ -1,8 +1,9 @@
-<view class="page join-page">
-  <view class="top-bar">
-    <button class="icon-button">‹</button>
-    <view class="top-title">加入家庭</view>
-    <view class="icon-button"></view>
+<view class="page join-page" style="{{pageTopStyle}}">
+  <view class="top-bar page-nav" style="{{navBarStyle}}">
+    <view class="nav-content" style="{{navContentStyle}}">
+      <view wx:if="{{showNavBack}}" class="icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
+      <view class="top-title" style="{{navTitleStyle}}">{{navTitle}}</view>
+    </view>
   </view>
 
   <view class="join-hero">
@@ -16,20 +17,27 @@
       <view class="field-label">输入邀请码</view>
       <view class="form-input-wrap">
         <input class="field-input code-input" type="number" value="{{inviteCode}}" maxlength="6" placeholder="请输入 6 位邀请码" bindinput="onInviteCodeInput" />
-        <view class="field-icon code-icon">⌘</view>
+        <view class="field-icon code-icon material-symbols-outlined">{{icons.familyHistory}}</view>
       </view>
     </view>
 
     <view class="info-card join-info">
-      <view class="info-icon">i</view>
+      <view class="info-icon material-symbols-outlined">{{icons.info}}</view>
       <view class="muted-text">加入后，你将成为成员家长。你可以查看记录，并根据习惯权限参与打卡。</view>
     </view>
+
+    <view wx:if="{{scanConfirmText}}" class="scan-confirm-card">{{scanConfirmText}}</view>
 
     <view wx:if="{{errorMessage}}" class="error-text">{{errorMessage}}</view>
   </view>
 
+  <view class="fixed-action-spacer join-action-spacer"></view>
+
   <view class="fixed-action">
-    <button class="primary-button" loading="{{submitting}}" bindtap="submitJoinFamily">加入家庭</button>
-    <button class="secondary-button scan-button">⌘  扫码加入家庭</button>
+    <view class="{{submitClass}}" bindtap="submitJoinFamily" hover-class="tap-active">{{submitText}}</view>
+    <view class="secondary-button visual-action scan-button" bindtap="scanInviteCode">
+      <text class="material-symbols-outlined visual-action-icon-left">{{icons.qrCodeScanner}}</text>
+      <text>扫码加入家庭</text>
+    </view>
   </view>
 </view>

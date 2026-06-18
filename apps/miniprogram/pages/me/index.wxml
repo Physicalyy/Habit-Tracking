@@ -1,24 +1,63 @@
-<view class="page me-page">
-  <view class="profile-card card">
-    <view class="avatar">{{avatarText}}</view>
-    <view class="profile-info">
-      <view class="profile-name">{{nickname}}</view>
-      <view class="profile-family muted-text">{{familyName}}</view>
+<view class="page me-page" style="{{pageTopStyle}}">
+  <view class="top-bar me-top" style="{{navBarStyle}}">
+    <view class="nav-content" style="{{navContentStyle}}">
+      <view class="top-title" style="{{navTitleStyle}}">{{navTitle}}</view>
     </view>
   </view>
 
-  <view class="menu-card card">
-    <view class="menu-item">
-      <text>家庭成员</text>
-      <text class="muted-text">待接入</text>
+  <view wx:if="{{feedbackVisible}}" class="{{feedbackClass}}">{{feedbackText}}</view>
+
+  <view class="profile-section">
+    <view class="avatar-wrap">
+      <view class="avatar">{{avatarText}}</view>
     </view>
-    <view class="menu-item">
-      <text>习惯库</text>
-      <text class="muted-text">待接入</text>
+    <view class="profile-info">
+      <view class="profile-name">{{nickname}}</view>
+      <view class="profile-family">当前家庭：<text>{{familyName}}</text></view>
     </view>
-    <view class="menu-item">
-      <text>习惯管理</text>
-      <text class="muted-text">待接入</text>
+  </view>
+
+  <view class="child-card card">
+    <view class="child-header">
+      <view class="child-left">
+        <view class="child-avatar">{{childNickname}}</view>
+        <view class="child-info">
+          <view class="child-name">{{childNickname}}的成长计划</view>
+          <view class="child-desc">默认孩子</view>
+        </view>
+      </view>
+      <view class="child-score">
+        <view class="child-score-value">{{growthPointsText}}</view>
+        <view class="child-score-label">{{growthPointsLabel}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="family-section">
+    <view class="family-heading">
+      <view>
+        <view class="family-title">家庭成员 - {{familyName}}</view>
+        <view class="family-role">我的角色：{{roleText}}</view>
+      </view>
+    </view>
+    <view class="{{familyCardClass}}" bindtap="goFamilyMembers">
+      <view class="member-bubble admin">{{avatarText}}</view>
+      <view class="member-copy">
+        <view class="member-title">家庭组管理</view>
+        <view class="member-desc">{{familyMemberText}}</view>
+      </view>
+      <text class="material-symbols-outlined member-chevron">{{icons.chevronRight}}</text>
+    </view>
+  </view>
+
+  <view class="bento-grid">
+    <view class="{{habitManageEntryClass}}" bindtap="goHabitManage">
+      <view class="bento-icon primary"><text class="material-symbols-outlined">{{icons.checklist}}</text></view>
+      <view class="bento-text">习惯管理</view>
+    </view>
+    <view class="{{habitLibraryEntryClass}}" bindtap="goHabitLibrary">
+      <view class="bento-icon tertiary"><text class="material-symbols-outlined">{{icons.libraryBooks}}</text></view>
+      <view class="bento-text">习惯库</view>
     </view>
   </view>
 </view>

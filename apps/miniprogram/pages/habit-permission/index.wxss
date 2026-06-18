@@ -1,0 +1,183 @@
+.habit-permission-page {
+  padding-bottom: 0;
+}
+
+.permission-top-bar {
+  display: block;
+}
+
+.top-icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56rpx;
+  height: 56rpx;
+  color: #006b58;
+  font-size: 34rpx;
+  line-height: 1;
+}
+
+.top-title {
+  color: #006b58;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 42rpx;
+}
+
+.permission-panel {
+  margin-top: 30rpx;
+  padding: 22rpx;
+  background: #f2f4f2;
+  border-radius: 24rpx;
+}
+
+.permission-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8rpx 4rpx 18rpx;
+}
+
+.panel-title-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.panel-icon {
+  margin-right: 10rpx;
+  color: #006b58;
+  font-size: 34rpx;
+  line-height: 1;
+}
+
+.panel-title {
+  color: #191c1b;
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 44rpx;
+}
+
+.expand-icon {
+  color: #3e4945;
+  font-size: 34rpx;
+  line-height: 1;
+}
+
+.permission-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 88rpx;
+  margin-top: 16rpx;
+  padding: 0 24rpx;
+  color: #191c1b;
+  background: #ffffff;
+  border-radius: 16rpx;
+}
+
+.permission-option-active {
+  color: #006b58;
+  font-weight: 700;
+}
+
+.option-radio {
+  flex: none;
+  width: 22rpx;
+  height: 22rpx;
+  border: 3rpx solid #bdc9c4;
+  border-radius: 999rpx;
+}
+
+.option-radio-active {
+  border: 6rpx solid #006b58;
+  background: #006b58;
+}
+
+.option-label {
+  font-size: 30rpx;
+  line-height: 42rpx;
+}
+
+.member-check-card {
+  margin-top: 22rpx;
+  padding-top: 22rpx;
+  border-top: 2rpx solid #bdc9c4;
+}
+
+.member-state {
+  text-align: center;
+}
+
+.member-check {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 80rpx;
+  padding: 12rpx 8rpx;
+}
+
+.member-avatar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 56rpx;
+  height: 56rpx;
+  color: #005d4c;
+  background: #d9f7ee;
+  border-radius: 999rpx;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.member-text {
+  flex: 1;
+  min-width: 0;
+  margin-left: 16rpx;
+}
+
+.member-name {
+  color: #191c1b;
+  font-size: 26rpx;
+  font-weight: 500;
+  line-height: 40rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member-checkbox {
+  flex: none;
+  transform: scale(0.82);
+}
+
+.permission-tip {
+  margin-top: 8rpx;
+  padding: 0 8rpx;
+  color: #56625d;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.save-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 72rpx;
+  color: #ffffff;
+  background: #006b58;
+  border-radius: 16rpx;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.save-action {
+  height: 88rpx;
+  font-size: 30rpx;
+}
+
+.action-disabled {
+  color: #a7b0ab;
+  background: #eef1ef;
+}

@@ -114,6 +114,7 @@ create table habit_child_config (
     family_id bigint not null,
     child_id bigint not null,
     template_id bigint not null,
+    active_template_id bigint,
     name varchar(64) not null,
     description varchar(512),
     icon_key varchar(128),
@@ -129,7 +130,7 @@ create table habit_child_config (
     del_flag varchar(1) not null default '0',
     ts datetime not null,
     primary key (id),
-    constraint uk_habit_child_config_child_template unique (child_id, template_id)
+    constraint uk_habit_child_config_child_active_template unique (child_id, active_template_id)
 );
 create index idx_habit_child_config_family_child on habit_child_config (family_id, child_id);
 

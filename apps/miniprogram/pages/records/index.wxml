@@ -1,9 +1,47 @@
-<view class="page records-page">
-  <view class="page-title">记录</view>
-  <view class="page-subtitle">历史记录会在打卡闭环接入后展示。</view>
-
-  <view class="placeholder-card card">
-    <view class="placeholder-number">0</view>
-    <view class="muted-text">累计打卡天数</view>
+<view class="page records-page" style="{{pageTopStyle}}">
+  <view class="top-bar records-top" style="{{navBarStyle}}">
+    <view class="nav-content" style="{{navContentStyle}}">
+      <view class="top-title" style="{{navTitleStyle}}">{{navTitle}}</view>
+    </view>
   </view>
+
+  <view class="records-summary">
+    <view class="summary-content">
+      <view class="summary-eyebrow">成长历程</view>
+      <view class="summary-title">累计打卡 {{totalCheckinDays}} 天</view>
+      <view class="summary-metric-row">
+        <text class="material-symbols-outlined summary-metric-icon">{{icons.eco}}</text>
+        <text class="summary-metric-text">{{summaryMetricText}}</text>
+      </view>
+    </view>
+    <text class="material-symbols-outlined summary-watermark">{{icons.historyEdu}}</text>
+  </view>
+
+  <view wx:if="{{loading}}" class="state-text muted-text">加载中...</view>
+  <view wx:elif="{{errorText}}" class="state-text error-text">{{errorText}}</view>
+  <view wx:elif="{{hasNoRecords}}" class="empty-card card">
+    <view class="empty-title">暂无历史记录</view>
+    <view class="muted-text">完成一次打卡后会出现在这里。</view>
+  </view>
+  <block wx:else>
+    <view wx:for="{{historyGroups}}" wx:key="date" class="history-group">
+      <view class="history-date">{{item.dateText}}</view>
+      <view wx:for="{{item.items}}" wx:for-item="record" wx:key="checkinId" class="record-card card">
+        <view class="record-date-badge">
+          <view class="record-weekday">{{record.weekdayText}}</view>
+          <view class="record-day">{{record.dayText}}</view>
+        </view>
+        <view class="record-info">
+          <view class="record-title">{{record.recordDateText}}</view>
+          <view class="record-desc muted-text">{{record.recordSubtitleText}}</view>
+        </view>
+        <view class="record-right">
+          <view class="record-complete-pill">
+            <text class="material-symbols-outlined record-check-icon">{{icons.checkCircle}}</text>
+            <text>{{record.completeText}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
 </view>
