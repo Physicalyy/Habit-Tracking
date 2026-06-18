@@ -28,10 +28,11 @@ class MeControllerBootstrapTest {
     }
 
     @Test
-    void bootstrap_without_openid_returns_bad_request() throws Exception {
+    void bootstrap_without_auth_returns_unauthorized() throws Exception {
         mockMvc.perform(get("/api/me/bootstrap"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success").value(false));
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));
     }
 
     @Test

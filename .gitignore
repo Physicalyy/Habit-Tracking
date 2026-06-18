@@ -43,6 +43,7 @@ target/
 # WeChat miniprogram
 miniprogram_npm/
 project.private.config.json
+apps/miniprogram/app.local.config.js
 
 # Local AI/Trellis/tool state
 AGENTS.md

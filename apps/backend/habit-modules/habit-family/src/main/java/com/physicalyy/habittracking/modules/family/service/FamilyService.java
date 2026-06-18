@@ -55,8 +55,16 @@ public class FamilyService {
     }
 
     @Transactional
+    public CreateFamilyResponse createFamily(CreateFamilyRequest request) {
+        return createFamilyForUser(currentUserService.requireCurrentUser(), request);
+    }
+
+    @Transactional
     public CreateFamilyResponse createFamily(String openid, String nickname, CreateFamilyRequest request) {
-        UserAccount user = currentUserService.requireCurrentUser(openid, nickname);
+        return createFamilyForUser(currentUserService.findOrCreateByOpenid(openid, nickname, null), request);
+    }
+
+    private CreateFamilyResponse createFamilyForUser(UserAccount user, CreateFamilyRequest request) {
         String operator = user.getOpenid();
 
         FamilyGroup family = new FamilyGroup();
@@ -103,8 +111,12 @@ public class FamilyService {
     }
 
     @Transactional
-    public JoinFamilyResponse joinFamily(String openid, String nickname, JoinFamilyRequest request) {
-        UserAccount user = currentUserService.requireCurrentUser(openid, nickname);
+    public JoinFamilyResponse joinFamily(JoinFamilyRequest request) {
+        UserAccount user = currentUserService.requireCurrentUser();
+        return joinFamilyForUser(user, request);
+    }
+
+    private JoinFamilyResponse joinFamilyForUser(UserAccount user, JoinFamilyRequest request) {
         String operator = user.getOpenid();
         LocalDateTime now = LocalDateTime.now();
         FamilyInviteCode inviteCode = findUsableInviteCode(request.inviteCode(), now);
@@ -146,16 +158,16 @@ public class FamilyService {
         );
     }
 
-    public InviteCodeSummary getActiveInviteCode(String openid, String nickname, Long familyId) {
-        UserAccount user = currentUserService.requireCurrentUser(openid, nickname);
+    public InviteCodeSummary getActiveInviteCode(Long familyId) {
+        UserAccount user = currentUserService.requireCurrentUser();
         FamilyGroup family = findActiveFamily(familyId);
         requireAdminMember(user.getId(), family);
         FamilyInviteCode inviteCode = findActiveInviteCodeByFamily(familyId);
         return new InviteCodeSummary(inviteCode.getCode(), inviteCode.getStatus(), inviteCode.getExpiresTime());
     }
 
-    public List<FamilyMemberSummary> listFamilyMembers(String openid, String nickname, Long familyId) {
-        UserAccount user = currentUserService.requireCurrentUser(openid, nickname);
+    public List<FamilyMemberSummary> listFamilyMembers(Long familyId) {
+        UserAccount user = currentUserService.requireCurrentUser();
         FamilyGroup family = findActiveFamily(familyId);
         requireActiveMember(user.getId(), family.getId());
         return familyMemberMapper.selectList(new LambdaQueryWrapper<FamilyMember>()
@@ -176,8 +188,8 @@ public class FamilyService {
     }
 
     @Transactional
-    public InviteCodeSummary refreshInviteCode(String openid, String nickname, Long familyId) {
-        UserAccount user = currentUserService.requireCurrentUser(openid, nickname);
+    public InviteCodeSummary refreshInviteCode(Long familyId) {
+        UserAccount user = currentUserService.requireCurrentUser();
         FamilyGroup family = findActiveFamily(familyId);
         FamilyMember adminMember = requireAdminMember(user.getId(), family);
         String operator = user.getOpenid();

@@ -1,6 +1,7 @@
 # 微信小程序首登到今日空态接口契约
 
-本文档描述小程序首阶段使用的最小接口契约。当前小程序实现先走本地 mock 适配层，后端业务接口落地后应保持字段语义一致。
+本文档描述小程序首阶段使用的最小接口契约。正式环境中，小程序先用
+`wx.login` 获取微信 code，再调用后端登录接口换取应用 Bearer Token。
 
 ## 通用返回
 
@@ -39,18 +40,34 @@ JavaScript's safe integer range. Count fields such as `totalCheckinCount` and
 
 ```json
 {
-  "token": "mock-token",
+  "token": "signed-backend-token",
   "user": {
-    "id": "user_mock_parent",
-    "openid": "mock-openid",
-    "nickname": "新手家长",
+    "id": "1001",
+    "openid": "wechat-openid",
+    "nickname": "微信用户"
   }
 }
 ```
 
+后端用服务器环境变量 `WECHAT_MINIPROGRAM_APPID` 和
+`WECHAT_MINIPROGRAM_SECRET` 调用微信 `code2Session`。小程序不得保存或接触
+`AppSecret`、`session_key`。
+
+登录成功后，小程序必须持久化 `token`，后续业务请求统一带：
+
+```http
+Authorization: Bearer <token>
+```
+
+收到 HTTP `401` 或响应 `code=UNAUTHORIZED` 时，小程序清理本地 token，重新
+调用一次 `wx.login` 和 `POST /api/auth/wechat-login`，然后重试当前请求一次。
+重试仍失败时提示登录失效。
+
 ## GET /api/me/bootstrap
 
 用途：获取小程序启动所需的当前态。
+
+认证：需要 `Authorization: Bearer <token>`。
 
 响应 `data`：
 

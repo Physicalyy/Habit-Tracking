@@ -67,8 +67,8 @@ public class ChildHabitService {
         this.habitChildAllowedMemberMapper = habitChildAllowedMemberMapper;
     }
 
-    public List<ChildHabitSummary> listChildHabits(String openid, String nickname, Long childId) {
-        ChildContext context = requireChildContext(openid, nickname, childId);
+    public List<ChildHabitSummary> listChildHabits(Long childId) {
+        ChildContext context = requireChildContext(childId);
         return habitChildConfigMapper.selectList(new LambdaQueryWrapper<HabitChildConfig>()
                         .eq(HabitChildConfig::getFamilyId, context.familyId())
                         .eq(HabitChildConfig::getChildId, childId)
@@ -81,8 +81,8 @@ public class ChildHabitService {
     }
 
     @Transactional
-    public ChildHabitSummary addSystemTemplate(String openid, String nickname, Long childId, AddChildHabitRequest request) {
-        ChildContext context = requireChildContext(openid, nickname, childId);
+    public ChildHabitSummary addSystemTemplate(Long childId, AddChildHabitRequest request) {
+        ChildContext context = requireChildContext(childId);
         HabitTemplate template = requireActiveTemplate(request.templateId());
         if (!"SYSTEM".equals(template.getSourceType())) {
             throw new BusinessException("BAD_REQUEST", "Only system templates can be added through this endpoint");
@@ -95,8 +95,8 @@ public class ChildHabitService {
     }
 
     @Transactional
-    public CreateCustomHabitResponse createCustomHabit(String openid, String nickname, CreateCustomHabitTemplateRequest request) {
-        ChildContext context = requireChildContext(openid, nickname, request.childId());
+    public CreateCustomHabitResponse createCustomHabit(CreateCustomHabitTemplateRequest request) {
+        ChildContext context = requireChildContext(request.childId());
         String operator = context.user().getOpenid();
 
         HabitTemplate template = new HabitTemplate();
@@ -126,13 +126,11 @@ public class ChildHabitService {
 
     @Transactional
     public ChildHabitSummary updateChildHabit(
-            String openid,
-            String nickname,
             Long childId,
             Long childHabitId,
             UpdateChildHabitRequest request
     ) {
-        ChildContext context = requireChildContext(openid, nickname, childId);
+        ChildContext context = requireChildContext(childId);
         HabitChildConfig childHabit = requireChildHabit(context, childHabitId);
         childHabit.setName(request.name().trim());
         childHabit.setDescription(trimToEmpty(request.description()));
@@ -145,13 +143,11 @@ public class ChildHabitService {
 
     @Transactional
     public ChildHabitPermissionSummary updatePermissions(
-            String openid,
-            String nickname,
             Long childId,
             Long childHabitId,
             UpdateChildHabitPermissionRequest request
     ) {
-        ChildContext context = requireChildContext(openid, nickname, childId);
+        ChildContext context = requireChildContext(childId);
         requireAdminMember(context);
         HabitChildConfig childHabit = requireChildHabit(context, childHabitId);
         String permissionType = request.permissionType().trim();
@@ -188,13 +184,11 @@ public class ChildHabitService {
 
     @Transactional
     public ChildHabitSummary updateStatus(
-            String openid,
-            String nickname,
             Long childId,
             Long childHabitId,
             UpdateChildHabitStatusRequest request
     ) {
-        ChildContext context = requireChildContext(openid, nickname, childId);
+        ChildContext context = requireChildContext(childId);
         String status = request.status().trim();
         if (!"active".equals(status) && !"disabled".equals(status)) {
             throw new BusinessException("BAD_REQUEST", "Child habit status is invalid");
@@ -208,8 +202,8 @@ public class ChildHabitService {
     }
 
     @Transactional
-    public void deleteChildHabit(String openid, String nickname, Long childId, Long childHabitId) {
-        ChildContext context = requireChildContext(openid, nickname, childId);
+    public void deleteChildHabit(Long childId, Long childHabitId) {
+        ChildContext context = requireChildContext(childId);
         requireAdminMember(context);
         HabitChildConfig childHabit = requireChildHabit(context, childHabitId);
         String operator = context.user().getOpenid();
@@ -238,8 +232,8 @@ public class ChildHabitService {
         return childHabit;
     }
 
-    private ChildContext requireChildContext(String openid, String nickname, Long childId) {
-        UserAccount user = currentUserService.requireCurrentUser(openid, nickname);
+    private ChildContext requireChildContext(Long childId) {
+        UserAccount user = currentUserService.requireCurrentUser();
         ChildProfile child = childProfileMapper.selectOne(new LambdaQueryWrapper<ChildProfile>()
                 .eq(ChildProfile::getId, childId)
                 .eq(ChildProfile::getStatus, "active")

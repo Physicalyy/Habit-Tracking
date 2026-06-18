@@ -1,6 +1,8 @@
-const STORAGE_KEY = "habit-tracking.mock-session";
+const MOCK_STORAGE_KEY = "habit-tracking.mock-session";
+const SESSION_STORAGE_KEY = "habit-tracking.session";
 
 let memorySession = null;
+let memoryAuthSession = null;
 
 const mockUser = Object.freeze({
   id: "user_mock_parent",
@@ -37,7 +39,7 @@ function createEmptySession() {
 
 function getMockSession() {
   if (canUseWxStorage()) {
-    const stored = wx.getStorageSync(STORAGE_KEY);
+    const stored = wx.getStorageSync(MOCK_STORAGE_KEY);
     if (stored) {
       return clone(stored);
     }
@@ -55,7 +57,7 @@ function saveMockSession(session) {
   memorySession = nextSession;
 
   if (canUseWxStorage()) {
-    wx.setStorageSync(STORAGE_KEY, nextSession);
+    wx.setStorageSync(MOCK_STORAGE_KEY, nextSession);
   }
 
   return clone(nextSession);
@@ -68,10 +70,42 @@ function resetMockSession() {
     typeof wx !== "undefined" &&
     typeof wx.removeStorageSync === "function"
   ) {
-    wx.removeStorageSync(STORAGE_KEY);
+    wx.removeStorageSync(MOCK_STORAGE_KEY);
   }
 
   return clone(memorySession);
+}
+
+function getSession() {
+  if (canUseWxStorage()) {
+    const stored = wx.getStorageSync(SESSION_STORAGE_KEY);
+    if (stored) {
+      return clone(stored);
+    }
+  }
+  return memoryAuthSession ? clone(memoryAuthSession) : null;
+}
+
+function saveSession(session) {
+  const nextSession = clone(session);
+  memoryAuthSession = nextSession;
+
+  if (canUseWxStorage()) {
+    wx.setStorageSync(SESSION_STORAGE_KEY, nextSession);
+  }
+
+  return clone(nextSession);
+}
+
+function clearSession() {
+  memoryAuthSession = null;
+
+  if (
+    typeof wx !== "undefined" &&
+    typeof wx.removeStorageSync === "function"
+  ) {
+    wx.removeStorageSync(SESSION_STORAGE_KEY);
+  }
 }
 
 module.exports = {
@@ -79,4 +113,7 @@ module.exports = {
   getMockSession,
   saveMockSession,
   resetMockSession,
+  getSession,
+  saveSession,
+  clearSession,
 };

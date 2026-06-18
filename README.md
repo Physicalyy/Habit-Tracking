@@ -45,8 +45,15 @@ WeChat miniprogram is not built into this compose stack.
    cp .env.example .env
    ```
 
-2. Edit `.env` and set `MYSQL_ROOT_PASSWORD` to the local deployment password.
-   Do not commit `.env`.
+2. Edit `.env` and set deployment-only secrets. Do not commit `.env`.
+
+   Required backend environment variables:
+
+   - `MYSQL_ROOT_PASSWORD`
+   - `WECHAT_MINIPROGRAM_APPID`
+   - `WECHAT_MINIPROGRAM_SECRET`
+   - `AUTH_TOKEN_SECRET`
+   - `AUTH_TOKEN_TTL_SECONDS` defaults to `604800`
 
 3. Build and start the stack:
 
@@ -69,6 +76,23 @@ Compose services:
 
 If Docker Hub is slow or blocked, set `BACKEND_JRE_IMAGE` in `.env` to an
 available Java 17 JRE image mirror before running `docker compose up`.
+
+Production miniprogram deployment also requires private environment
+configuration outside the public repository:
+
+- Add the deployed backend HTTPS domain as a WeChat request legal domain.
+- If server IP whitelist is enabled for the miniprogram secret, add the
+  backend server's outbound IP shown by your server or by WeChat's
+  `code2Session` error response.
+- Keep `WECHAT_MINIPROGRAM_SECRET` and `AUTH_TOKEN_SECRET` only in 1Panel /
+  container environment variables. They must not be written into miniprogram
+  source code.
+- Keep the real miniprogram API base URL in a local ignored file such as
+  `apps/miniprogram/app.local.config.js`, not in tracked source.
+
+  ```bash
+  cp apps/miniprogram/app.local.config.example.js apps/miniprogram/app.local.config.js
+  ```
 
 Default local ports:
 

@@ -38,8 +38,8 @@ public class MeBootstrapService {
         this.childProfileMapper = childProfileMapper;
     }
 
-    public BootstrapResponse bootstrap(String openid, String nickname) {
-        UserAccount user = currentUserService.requireCurrentUser(openid, nickname);
+    public BootstrapResponse bootstrap() {
+        UserAccount user = currentUserService.requireCurrentUser();
         List<FamilyMember> members = familyMemberMapper.selectList(new LambdaQueryWrapper<FamilyMember>()
                 .eq(FamilyMember::getUserId, user.getId())
                 .eq(FamilyMember::getStatus, "active")

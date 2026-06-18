@@ -53,8 +53,8 @@ public class CheckinService {
         this.habitCheckinRecordMapper = habitCheckinRecordMapper;
     }
 
-    public List<TodayHabitSummary> listTodayHabits(String openid, String nickname, Long childId) {
-        ChildContext context = requireChildContext(openid, nickname, childId);
+    public List<TodayHabitSummary> listTodayHabits(Long childId) {
+        ChildContext context = requireChildContext(childId);
         List<HabitChildConfig> childHabits = habitChildConfigMapper.selectList(new LambdaQueryWrapper<HabitChildConfig>()
                 .eq(HabitChildConfig::getFamilyId, context.familyId())
                 .eq(HabitChildConfig::getChildId, childId)
@@ -80,8 +80,8 @@ public class CheckinService {
                 .toList();
     }
 
-    public List<CheckinHistoryItem> listHistory(String openid, String nickname, Long childId) {
-        ChildContext context = requireChildContext(openid, nickname, childId);
+    public List<CheckinHistoryItem> listHistory(Long childId) {
+        ChildContext context = requireChildContext(childId);
         List<HabitCheckinRecord> records = habitCheckinRecordMapper.selectList(
                 new LambdaQueryWrapper<HabitCheckinRecord>()
                         .eq(HabitCheckinRecord::getFamilyId, context.familyId())
@@ -111,8 +111,8 @@ public class CheckinService {
                 .toList();
     }
 
-    public CheckinSummary getSummary(String openid, String nickname, Long childId) {
-        ChildContext context = requireChildContext(openid, nickname, childId);
+    public CheckinSummary getSummary(Long childId) {
+        ChildContext context = requireChildContext(childId);
         List<HabitCheckinRecord> records = habitCheckinRecordMapper.selectList(
                 new LambdaQueryWrapper<HabitCheckinRecord>()
                         .eq(HabitCheckinRecord::getFamilyId, context.familyId())
@@ -126,8 +126,8 @@ public class CheckinService {
     }
 
     @Transactional
-    public TodayHabitSummary checkin(String openid, String nickname, Long childId, Long childHabitId) {
-        ChildContext context = requireChildContext(openid, nickname, childId);
+    public TodayHabitSummary checkin(Long childId, Long childHabitId) {
+        ChildContext context = requireChildContext(childId);
         HabitChildConfig childHabit = requireActiveChildHabit(context, childHabitId);
         if (!canCheckin(childHabit, context.member())) {
             throw new BusinessException("BAD_REQUEST", "Current member cannot check in this habit");
@@ -153,8 +153,8 @@ public class CheckinService {
     }
 
     @Transactional
-    public TodayHabitSummary undoTodayCheckin(String openid, String nickname, Long childId, Long childHabitId) {
-        ChildContext context = requireChildContext(openid, nickname, childId);
+    public TodayHabitSummary undoTodayCheckin(Long childId, Long childHabitId) {
+        ChildContext context = requireChildContext(childId);
         HabitChildConfig childHabit = requireActiveChildHabit(context, childHabitId);
         if (!canCheckin(childHabit, context.member())) {
             throw new BusinessException("BAD_REQUEST", "Current member cannot undo this check-in");
@@ -171,8 +171,8 @@ public class CheckinService {
         return toSummary(childHabit, null, context.member());
     }
 
-    private ChildContext requireChildContext(String openid, String nickname, Long childId) {
-        UserAccount user = currentUserService.requireCurrentUser(openid, nickname);
+    private ChildContext requireChildContext(Long childId) {
+        UserAccount user = currentUserService.requireCurrentUser();
         ChildProfile child = childProfileMapper.selectOne(new LambdaQueryWrapper<ChildProfile>()
                 .eq(ChildProfile::getId, childId)
                 .eq(ChildProfile::getStatus, "active")

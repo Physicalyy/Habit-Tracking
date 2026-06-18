@@ -1,8 +1,8 @@
 package com.physicalyy.habittracking.common.exception;
 
-public class MissingOpenidException extends RuntimeException {
+public class MissingOpenidException extends UnauthorizedException {
 
     public MissingOpenidException() {
-        super("X-Test-Openid is required");
+        super("Authentication is required");
     }
 }

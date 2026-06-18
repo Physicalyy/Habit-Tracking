@@ -1273,6 +1273,10 @@ function assertNoBlockingBusinessFeedback(pagePath) {
   assert.ok(!source.includes("wx.showModal"), `${pagePath}.js must use inline confirmation instead of wx.showModal`);
 }
 
+function extractHttpsUrls(source) {
+  return Array.from(source.matchAll(/https:\/\/[^"',\s)]+/g), (match) => match[0]);
+}
+
 function assertAppConfig() {
   const appConfig = readJson(join(rootDir, "app.json"));
   const projectConfig = readJson(join(rootDir, "project.config.json"));
@@ -1304,10 +1308,34 @@ function assertApiConfiguration() {
   }
 
   const requestSource = readFileSync(join(rootDir, "utils/request.js"), "utf8");
+  const appSource = readFileSync(join(rootDir, "app.js"), "utf8");
+  const appConfigSource = readFileSync(join(rootDir, "app.config.js"), "utf8");
+  const authServiceSource = readFileSync(join(rootDir, "services/auth-service.js"), "utf8");
+  const sessionStateSource = readFileSync(join(rootDir, "services/session-state.js"), "utf8");
   assert.ok(!requestSource.includes("const USE_MOCK_API = true"), "mock API must be explicit");
   assertTextIncludes(join(rootDir, "utils/request.js"), "setRequestConfig");
-  assertTextIncludes(join(rootDir, "utils/request.js"), '"X-Test-Openid"');
-  assertTextIncludes(join(rootDir, "utils/request.js"), '"X-Test-Nickname"');
+  assertTextIncludes(join(rootDir, "utils/request.js"), "Authorization");
+  assertTextIncludes(join(rootDir, "utils/request.js"), "Bearer ");
+  assertTextIncludes(join(rootDir, "utils/request.js"), "UNAUTHORIZED");
+  assertTextIncludes(join(rootDir, "services/auth-service.js"), "wx.login");
+  assertTextIncludes(join(rootDir, "services/auth-service.js"), "saveSession");
+  assertTextIncludes(join(rootDir, "services/session-state.js"), "habit-tracking.session");
+  assertTextIncludes(join(rootDir, "app.js"), "app.local.config.js");
+  assertTextIncludes(join(rootDir, "app.local.config.example.js"), "your-backend-domain.example");
+  assert.ok(appConfigSource.includes("https://example.com"), "public app config must use a placeholder backend domain");
+  assert.deepEqual(
+    extractHttpsUrls(appSource),
+    [],
+    "app.js must not include a concrete backend HTTPS domain",
+  );
+  assert.deepEqual(
+    extractHttpsUrls(appConfigSource),
+    ["https://example.com"],
+    "tracked app config must only include the placeholder backend HTTPS domain",
+  );
+  assert.ok(!appSource.includes("testOpenid") && !appSource.includes("testNickname"), "app.js must not configure fixed test identity");
+  assert.ok(!requestSource.includes('"X-Test-Openid"') && !requestSource.includes('"X-Test-Nickname"'), "utils/request.js must not send test identity headers");
+  assert.ok(authServiceSource.includes("login") && sessionStateSource.includes("clearSession"), "miniprogram must expose real login/session helpers");
 }
 
 function assertGlobalFixedActionSafeArea() {
@@ -1498,9 +1526,12 @@ for (const page of requiredPages) {
 for (const path of [
   "core/api.js",
   "core/routes.js",
+  "app.config.js",
+  "app.local.config.example.js",
   "utils/request.js",
   "utils/asset-path.js",
   "utils/mock-api.js",
+  "services/auth-service.js",
   "services/bootstrap-service.js",
   "services/family-service.js",
   "services/habit-service.js",

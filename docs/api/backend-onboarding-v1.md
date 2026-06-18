@@ -1,7 +1,8 @@
 # Backend Onboarding API V1
 
 This document describes the first backend APIs used by the miniprogram
-onboarding flow. V1 uses test headers to simulate the current WeChat user.
+onboarding flow. Production clients authenticate with a backend-issued Bearer
+Token obtained through real WeChat miniprogram login.
 
 ## Response Envelope
 
@@ -33,21 +34,24 @@ Error responses keep the same shape:
 ```json
 {
   "success": false,
-  "code": "BAD_REQUEST",
-  "message": "X-Test-Openid is required",
+  "code": "UNAUTHORIZED",
+  "message": "Authentication is required",
   "data": null
 }
 ```
 
-## Test Login Headers
+## Authentication
 
-| Header | Required | Description |
-| --- | --- | --- |
-| `X-Test-Openid` | Yes | Mock current user's WeChat openid. |
-| `X-Test-Nickname` | No | Mock current user's nickname. |
+`POST /api/auth/wechat-login` does not require `Authorization`. All other
+business APIs require:
 
-V1 keeps test headers for local development. Real WeChat code exchange can be
-enabled later through configuration without changing the public response shape.
+```http
+Authorization: Bearer <token>
+```
+
+The backend test suite may enable `X-Test-Openid` / `X-Test-Nickname` through
+`auth.test-headers.enabled=true`. These headers are compatibility-only test
+inputs and must not be used by the production miniprogram.
 
 ## WeChat Login
 
@@ -63,9 +67,12 @@ enabled later through configuration without changing the public response shape.
 
 ### Behavior
 
-- In local development, creates or reuses the current account from
-  `X-Test-Openid`.
-- Returns a temporary application token and current user summary.
+- Uses WeChat `code2Session` with server-side `WECHAT_MINIPROGRAM_APPID` and
+  `WECHAT_MINIPROGRAM_SECRET`.
+- Creates or reuses `auth_user_account` by returned `openid`, and saves
+  `unionid` when WeChat returns it.
+- Does not store, return, or log `session_key`.
+- Returns a signed application token and current user summary.
 - Does not require clients to guess bootstrap fields from the login response.
 
 ### Success Response
@@ -76,11 +83,11 @@ enabled later through configuration without changing the public response shape.
   "code": "OK",
   "message": "ok",
   "data": {
-    "token": "test-token-1001",
+    "token": "eyJ-or-signed-token",
     "user": {
       "id": 1001,
-      "openid": "test-openid-001",
-      "nickname": "Parent"
+      "openid": "wechat-openid",
+      "nickname": "微信用户"
     }
   }
 }
@@ -92,9 +99,8 @@ enabled later through configuration without changing the public response shape.
 
 ### Behavior
 
-- Creates `auth_user_account` when `X-Test-Openid` is new.
-- Reuses the existing account when `X-Test-Openid` already exists.
-- Updates nickname when `X-Test-Nickname` is present and changed.
+- Requires a valid Bearer Token.
+- Loads the current `auth_user_account` from the token payload.
 - Returns `needOnboarding=true` when the user has no active family membership.
 - Returns active families, default family, and default child when the user has
   active family membership.
@@ -160,7 +166,9 @@ enabled later through configuration without changing the public response shape.
 
 | HTTP Status | Code | Message |
 | --- | --- | --- |
-| 400 | `BAD_REQUEST` | `X-Test-Openid is required` |
+| 401 | `UNAUTHORIZED` | `Authentication is required` |
+| 401 | `UNAUTHORIZED` | `Authentication token is invalid` |
+| 401 | `UNAUTHORIZED` | `Authentication token is expired` |
 
 ## Create Family
 
@@ -186,7 +194,7 @@ enabled later through configuration without changing the public response shape.
 
 Within one transaction, the backend:
 
-1. Creates or reuses the current user account.
+1. Loads the current user account from the Bearer Token.
 2. Creates `family_group`.
 3. Creates the main parent `family_member`.
 4. Updates `family_group.admin_member_id`.
@@ -227,7 +235,7 @@ client idempotency key for repeated button taps.
 
 | HTTP Status | Code | Message |
 | --- | --- | --- |
-| 400 | `BAD_REQUEST` | `X-Test-Openid is required` |
+| 401 | `UNAUTHORIZED` | `Authentication is required` |
 | 400 | `BAD_REQUEST` | `Request validation failed` |
 
 ## Join Family
@@ -400,8 +408,8 @@ Lists enabled habit templates for the V1 miniprogram habit library.
 
 ## Child Habit Configuration
 
-All child-habit APIs require the current `X-Test-Openid` user to be an active
-member of the child's family.
+All child-habit APIs require a valid Bearer Token and the current user to be an
+active member of the child's family.
 
 ### List Child Habits
 
@@ -710,7 +718,20 @@ Response `data`:
 | 400 | `BAD_REQUEST` | `Child not found` |
 | 400 | `BAD_REQUEST` | `Current user is not a family member` |
 
+## Deployment Notes
+
+- Backend container environment variables:
+  - `WECHAT_MINIPROGRAM_APPID`
+  - `WECHAT_MINIPROGRAM_SECRET`
+  - `AUTH_TOKEN_SECRET`
+  - `AUTH_TOKEN_TTL_SECONDS`, default `604800`
+- WeChat public platform must add the deployed backend HTTPS domain as a
+  request legal domain.
+- If WeChat server IP whitelist is enabled, add the backend server's outbound
+  IP from your server or from the WeChat error response.
+
 ## Out Of Scope
 
-- Production WeChat AppSecret handling and token refresh.
+- WeChat Pay APIv3 keys, merchant certificates, safe keyboard certificates.
+- Phone number authorization, avatar/nickname authorization.
 - Account deletion or logout APIs.

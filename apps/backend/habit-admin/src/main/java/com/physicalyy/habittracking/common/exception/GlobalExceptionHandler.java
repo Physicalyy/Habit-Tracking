@@ -11,9 +11,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MissingOpenidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ApiResult<Void> handleMissingOpenid(MissingOpenidException exception) {
-        return ApiResult.error("BAD_REQUEST", exception.getMessage());
+        return ApiResult.error("UNAUTHORIZED", exception.getMessage());
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResult<Void> handleUnauthorized(UnauthorizedException exception) {
+        return ApiResult.error("UNAUTHORIZED", exception.getMessage());
     }
 
     @ExceptionHandler(BusinessException.class)

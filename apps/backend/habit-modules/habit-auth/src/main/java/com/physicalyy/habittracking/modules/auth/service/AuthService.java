@@ -10,15 +10,33 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final CurrentUserService currentUserService;
+    private final WechatLoginClient wechatLoginClient;
+    private final AuthTokenService authTokenService;
+    private final AuthenticationContext authenticationContext;
 
-    public AuthService(CurrentUserService currentUserService) {
+    public AuthService(
+            CurrentUserService currentUserService,
+            WechatLoginClient wechatLoginClient,
+            AuthTokenService authTokenService,
+            AuthenticationContext authenticationContext
+    ) {
         this.currentUserService = currentUserService;
+        this.wechatLoginClient = wechatLoginClient;
+        this.authTokenService = authTokenService;
+        this.authenticationContext = authenticationContext;
     }
 
-    public WechatLoginResponse wechatLogin(String openid, String nickname, WechatLoginRequest request) {
-        UserAccount user = currentUserService.requireCurrentUser(openid, nickname);
+    public WechatLoginResponse wechatLogin(WechatLoginRequest request) {
+        CurrentUserIdentity testIdentity = authenticationContext.currentUserIdentity().orElse(null);
+        UserAccount user;
+        if (testIdentity != null) {
+            user = currentUserService.requireCurrentUser();
+        } else {
+            WechatSession session = wechatLoginClient.codeToSession(request.code());
+            user = currentUserService.findOrCreateByOpenid(session.openid(), null, session.unionid());
+        }
         return new WechatLoginResponse(
-                "test-token-" + user.getId(),
+                authTokenService.issue(user),
                 new AuthUserSummary(user.getId(), user.getOpenid(), user.getNickname())
         );
     }

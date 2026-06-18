@@ -1,9 +1,17 @@
 const { setRequestConfig } = require("./utils/request.js");
+const publicConfig = require("./app.config.js");
+
+function loadLocalConfig() {
+  try {
+    return require("./app.local.config.js");
+  } catch (error) {
+    return {};
+  }
+}
 
 setRequestConfig({
-  apiBaseUrl: "http://127.0.0.1:18080",
-  testOpenid: "mp-owner-002",
-  testNickname: "Owner2",
+  ...publicConfig,
+  ...loadLocalConfig(),
 });
 
 App({
