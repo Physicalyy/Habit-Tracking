@@ -2,6 +2,12 @@
 
 Habit-Tracking 是一个习惯打卡系统，包含后端服务、Web 前端和微信小程序。项目使用 GitHub 做仓库管理，采用单仓库 monorepo 结构。
 
+This is a public repository. Do not commit real deployment domains, server IPs,
+account identifiers, secrets, keys, certificates, whitelist values, or real
+logs. Use placeholders in tracked files and keep real values in ignored local
+files or server-side configuration. See
+`docs/security/public-repo-safety.md`.
+
 ## 目录结构
 
 ```text
