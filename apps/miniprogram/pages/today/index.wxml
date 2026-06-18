@@ -5,6 +5,8 @@
     </view>
   </view>
 
+  <view wx:if="{{feedbackVisible}}" class="{{feedbackClass}}">{{feedbackText}}</view>
+
   <view wx:if="{{loading}}" class="muted-text today-state">加载中...</view>
   <view wx:elif="{{errorText}}" class="error-text today-state">{{errorText}}</view>
 
@@ -49,7 +51,14 @@
       <view class="section-link" bindtap="goHabitManage">管理习惯</view>
     </view>
 
-    <view wx:for="{{todayHabits}}" wx:key="childHabitId" class="today-habit-card card">
+    <view wx:for="{{uncheckedHabits}}" wx:key="childHabitId" class="{{item.cardClass}}">
+      <view wx:if="{{item.showSuccessBurst}}" class="checkin-success-burst">
+        <view class="checkin-success-ring"></view>
+        <view class="checkin-particle checkin-particle-1"></view>
+        <view class="checkin-particle checkin-particle-2"></view>
+        <view class="checkin-particle checkin-particle-3"></view>
+        <view class="checkin-particle checkin-particle-4"></view>
+      </view>
       <view class="habit-icon">
         <image wx:if="{{item.imageUrl}}" class="habit-image" mode="aspectFill" src="{{item.imageUrl}}" />
         <text wx:else>{{item.fallbackIcon}}</text>
@@ -60,10 +69,6 @@
           <view wx:if="{{item.showSourceBadge}}" class="{{item.sourceBadgeClass}}">{{item.sourceBadgeText}}</view>
         </view>
         <view class="habit-desc">{{item.description}}</view>
-        <view class="habit-meta">
-          <text>{{item.checkedText}}</text>
-          <text class="{{item.permissionClass}}">{{item.permissionText}}</text>
-        </view>
       </view>
       <view wx:if="{{item.showPermissionInlineText}}" class="permission-inline-text">{{item.permissionInlineText}}</view>
       <view
@@ -74,6 +79,42 @@
       >
         <text wx:if="{{item.actionIcon}}" class="material-symbols-outlined checkin-action-icon">{{item.actionIcon}}</text>
         <text>{{item.actionText}}</text>
+      </view>
+    </view>
+
+    <view wx:if="{{showCheckedSection}}" class="{{checkedSectionClass}}">
+      <view class="checked-section-head" bindtap="toggleCheckedHabits">
+        <view class="checked-section-copy">
+          <view class="checked-section-title">{{checkedSectionTitle}}</view>
+          <view class="checked-section-hint">{{checkedSectionHint}}</view>
+        </view>
+        <view class="checked-section-toggle">
+          <text>{{checkedSectionToggleText}}</text>
+          <text class="material-symbols-outlined checked-section-icon">{{checkedSectionIcon}}</text>
+        </view>
+      </view>
+
+      <view wx:if="{{checkedHabitsExpanded}}" class="checked-habit-list">
+        <view wx:for="{{checkedHabits}}" wx:key="childHabitId" class="today-habit-card checked-habit-card card">
+          <view class="habit-icon checked-habit-icon">
+            <image wx:if="{{item.imageUrl}}" class="habit-image" mode="aspectFill" src="{{item.imageUrl}}" />
+            <text wx:else>{{item.fallbackIcon}}</text>
+          </view>
+          <view class="habit-main">
+            <view class="habit-title-row">
+              <view class="{{item.habitNameClass}}">{{item.name}}</view>
+              <view wx:if="{{item.showSourceBadge}}" class="{{item.sourceBadgeClass}}">{{item.sourceBadgeText}}</view>
+            </view>
+            <view class="habit-desc">{{item.description}}</view>
+          </view>
+          <view
+            class="{{item.undoActionClass}}"
+            data-habit-id="{{item.childHabitId}}"
+            bindtap="undoCheckinTap"
+          >
+            <text>{{item.undoActionText}}</text>
+          </view>
+        </view>
       </view>
     </view>
   </view>

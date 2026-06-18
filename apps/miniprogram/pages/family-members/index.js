@@ -1,6 +1,7 @@
 const { ROUTES } = require("../../core/routes.js");
 const { getBootstrap } = require("../../services/bootstrap-service.js");
 const { listFamilyMembers } = require("../../services/family-service.js");
+const { defaultFeedbackState, showInlineFeedback } = require("../../utils/inline-feedback.js");
 const { buildNavState, goBackWithFallback } = require("../../utils/navigation-bar.js");
 
 Page({
@@ -15,6 +16,7 @@ Page({
     memberCount: 0,
     loading: false,
     errorText: "",
+    ...defaultFeedbackState,
     icons: {
       arrowBack: "\ue5e0",
       bubbleChart: "\ue6dd",
@@ -37,6 +39,7 @@ Page({
     this.setData({
       loading: true,
       errorText: "",
+      ...defaultFeedbackState,
       familyId: "",
       familyName: "",
       childNickname: "",
@@ -80,11 +83,11 @@ Page({
 
   goFamilyInvite() {
     if (!this.data.familyId) {
-      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      showInlineFeedback(this, "请先加入家庭", "info");
       return;
     }
     if (!this.data.isFamilyAdmin) {
-      wx.showToast({ title: "仅主家长可邀请成员", icon: "none" });
+      showInlineFeedback(this, "仅主家长可邀请成员", "info");
       return;
     }
     wx.navigateTo({ url: ROUTES.FAMILY_INVITE });

@@ -6,6 +6,7 @@ const {
   updateChildHabitStatus,
 } = require("../../services/child-habit-service.js");
 const { normalizeAssetPath } = require("../../utils/asset-path.js");
+const { defaultFeedbackState, showInlineFeedback } = require("../../utils/inline-feedback.js");
 const { buildNavState, goBackWithFallback } = require("../../utils/navigation-bar.js");
 
 Page({
@@ -19,6 +20,7 @@ Page({
     canManageHabits: false,
     updatingHabitId: "",
     deletingHabitId: "",
+    confirmingDeleteHabitId: "",
     addActionClass: "add-habit-action action-disabled",
     icons: {
       arrowBack: "\ue5e0",
@@ -26,6 +28,7 @@ Page({
       drag: "\ue25d",
       lightbulb: "\ue0f0",
     },
+    ...defaultFeedbackState,
     ...buildNavState({ title: "习惯管理", showBack: true }),
   },
 
@@ -44,7 +47,9 @@ Page({
       canManageHabits: false,
       updatingHabitId: "",
       deletingHabitId: "",
+      confirmingDeleteHabitId: "",
       addActionClass: "add-habit-action action-disabled",
+      ...defaultFeedbackState,
     });
     try {
       const bootstrap = await getBootstrap();
@@ -75,7 +80,8 @@ Page({
           sourceBadgeClass: sourceBadgeClass(habit),
           toggleSwitchClass: buildToggleSwitchClass(habit.status, canManageHabits, this.data.updatingHabitId === String(habit.id)),
           permissionActionClass: canManageHabits ? "permission-action" : "permission-action action-disabled",
-          deleteActionClass: canManageHabits ? "delete-swipe-action" : "delete-swipe-action action-disabled",
+          deleteActionClass: buildDeleteActionClass(habit.id, canManageHabits, this.data.confirmingDeleteHabitId, this.data.deletingHabitId),
+          deleteActionText: buildDeleteActionText(habit.id, this.data.confirmingDeleteHabitId, this.data.deletingHabitId),
           nextStatus: habit.status === "active" ? "disabled" : "active",
         })),
         hasNoHabits: habits.length === 0,
@@ -89,11 +95,11 @@ Page({
 
   goHabitLibrary() {
     if (!this.data.childId) {
-      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      showInlineFeedback(this, "请先加入家庭", "info");
       return;
     }
     if (!this.data.canManageHabits) {
-      wx.showToast({ title: "仅主家长可管理习惯", icon: "none" });
+      showInlineFeedback(this, "仅主家长可管理习惯", "info");
       return;
     }
     wx.navigateTo({ url: ROUTES.HABIT_LIBRARY });
@@ -105,11 +111,11 @@ Page({
 
   goHabitPermission(event) {
     if (!this.data.childId) {
-      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      showInlineFeedback(this, "请先加入家庭", "info");
       return;
     }
     if (!this.data.canManageHabits) {
-      wx.showToast({ title: "仅主家长可编辑权限", icon: "none" });
+      showInlineFeedback(this, "仅主家长可编辑权限", "info");
       return;
     }
     const habitId = event.currentTarget.dataset.habitId;
@@ -126,11 +132,11 @@ Page({
       return;
     }
     if (!this.data.childId) {
-      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      showInlineFeedback(this, "请先加入家庭", "info");
       return;
     }
     if (!this.data.canManageHabits) {
-      wx.showToast({ title: "仅主家长可管理习惯", icon: "none" });
+      showInlineFeedback(this, "仅主家长可管理习惯", "info");
       return;
     }
     const childHabitId = event.currentTarget.dataset.habitId;
@@ -141,7 +147,7 @@ Page({
       this.setData({ updatingHabitId: "" });
       await this.loadHabits();
     } catch (error) {
-      wx.showToast({ title: error.message || "状态更新失败", icon: "none" });
+      showInlineFeedback(this, error.message || "状态更新失败", "error");
       this.setData({ updatingHabitId: "" });
     }
   },
@@ -151,34 +157,41 @@ Page({
       return;
     }
     if (!this.data.childId) {
-      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      showInlineFeedback(this, "请先加入家庭", "info");
       return;
     }
     if (!this.data.canManageHabits) {
-      wx.showToast({ title: "仅主家长可删除习惯", icon: "none" });
+      showInlineFeedback(this, "仅主家长可删除习惯", "info");
       return;
     }
     const childHabitId = event.currentTarget.dataset.habitId;
-    wx.showModal({
-      title: "删除习惯",
-      content: "删除后今日页不再显示，历史打卡记录会保留。",
-      confirmText: "删除",
-      confirmColor: "#ba1a1a",
-      success: async (result) => {
-        if (!result.confirm) {
-          return;
-        }
-        try {
-          this.setData({ deletingHabitId: String(childHabitId) });
-          await removeChildHabit(this.data.childId, childHabitId);
-          wx.showToast({ title: "已删除", icon: "success" });
-          await this.loadHabits();
-        } catch (error) {
-          wx.showToast({ title: error.message || "删除失败", icon: "none" });
-        } finally {
-          this.setData({ deletingHabitId: "" });
-        }
-      },
+    const habitIdText = String(childHabitId);
+    if (this.data.confirmingDeleteHabitId !== habitIdText) {
+      this.setDeleteConfirmState(habitIdText);
+      showInlineFeedback(this, "再次点击删除可确认操作", "info");
+      return;
+    }
+    try {
+      this.setData({ deletingHabitId: habitIdText });
+      this.setDeleteConfirmState(habitIdText);
+      await removeChildHabit(this.data.childId, childHabitId);
+      await this.loadHabits();
+    } catch (error) {
+      showInlineFeedback(this, error.message || "删除失败", "error");
+    } finally {
+      this.setData({ deletingHabitId: "", confirmingDeleteHabitId: "" });
+      this.setDeleteConfirmState("");
+    }
+  },
+
+  setDeleteConfirmState(confirmingDeleteHabitId) {
+    this.setData({
+      confirmingDeleteHabitId,
+      habits: this.data.habits.map((habit) => ({
+        ...habit,
+        deleteActionClass: buildDeleteActionClass(habit.id, this.data.canManageHabits, confirmingDeleteHabitId, this.data.deletingHabitId),
+        deleteActionText: buildDeleteActionText(habit.id, confirmingDeleteHabitId, this.data.deletingHabitId),
+      })),
     });
   },
 });
@@ -203,6 +216,24 @@ function buildToggleSwitchClass(status, canManageHabits, updating) {
     parts.push("action-disabled");
   }
   return parts.join(" ");
+}
+
+function buildDeleteActionClass(habitId, canManageHabits, confirmingDeleteHabitId, deletingHabitId) {
+  const parts = ["delete-swipe-action"];
+  if (!canManageHabits || String(deletingHabitId) === String(habitId)) {
+    parts.push("action-disabled");
+  }
+  if (String(confirmingDeleteHabitId) === String(habitId)) {
+    parts.push("delete-swipe-confirm");
+  }
+  return parts.join(" ");
+}
+
+function buildDeleteActionText(habitId, confirmingDeleteHabitId, deletingHabitId) {
+  if (String(deletingHabitId) === String(habitId)) {
+    return "删除中";
+  }
+  return String(confirmingDeleteHabitId) === String(habitId) ? "确认删除" : "删除";
 }
 
 function sourceTypeOf(habit) {

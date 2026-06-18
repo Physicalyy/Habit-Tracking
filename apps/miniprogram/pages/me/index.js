@@ -1,6 +1,7 @@
 const { ROUTES } = require("../../core/routes.js");
 const { getBootstrap } = require("../../services/bootstrap-service.js");
 const { getCheckinSummary } = require("../../services/checkin-service.js");
+const { defaultFeedbackState, showInlineFeedback } = require("../../utils/inline-feedback.js");
 const { buildNavState } = require("../../utils/navigation-bar.js");
 const { syncCustomTabBar } = require("../../utils/tab-bar.js");
 
@@ -29,6 +30,7 @@ Page({
       groupAdd: "\uf8eb",
       chevronRight: "\ue5cc",
     },
+    ...defaultFeedbackState,
     ...buildNavState({ title: "我的" }),
   },
 
@@ -38,6 +40,7 @@ Page({
       nickname: "新手家长",
       avatarText: "新",
       ...defaultFamilyState,
+      ...defaultFeedbackState,
     });
     const bootstrap = await getBootstrap();
     const currentUser = bootstrap.currentUser || {};
@@ -72,7 +75,7 @@ Page({
 
   goFamilyMembers() {
     if (!this.data.hasFamily) {
-      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      showInlineFeedback(this, "请先加入家庭", "info");
       return;
     }
     wx.navigateTo({ url: ROUTES.FAMILY_MEMBERS });
@@ -80,7 +83,7 @@ Page({
 
   goHabitLibrary() {
     if (!this.data.hasFamily) {
-      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      showInlineFeedback(this, "请先加入家庭", "info");
       return;
     }
     wx.navigateTo({ url: ROUTES.HABIT_LIBRARY });
@@ -88,7 +91,7 @@ Page({
 
   goHabitManage() {
     if (!this.data.hasFamily) {
-      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      showInlineFeedback(this, "请先加入家庭", "info");
       return;
     }
     wx.navigateTo({ url: ROUTES.HABIT_MANAGE });

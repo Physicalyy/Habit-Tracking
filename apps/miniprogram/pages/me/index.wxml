@@ -5,6 +5,8 @@
     </view>
   </view>
 
+  <view wx:if="{{feedbackVisible}}" class="{{feedbackClass}}">{{feedbackText}}</view>
+
   <view class="profile-section">
     <view class="avatar-wrap">
       <view class="avatar">{{avatarText}}</view>

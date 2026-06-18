@@ -10,6 +10,8 @@
     </view>
   </view>
 
+  <view wx:if="{{feedbackVisible}}" class="{{feedbackClass}}">{{feedbackText}}</view>
+
   <view wx:if="{{loading}}" class="muted-text members-state">加载中...</view>
   <view wx:elif="{{errorText}}" class="error-text members-state">{{errorText}}</view>
   <view wx:elif="{{!familyId}}" class="card empty-card">

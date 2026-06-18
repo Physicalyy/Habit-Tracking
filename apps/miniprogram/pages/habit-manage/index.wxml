@@ -18,6 +18,8 @@
     </view>
   </view>
 
+  <view wx:if="{{feedbackVisible}}" class="{{feedbackClass}}">{{feedbackText}}</view>
+
   <view wx:if="{{loading}}" class="muted-text manage-state">加载中...</view>
   <view wx:elif="{{errorText}}" class="error-text manage-state">{{errorText}}</view>
   <view wx:elif="{{!childId}}" class="card empty-card">
@@ -72,7 +74,7 @@
           data-habit-id="{{item.id}}"
           bindtap="deleteHabitTap"
         >
-          删除
+          {{item.deleteActionText}}
         </view>
       </view>
     </scroll-view>

@@ -7,6 +7,8 @@
     </view>
   </view>
 
+  <view wx:if="{{feedbackVisible}}" class="{{feedbackClass}}">{{feedbackText}}</view>
+
   <view wx:if="{{loading}}" class="muted-text invite-state">加载中...</view>
   <view wx:elif="{{errorText}}" class="error-text invite-state">{{errorText}}</view>
   <view wx:elif="{{!familyId}}" class="card empty-card">
@@ -32,7 +34,7 @@
       </view>
       <view class="code-row">
         <view class="invite-code">{{inviteCode}}</view>
-        <view class="copy-action" bindtap="copyInviteCode">复制邀请码</view>
+        <view class="{{copyActionClass}}" bindtap="copyInviteCode">{{copyActionText}}</view>
       </view>
       <view class="refresh-row">
         <view class="refresh-hint">刷新后，旧邀请码将失效。</view>

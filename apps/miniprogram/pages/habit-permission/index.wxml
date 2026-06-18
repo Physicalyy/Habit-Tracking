@@ -7,6 +7,8 @@
     </view>
   </view>
 
+  <view wx:if="{{feedbackVisible}}" class="{{feedbackClass}}">{{feedbackText}}</view>
+
   <view class="permission-panel">
     <view class="permission-panel-head">
       <view class="panel-title-wrap">

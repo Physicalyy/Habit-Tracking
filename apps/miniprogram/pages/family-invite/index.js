@@ -5,6 +5,7 @@ const {
 } = require("../../services/family-service.js");
 const { ROUTES } = require("../../core/routes.js");
 const { buildNavState, goBackWithFallback } = require("../../utils/navigation-bar.js");
+const { defaultFeedbackState, showInlineFeedback } = require("../../utils/inline-feedback.js");
 const { drawInviteQr } = require("../../utils/qr-code.js");
 
 Page({
@@ -19,6 +20,8 @@ Page({
     loading: false,
     refreshing: false,
     refreshActionClass: "refresh-button",
+    copyActionText: "复制邀请码",
+    copyActionClass: "copy-action",
     icons: {
       arrowBack: "\ue5e0",
       family: "\ue63d",
@@ -31,6 +34,7 @@ Page({
       refresh: "\ue5d5",
     },
     errorText: "",
+    ...defaultFeedbackState,
     ...buildNavState({ title: "邀请家长加入", showBack: true }),
   },
 
@@ -46,6 +50,7 @@ Page({
     this.setData({
       loading: true,
       errorText: "",
+      ...defaultFeedbackState,
       familyId: "",
       familyName: "",
       childNickname: "",
@@ -54,6 +59,8 @@ Page({
       qrPayload: "",
       expiresTime: "",
       refreshing: false,
+      copyActionText: "复制邀请码",
+      copyActionClass: "copy-action",
       refreshActionClass: "refresh-button action-disabled",
     });
     try {
@@ -92,12 +99,25 @@ Page({
 
   copyInviteCode() {
     if (!this.data.inviteCode) {
-      wx.showToast({ title: "邀请码未生成", icon: "none" });
+      showInlineFeedback(this, "邀请码未生成", "info");
       return;
     }
     wx.setClipboardData({
       data: this.data.inviteCode,
-      success: () => wx.showToast({ title: "已复制", icon: "success" }),
+      success: () => {
+        wx.hideToast();
+        this.setData({
+          copyActionText: "已复制",
+          copyActionClass: "copy-action copy-action-done",
+        });
+        setTimeout(() => {
+          this.setData({
+            copyActionText: "复制邀请码",
+            copyActionClass: "copy-action",
+          });
+        }, 1800);
+      },
+      fail: () => showInlineFeedback(this, "复制失败", "error"),
     });
   },
 
@@ -106,11 +126,11 @@ Page({
       return;
     }
     if (!this.data.familyId) {
-      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      showInlineFeedback(this, "请先加入家庭", "info");
       return;
     }
     if (!this.data.isFamilyAdmin) {
-      wx.showToast({ title: "仅主家长可刷新邀请码", icon: "none" });
+      showInlineFeedback(this, "仅主家长可刷新邀请码", "info");
       return;
     }
     try {
@@ -123,9 +143,9 @@ Page({
         expiresTime: invite.expiresTime,
       });
       this.drawQrCode(qrPayload);
-      wx.showToast({ title: "已刷新", icon: "success" });
+      showInlineFeedback(this, "邀请码已刷新", "success");
     } catch (error) {
-      wx.showToast({ title: error.message || "刷新失败", icon: "none" });
+      showInlineFeedback(this, error.message || "刷新失败", "error");
     } finally {
       this.setData({ refreshing: false, refreshActionClass: "refresh-button" });
     }

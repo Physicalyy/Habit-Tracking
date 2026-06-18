@@ -1,6 +1,7 @@
 const { listFamilyMembers } = require("../../services/family-service.js");
 const { updateChildHabitPermission } = require("../../services/child-habit-service.js");
 const { ROUTES } = require("../../core/routes.js");
+const { defaultFeedbackState, showInlineFeedback } = require("../../utils/inline-feedback.js");
 const { buildNavState, goBackWithFallback } = require("../../utils/navigation-bar.js");
 
 Page({
@@ -17,6 +18,7 @@ Page({
     saving: false,
     saveClass: "save-action",
     errorText: "",
+    ...defaultFeedbackState,
     icons: {
       arrowBack: "\ue5e0",
       verifiedUser: "\ue8e8",
@@ -47,6 +49,7 @@ Page({
     this.setData({
       loading: true,
       errorText: "",
+      ...defaultFeedbackState,
       members: [],
       saving: false,
       saveClass: "save-action",
@@ -100,15 +103,15 @@ Page({
       return;
     }
     if (!this.data.childId) {
-      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      showInlineFeedback(this, "请先加入家庭", "info");
       return;
     }
     if (!this.data.childHabitId) {
-      wx.showToast({ title: "请先选择习惯", icon: "none" });
+      showInlineFeedback(this, "请先选择习惯", "info");
       return;
     }
     if (this.data.permissionType === "SPECIFIC_PARENTS" && this.data.allowedMemberIds.length === 0) {
-      wx.showToast({ title: "请选择可打卡家长", icon: "none" });
+      showInlineFeedback(this, "请选择可打卡家长", "info");
       return;
     }
     this.setData({
@@ -120,10 +123,12 @@ Page({
         permissionType: this.data.permissionType,
         allowedMemberIds: this.data.permissionType === "SPECIFIC_PARENTS" ? this.data.allowedMemberIds : [],
       });
-      wx.showToast({ title: "已保存", icon: "success" });
-      wx.navigateBack();
+      showInlineFeedback(this, "权限已保存", "success", 900);
+      setTimeout(() => {
+        wx.navigateBack();
+      }, 650);
     } catch (error) {
-      wx.showToast({ title: error.message || "保存失败", icon: "none" });
+      showInlineFeedback(this, error.message || "保存失败", "error");
     } finally {
       this.setData({
         saving: false,

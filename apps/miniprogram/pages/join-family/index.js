@@ -44,7 +44,6 @@ Page({
         this.setData({ inviteCode, errorMessage: "" });
       },
       fail: () => {
-        wx.showToast({ title: "扫码已取消", icon: "none" });
       },
     });
   },

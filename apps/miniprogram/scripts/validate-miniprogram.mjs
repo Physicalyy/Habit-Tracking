@@ -53,6 +53,7 @@ const requiredApiPaths = [
   "PUT /api/children/{childId}/habits/{childHabitId}/permissions",
   "GET /api/children/{childId}/today",
   "POST /api/children/{childId}/habits/{childHabitId}/checkins",
+  "DELETE /api/children/{childId}/habits/{childHabitId}/checkins/today",
   "GET /api/children/{childId}/checkins",
   "GET /api/children/{childId}/checkins/summary",
   "POST /api/habit-templates/custom",
@@ -372,7 +373,7 @@ function assertHabitLibraryPrototypeGuard() {
   }
   assert.ok(!jsSource.includes('selectedCategory === "CUSTOM"'), "habit-library must not use CUSTOM as a category filter");
   assert.ok(jsSource.includes("hasFamily"), "habit-library must track family state for secondary actions");
-  assert.ok(jsSource.includes('wx.showToast({ title: "请先加入家庭", icon: "none" })'), "habit-library custom habit entry must block users without family");
+  assert.ok(jsSource.includes("showInlineFeedback") && jsSource.includes("请先加入家庭"), "habit-library custom habit entry must show inline guidance without toast");
   assert.ok(jsSource.includes('sourceType: "SYSTEM"'), "habit-library must query system templates from the backend seed");
   assert.ok(jsSource.includes("listHabitTemplates"), "habit-library must load templates through the service layer");
   assert.ok(jsSource.includes("listChildHabits"), "habit-library must load child habits to initialize already-added template state");
@@ -623,9 +624,29 @@ function assertP0VisualPrototypeGuard() {
   for (const token of ["actionIcon", "\\ue86c", "checkin-action-icon", "normalizeAssetPath"]) {
     assert.ok(todayJs.includes(token) || todayWxml.includes(token) || todayWxss.includes(token), `today non-empty card must preserve checked-state token ${token}`);
   }
+  for (const token of [
+    "uncheckedHabits",
+    "checkedHabits",
+    "checkedHabitsExpanded",
+    "showCheckedSection",
+    "buildHabitGroups",
+    "buildCheckedSectionState",
+    "toggleCheckedHabits",
+  ]) {
+    assert.ok(todayJs.includes(token), `today page must preserve unfinished-first checked-collapse state token ${token}`);
+  }
+  for (const token of [
+    "animatingHabitId",
+    "checkinVisualState",
+    "buildAnimatedHabitCards",
+    "buildCheckinAnimationState",
+    "CHECKIN_SUCCESS_ANIMATION_MS",
+  ]) {
+    assert.ok(todayJs.includes(token), `today page must preserve checkin animation state token ${token}`);
+  }
   assert.ok(todayJs.includes("checkingHabitId"), "today page must guard repeated checkin taps while a request is in flight");
   assert.ok(todayJs.includes("this.data.checkingHabitId"), "today checkin handler must read in-flight checkin state");
-  for (const token of ["permissionClass", "actionClass"]) {
+  for (const token of ["actionClass"]) {
     assert.ok(todayJs.includes(token), `today page must derive visual state ${token} in JS`);
   }
   for (const token of ["habitNameClass", "sourceBadgeText", "sourceBadgeClass", "showSourceBadge", "permissionInlineText", "showPermissionInlineText"]) {
@@ -639,6 +660,27 @@ function assertP0VisualPrototypeGuard() {
   assert.ok(todayWxml.includes("{{item.sourceBadgeText}}"), "today source badge text must come from derived API state");
   assert.ok(todayWxml.includes('wx:if="{{item.showPermissionInlineText}}"'), "today no-permission inline text visibility must be derived in JS");
   assert.ok(todayWxml.includes('class="material-symbols-outlined checkin-action-icon"'), "today checked action must render Material check_circle icon from page data");
+  assert.ok(!todayWxml.includes("habit-meta"), "today cards must not show redundant checked/can-checkin metadata text");
+  assert.ok(todayWxml.includes('bindtap="undoCheckinTap"'), "today checked cards must expose an undo checkin action");
+  assert.ok(todayJs.includes("undoActionText") && todayJs.includes("undoActionClass"), "today checked cards must derive undo action state in JS");
+  assert.ok(todayWxml.includes('wx:for="{{uncheckedHabits}}"'), "today page must render unchecked habits before completed habits");
+  assert.ok(todayWxml.includes('wx:if="{{showCheckedSection}}"'), "today page must render completed habits behind a derived section flag");
+  assert.ok(todayWxml.includes('bindtap="toggleCheckedHabits"'), "today completed section must be collapsible");
+  assert.ok(todayWxml.includes('wx:if="{{checkedHabitsExpanded}}"'), "today checked habit cards must be hidden until the completed section expands");
+  for (const token of ["checked-section-head", "checked-section-toggle", "checked-habit-list", "checked-habit-card"]) {
+    assert.ok(todayWxml.includes(token) || todayWxss.includes(token), `today checked-collapse UI must preserve token ${token}`);
+  }
+  for (const token of [
+    "checkin-success-burst",
+    "checkin-particle",
+    "checkin-card-checking",
+    "checkin-card-success",
+    "checkin-card-leaving",
+    "checkin-burst-pop",
+    "checkin-card-leave",
+  ]) {
+    assert.ok(todayWxml.includes(token) || todayWxss.includes(token), `today checkin animation must preserve token ${token}`);
+  }
 
   for (const token of [
     "record-date-badge",
@@ -953,9 +995,11 @@ function assertSecondaryVisualPrototypeGuard() {
   assert.ok(familyInviteJs.includes("inviteCode="), "family-invite QR payload must carry inviteCode");
   assert.ok(!familyInviteWxml.includes("qr-placeholder") && !familyInviteWxml.includes("share-action"), "family-invite must not keep static QR placeholder or fake share action");
   assert.ok(
-    /copyInviteCode\(\)\s*\{[\s\S]*if\s*\(\s*!this\.data\.inviteCode\s*\)[\s\S]*wx\.showToast\(\{ title: "邀请码未生成", icon: "none" \}\)[\s\S]*return;/.test(familyInviteJs),
-    "family-invite copy action must show feedback when invite code is missing",
+    /copyInviteCode\(\)\s*\{[\s\S]*if\s*\(\s*!this\.data\.inviteCode\s*\)[\s\S]*showInlineFeedback\(this,\s*"邀请码未生成"[\s\S]*return;/.test(familyInviteJs),
+    "family-invite copy action must show inline feedback when invite code is missing",
   );
+  assert.ok(familyInviteJs.includes("wx.hideToast()"), "family-invite copy success must hide WeChat clipboard toast");
+  assert.ok(familyInviteJs.includes("copyActionText") && familyInviteWxml.includes("{{copyActionText}}"), "family-invite copy success must use button-local copied state");
   assert.ok(
     /wx:elif="\{\{!familyId\}\}"[\s\S]*wx:elif="\{\{!isFamilyAdmin\}\}"/.test(familyInviteWxml),
     "family-invite must show no-family empty state before admin-only empty state",
@@ -1124,6 +1168,12 @@ function assertNoRawApiUrls(pagePath) {
   }
 }
 
+function assertNoBlockingBusinessFeedback(pagePath) {
+  const source = readFileSync(join(rootDir, pagePath + ".js"), "utf8");
+  assert.ok(!source.includes("wx.showToast"), `${pagePath}.js must use inline feedback instead of wx.showToast`);
+  assert.ok(!source.includes("wx.showModal"), `${pagePath}.js must use inline confirmation instead of wx.showModal`);
+}
+
 function assertAppConfig() {
   const appConfig = readJson(join(rootDir, "app.json"));
   const projectConfig = readJson(join(rootDir, "project.config.json"));
@@ -1147,6 +1197,7 @@ function assertApiConfiguration() {
     "function deleteChildHabit",
     "function todayHabits",
     "function checkinHabit",
+    "function undoTodayCheckin",
     "function checkinHistory",
     "function checkinSummary",
   ]) {
@@ -1186,8 +1237,8 @@ function assertRoutesAndServices() {
     ["services/family-service.js", ["getFamilyInvite", "refreshFamilyInvite", "listFamilyMembers", "familyMembers("]],
     ["services/habit-service.js", ["listHabitTemplates", "API_ENDPOINTS.HABIT_TEMPLATES"]],
     ["services/child-habit-service.js", ["listChildHabits", "addSystemTemplateToChild", "createCustomHabit", "updateChildHabit", "updateChildHabitStatus", "removeChildHabit", "updateChildHabitPermission", "childHabitPermissions(", "deleteChildHabit("]],
-    ["services/checkin-service.js", ["listTodayHabits", "checkinHabit", "listCheckinHistory", "getCheckinSummary", "todayHabits(", "checkinHabit(", "checkinHistory(", "checkinSummary("]],
-    ["pages/today/index.js", ["listTodayHabits", "checkinHabit", "todayHabits", "checkedText", "canCheckin"]],
+    ["services/checkin-service.js", ["listTodayHabits", "checkinHabit", "undoCheckinHabit", "listCheckinHistory", "getCheckinSummary", "todayHabits(", "checkinHabit(", "undoTodayCheckin(", "checkinHistory(", "checkinSummary("]],
+    ["pages/today/index.js", ["listTodayHabits", "checkinHabit", "undoCheckinHabit", "todayHabits", "undoCheckinTap", "canCheckin"]],
     ["pages/records/index.js", ["listCheckinHistory", "getCheckinSummary", "historyGroups", "totalCheckinDays", "ROUTES.START", "redirectTo"]],
     ["pages/records/index.wxml", ["historyGroups", "record.recordDateText", "record.recordSubtitleText", "summaryMetricText", "totalCheckinDays"]],
     ["pages/me/index.js", ["ROUTES.FAMILY_MEMBERS", "goFamilyMembers", "isFamilyAdmin", "childNickname", "currentUser", "getCheckinSummary", "totalCheckinCount"]],
@@ -1228,6 +1279,7 @@ async function assertMockFlow() {
   const {
     listTodayHabits,
     checkinHabit,
+    undoCheckinHabit,
     listCheckinHistory,
     getCheckinSummary,
   } = requireFromRoot("./services/checkin-service.js");
@@ -1276,6 +1328,10 @@ async function assertMockFlow() {
   await assert.rejects(() => checkinHabit(childId, addedHabit.id), /已打卡|already checked/);
   assert.equal((await getCheckinSummary(childId)).totalCheckinDays, 1);
   assert.equal((await getCheckinSummary(childId)).totalCheckinCount, 1);
+  const undone = await undoCheckinHabit(childId, addedHabit.id);
+  assert.equal(undone.checked, false);
+  assert.equal((await getCheckinSummary(childId)).totalCheckinCount, 0);
+  await checkinHabit(childId, addedHabit.id);
   const disabledAfterCheckin = await updateChildHabitStatus(childId, addedHabit.id, "disabled");
   assert.equal(disabledAfterCheckin.status, "disabled");
   const history = await listCheckinHistory(childId);
@@ -1333,6 +1389,7 @@ for (const page of requiredPages) {
   assertFile(join(rootDir, page + ".wxss"));
   assertCommonJs(join(rootDir, page + ".js"));
   assertNoRawApiUrls(page);
+  assertNoBlockingBusinessFeedback(page);
   assertNoWxmlFunctionCalls(page);
   assertWxssCompatibility(page);
   assertFixedActionSafeArea(page);

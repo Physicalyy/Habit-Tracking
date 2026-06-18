@@ -8,6 +8,8 @@
   </view>
 
   <view class="library-main">
+    <view wx:if="{{feedbackVisible}}" class="{{feedbackClass}}">{{feedbackText}}</view>
+
     <view class="library-sticky-tools">
       <view class="search-wrap">
         <text class="material-symbols-outlined search-icon">{{icons.search}}</text>

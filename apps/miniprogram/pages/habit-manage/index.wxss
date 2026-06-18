@@ -118,6 +118,10 @@
   font-weight: 800;
 }
 
+.delete-swipe-confirm {
+  background: #7c2d12;
+}
+
 .habit-card.disabled {
   opacity: 0.7;
 }

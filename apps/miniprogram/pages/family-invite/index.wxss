@@ -114,6 +114,11 @@
   font-weight: 800;
 }
 
+.copy-action-done {
+  color: #005d4c;
+  background: #d9f7ee;
+}
+
 .refresh-row {
   display: flex;
   align-items: center;

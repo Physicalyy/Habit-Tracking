@@ -6,6 +6,7 @@ const {
 const { getBootstrap } = require("../../services/bootstrap-service.js");
 const { listHabitTemplates } = require("../../services/habit-service.js");
 const { normalizeAssetPath } = require("../../utils/asset-path.js");
+const { defaultFeedbackState, showInlineFeedback } = require("../../utils/inline-feedback.js");
 const { buildNavState, goBackWithFallback } = require("../../utils/navigation-bar.js");
 
 const categories = [
@@ -67,6 +68,7 @@ Page({
     addingSlug: "",
     addedTemplateIds: [],
     errorText: "",
+    ...defaultFeedbackState,
     icons,
     ...buildNavState({ title: "习惯库", showBack: true }),
   },
@@ -103,6 +105,7 @@ Page({
     this.setData({
       loading: true,
       errorText: "",
+      ...defaultFeedbackState,
       loadRequestSeq: requestSeq,
       templates: [],
       templateCards: [],
@@ -145,7 +148,7 @@ Page({
 
   goCustomHabit() {
     if (!this.data.hasFamily) {
-      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      showInlineFeedback(this, "请先加入家庭", "info");
       return;
     }
     wx.navigateTo({ url: ROUTES.CUSTOM_HABIT });
@@ -170,7 +173,7 @@ Page({
       return;
     }
     if (!this.data.childId) {
-      wx.showToast({ title: "请先加入家庭", icon: "none" });
+      showInlineFeedback(this, "请先加入家庭", "info");
       return;
     }
 
@@ -186,9 +189,8 @@ Page({
       this.setData({
         addedTemplateIds: [...this.data.addedTemplateIds, String(templateId)],
       });
-      wx.showToast({ title: "已添加", icon: "success" });
     } catch (error) {
-      wx.showToast({ title: error.message || "添加失败", icon: "none" });
+      showInlineFeedback(this, error.message || "添加失败", "error");
     } finally {
       this.setData({ addingSlug: "" });
       this.setTemplateState(this.data.templates);
