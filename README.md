@@ -48,21 +48,13 @@ WeChat miniprogram is not built into this compose stack.
 2. Edit `.env` and set `MYSQL_ROOT_PASSWORD` to the local deployment password.
    Do not commit `.env`.
 
-3. Package the backend jar:
-
-   ```bash
-   cd apps/backend
-   mvn package -DskipTests
-   cd ../..
-   ```
-
-4. Build and start the stack:
+3. Build and start the stack:
 
    ```bash
    docker compose up -d --build
    ```
 
-5. Verify the backend health endpoint:
+4. Verify the backend health endpoint:
 
    ```bash
    curl http://localhost:18080/api/health

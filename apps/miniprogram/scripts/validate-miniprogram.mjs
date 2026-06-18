@@ -9,6 +9,7 @@ const scriptDir = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(scriptDir, "..");
 const repoDir = join(rootDir, "..", "..");
 const requireFromRoot = createRequire(pathToFileURL(join(rootDir, "package.json")));
+const maxUploadSourceSizeBytes = 1536 * 1024;
 
 const requiredPages = [
   "pages/start/index",
@@ -127,6 +128,15 @@ function collectFiles(dir) {
     }
   }
   return files;
+}
+
+function assertUploadSourceSize() {
+  const totalBytes = collectFiles(rootDir)
+    .reduce((sum, path) => sum + statSync(path).size, 0);
+  assert.ok(
+    totalBytes <= maxUploadSourceSizeBytes,
+    `miniprogram source package must stay below 1.5MB, current size is ${(totalBytes / 1024).toFixed(1)}KB`,
+  );
 }
 
 function assertNoTextFileBom() {
@@ -1459,6 +1469,7 @@ async function assertMockFlow() {
   );
 }
 
+assertUploadSourceSize();
 assertNoTextFileBom();
 assertAppConfig();
 assertGlobalFixedActionSafeArea();

@@ -54,6 +54,10 @@ TOOL.md
 .codegraph/
 .trellis/
 
+# Local transfer bundles
+MIGRATION_README.txt
+habit-tracking-local-dev-files-*.zip
+
 # Local prototype exports
 /原型/
 
