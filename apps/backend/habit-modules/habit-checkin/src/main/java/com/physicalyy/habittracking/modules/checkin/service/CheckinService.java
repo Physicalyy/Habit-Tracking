@@ -152,6 +152,25 @@ public class CheckinService {
         return toSummary(childHabit, record, context.member());
     }
 
+    @Transactional
+    public TodayHabitSummary undoTodayCheckin(String openid, String nickname, Long childId, Long childHabitId) {
+        ChildContext context = requireChildContext(openid, nickname, childId);
+        HabitChildConfig childHabit = requireActiveChildHabit(context, childHabitId);
+        if (!canCheckin(childHabit, context.member())) {
+            throw new BusinessException("BAD_REQUEST", "Current member cannot undo this check-in");
+        }
+
+        HabitCheckinRecord existingRecord = findTodayRecord(context, childHabitId);
+        if (existingRecord == null) {
+            throw new BusinessException("BAD_REQUEST", "Habit is not checked in today");
+        }
+        existingRecord.setDelFlag("1");
+        existingRecord.touchForUpdate(context.user().getOpenid());
+        habitCheckinRecordMapper.updateById(existingRecord);
+
+        return toSummary(childHabit, null, context.member());
+    }
+
     private ChildContext requireChildContext(String openid, String nickname, Long childId) {
         UserAccount user = currentUserService.requireCurrentUser(openid, nickname);
         ChildProfile child = childProfileMapper.selectOne(new LambdaQueryWrapper<ChildProfile>()

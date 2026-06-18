@@ -12,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -71,6 +72,22 @@ class CheckinControllerTest {
                 .andExpect(jsonPath("$.code").value("BAD_REQUEST"));
 
         assertThat(checkinCount(activeHabitId)).isEqualTo(1);
+
+        mockMvc.perform(delete("/api/children/{childId}/habits/{childHabitId}/checkins/today", childId, activeHabitId)
+                        .header("X-Test-Openid", ownerOpenid)
+                        .header("X-Test-Nickname", "Owner"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.childHabitId").value(String.valueOf(activeHabitId)))
+                .andExpect(jsonPath("$.data.checked").value(false))
+                .andExpect(jsonPath("$.data.checkinId").doesNotExist());
+
+        assertThat(checkinCount(activeHabitId)).isZero();
+
+        mockMvc.perform(get("/api/children/{childId}/today", childId)
+                        .header("X-Test-Openid", ownerOpenid)
+                        .header("X-Test-Nickname", "Owner"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].checked").value(false));
     }
 
     @Test

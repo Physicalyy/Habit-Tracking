@@ -545,6 +545,37 @@ function checkinHabit(childId, childHabitId) {
   return ok(toTodayHabit(habit, nextSession));
 }
 
+function undoCheckinHabit(childId, childHabitId) {
+  const { session, error } = requireChildSession(childId);
+  if (error) {
+    return error;
+  }
+  const habit = (session.childHabits || []).find((item) => (
+    String(item.id) === String(childHabitId) &&
+    item.status === "active"
+  ));
+  if (!habit) {
+    return fail("孩子习惯不存在或已停用");
+  }
+  if (!canCheckin(habit, session)) {
+    return fail("当前家长无撤销权限");
+  }
+  const checkins = session.checkins || [];
+  const existing = checkins.find((item) => (
+    String(item.childHabitId) === String(childHabitId) &&
+    item.checkinDate === todayKey()
+  ));
+  if (!existing) {
+    return fail("今天还未打卡");
+  }
+  const nextSession = {
+    ...session,
+    checkins: checkins.filter((item) => item !== existing),
+  };
+  saveMockSession(nextSession);
+  return ok(toTodayHabit(habit, nextSession));
+}
+
 function toHistoryItem(record, habit) {
   return {
     checkinId: record.id,
@@ -698,6 +729,11 @@ async function handleMockRequest({ endpoint, data = {} }) {
   if (endpoint.path && endpoint.method === "POST" && /\/api\/children\/[^/]+\/habits\/[^/]+\/checkins$/.test(endpoint.path)) {
     const [, childId, childHabitId] = endpoint.path.match(/\/api\/children\/([^/]+)\/habits\/([^/]+)\/checkins$/);
     return checkinHabit(childId, childHabitId);
+  }
+
+  if (endpoint.path && endpoint.method === "DELETE" && /\/api\/children\/[^/]+\/habits\/[^/]+\/checkins\/today$/.test(endpoint.path)) {
+    const [, childId, childHabitId] = endpoint.path.match(/\/api\/children\/([^/]+)\/habits\/([^/]+)\/checkins\/today$/);
+    return undoCheckinHabit(childId, childHabitId);
   }
 
   if (endpoint.path && endpoint.method === "GET" && /\/api\/children\/[^/]+\/checkins$/.test(endpoint.path)) {

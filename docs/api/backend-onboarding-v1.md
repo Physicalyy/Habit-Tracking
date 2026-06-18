@@ -632,6 +632,17 @@ one-record-per-habit-per-day unique rule.
 Response `data`: same item shape as `GET /api/children/{childId}/today`, with
 `checked=true` and check-in fields filled.
 
+### Undo Today's Check-In
+
+`DELETE /api/children/{childId}/habits/{childHabitId}/checkins/today`
+
+Soft-deletes today's check-in record for the child habit. The backend validates
+family membership, child ownership, active habit status, permission, and that a
+today record exists.
+
+Response `data`: same item shape as `GET /api/children/{childId}/today`, with
+`checked=false` and check-in fields empty.
+
 ### Errors
 
 | HTTP Status | Code | Message |
@@ -640,7 +651,9 @@ Response `data`: same item shape as `GET /api/children/{childId}/today`, with
 | 400 | `BAD_REQUEST` | `Current user is not a family member` |
 | 400 | `BAD_REQUEST` | `Child habit not found or disabled` |
 | 400 | `BAD_REQUEST` | `Current member cannot check in this habit` |
+| 400 | `BAD_REQUEST` | `Current member cannot undo this check-in` |
 | 400 | `BAD_REQUEST` | `Habit already checked in today` |
+| 400 | `BAD_REQUEST` | `Habit is not checked in today` |
 
 ## Check-In History
 

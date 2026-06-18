@@ -102,6 +102,13 @@ function checkinHabit(childId, childHabitId) {
   });
 }
 
+function undoTodayCheckin(childId, childHabitId) {
+  return Object.freeze({
+    method: "DELETE",
+    path: `/api/children/${childId}/habits/${childHabitId}/checkins/today`,
+  });
+}
+
 function checkinHistory(childId) {
   return Object.freeze({
     method: "GET",
@@ -129,6 +136,7 @@ module.exports = {
   childHabitPermissions,
   todayHabits,
   checkinHabit,
+  undoTodayCheckin,
   checkinHistory,
   checkinSummary,
 };

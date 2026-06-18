@@ -374,6 +374,15 @@ unauthorized parent members return the common error envelope.
 Response `data`: same item shape as `GET /api/children/{childId}/today`, with
 `checked=true`.
 
+## DELETE /api/children/{childId}/habits/{childHabitId}/checkins/today
+
+Purpose: undo today's check-in for the child habit. The backend soft-deletes
+the current-day check-in record, so today's list shows the habit as unchecked,
+history no longer displays that record, and `totalCheckinCount` decreases by 1.
+
+Response `data`: same item shape as `GET /api/children/{childId}/today`, with
+`checked=false` and empty check-in fields.
+
 ## GET /api/children/{childId}/checkins
 
 Purpose: list historical check-in records for the current child. Disabled

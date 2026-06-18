@@ -5,6 +5,7 @@ import com.physicalyy.habittracking.modules.checkin.service.CheckinService;
 import com.physicalyy.habittracking.modules.checkin.vo.CheckinHistoryItem;
 import com.physicalyy.habittracking.modules.checkin.vo.CheckinSummary;
 import com.physicalyy.habittracking.modules.checkin.vo.TodayHabitSummary;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,6 +40,16 @@ public class CheckinController {
             @PathVariable Long childHabitId
     ) {
         return ApiResult.ok(checkinService.checkin(openid, nickname, childId, childHabitId));
+    }
+
+    @DeleteMapping("/api/children/{childId}/habits/{childHabitId}/checkins/today")
+    public ApiResult<TodayHabitSummary> undoTodayCheckin(
+            @RequestHeader(value = "X-Test-Openid", required = false) String openid,
+            @RequestHeader(value = "X-Test-Nickname", required = false) String nickname,
+            @PathVariable Long childId,
+            @PathVariable Long childHabitId
+    ) {
+        return ApiResult.ok(checkinService.undoTodayCheckin(openid, nickname, childId, childHabitId));
     }
 
     @GetMapping("/api/children/{childId}/checkins")
