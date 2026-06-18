@@ -2,9 +2,12 @@ package com.physicalyy.habittracking.modules.auth.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.physicalyy.habittracking.common.entity.BaseEntity;
+import org.springframework.util.StringUtils;
 
 @TableName("auth_user_account")
 public class UserAccount extends BaseEntity {
+
+    public static final String DEFAULT_NICKNAME = "微信用户";
 
     private String openid;
 
@@ -44,5 +47,9 @@ public class UserAccount extends BaseEntity {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
+    }
+
+    public boolean isProfileCompleted() {
+        return (StringUtils.hasText(nickname) && !DEFAULT_NICKNAME.equals(nickname)) || StringUtils.hasText(avatarUrl);
     }
 }

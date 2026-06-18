@@ -41,6 +41,8 @@ const tabPageSelections = [
 const requiredApiPaths = [
   "POST /api/auth/wechat-login",
   "GET /api/me/bootstrap",
+  "POST /api/me/avatar",
+  "PATCH /api/me/profile",
   "POST /api/families",
   "POST /api/families/join",
   "GET /api/families/{familyId}/invite",
@@ -1311,14 +1313,21 @@ function assertApiConfiguration() {
   const appSource = readFileSync(join(rootDir, "app.js"), "utf8");
   const appConfigSource = readFileSync(join(rootDir, "app.config.js"), "utf8");
   const authServiceSource = readFileSync(join(rootDir, "services/auth-service.js"), "utf8");
+  const profileServiceSource = readFileSync(join(rootDir, "services/profile-service.js"), "utf8");
   const sessionStateSource = readFileSync(join(rootDir, "services/session-state.js"), "utf8");
   assert.ok(!requestSource.includes("const USE_MOCK_API = true"), "mock API must be explicit");
   assertTextIncludes(join(rootDir, "utils/request.js"), "setRequestConfig");
   assertTextIncludes(join(rootDir, "utils/request.js"), "Authorization");
   assertTextIncludes(join(rootDir, "utils/request.js"), "Bearer ");
   assertTextIncludes(join(rootDir, "utils/request.js"), "UNAUTHORIZED");
+  assertTextIncludes(join(rootDir, "utils/request.js"), "getApiBaseUrl");
+  assertTextIncludes(join(rootDir, "utils/request.js"), "getAuthHeader");
   assertTextIncludes(join(rootDir, "services/auth-service.js"), "wx.login");
   assertTextIncludes(join(rootDir, "services/auth-service.js"), "saveSession");
+  assert.ok(profileServiceSource.includes("wx.uploadFile"), "profile-service must upload avatar with wx.uploadFile");
+  assert.ok(profileServiceSource.includes("API_ENDPOINTS.ME_AVATAR"), "profile-service must use ME_AVATAR endpoint");
+  assert.ok(profileServiceSource.includes("API_ENDPOINTS.ME_PROFILE"), "profile-service must use ME_PROFILE endpoint");
+  assert.ok(profileServiceSource.includes("habit-tracking.profile-prompt-skipped"), "profile-service must own profile prompt skip storage");
   assertTextIncludes(join(rootDir, "services/session-state.js"), "habit-tracking.session");
   assertTextIncludes(join(rootDir, "app.js"), "app.local.config.js");
   assertTextIncludes(join(rootDir, "app.local.config.example.js"), "your-backend-domain.example");
@@ -1365,11 +1374,12 @@ function assertRoutesAndServices() {
     ["services/habit-service.js", ["listHabitTemplates", "API_ENDPOINTS.HABIT_TEMPLATES"]],
     ["services/child-habit-service.js", ["listChildHabits", "addSystemTemplateToChild", "createCustomHabit", "updateChildHabit", "updateChildHabitStatus", "removeChildHabit", "updateChildHabitPermission", "childHabitPermissions(", "deleteChildHabit("]],
     ["services/checkin-service.js", ["listTodayHabits", "checkinHabit", "undoCheckinHabit", "listCheckinHistory", "getCheckinSummary", "todayHabits(", "checkinHabit(", "undoTodayCheckin(", "checkinHistory(", "checkinSummary("]],
+    ["services/profile-service.js", ["uploadAvatar", "updateProfile", "shouldPromptProfile", "skipProfilePrompt", "buildAvatarImageUrl"]],
     ["pages/today/index.js", ["listTodayHabits", "checkinHabit", "undoCheckinHabit", "todayHabits", "undoCheckinTap", "canCheckin"]],
     ["pages/records/index.js", ["listCheckinHistory", "getCheckinSummary", "historyGroups", "totalCheckinDays", "ROUTES.START", "redirectTo"]],
     ["pages/records/index.wxml", ["historyGroups", "record.recordDateText", "record.recordSubtitleText", "summaryMetricText", "totalCheckinDays"]],
-    ["pages/me/index.js", ["ROUTES.FAMILY_MEMBERS", "goFamilyMembers", "isFamilyAdmin", "childNickname", "currentUser", "getCheckinSummary", "totalCheckinCount"]],
-    ["pages/me/index.wxml", ["默认孩子", "childNickname"]],
+    ["pages/me/index.js", ["ROUTES.FAMILY_MEMBERS", "goFamilyMembers", "isFamilyAdmin", "childNickname", "currentUser", "getCheckinSummary", "totalCheckinCount", "openProfileDialog", "onChooseAvatar", "saveProfile", "shouldPromptProfile"]],
+    ["pages/me/index.wxml", ["默认孩子", "childNickname", "open-type=\"chooseAvatar\"", "type=\"nickname\"", "用于展示家庭成员身份"]],
     ["pages/habit-manage/index.js", ["ROUTES.HABIT_PERMISSION", "goHabitPermission", "canManageHabits", "permissionTypeText", "ROUTES.START", "redirectTo"]],
     ["pages/family-members/index.js", ["listFamilyMembers", "getBootstrap", "goFamilyInvite", "memberCount", "isFamilyAdmin"]],
     ["pages/family-invite/index.js", ["getFamilyInvite", "refreshFamilyInvite", "copyInviteCode", "refreshInvite", "isFamilyAdmin"]],
@@ -1386,6 +1396,7 @@ async function assertMockFlow() {
   const { setRequestConfig } = requireFromRoot("./utils/request.js");
   const { resetMockSession } = requireFromRoot("./services/session-state.js");
   const { getBootstrap } = requireFromRoot("./services/bootstrap-service.js");
+  const { updateProfile, shouldPromptProfile, buildAvatarImageUrl } = requireFromRoot("./services/profile-service.js");
   const {
     createFamily,
     joinFamily,
@@ -1416,6 +1427,15 @@ async function assertMockFlow() {
   const emptyBootstrap = await getBootstrap();
   assert.equal(emptyBootstrap.needOnboarding, true);
   assert.equal(emptyBootstrap.currentUser.nickname, "新手家长");
+  assert.equal(emptyBootstrap.currentUser.profileCompleted, false);
+  assert.equal(shouldPromptProfile(emptyBootstrap.currentUser), true);
+  const updatedProfile = await updateProfile({
+    nickname: "资料家长",
+    avatarUrl: "/api/public/avatars/user_mock_parent-avatar.png",
+  });
+  assert.equal(updatedProfile.nickname, "资料家长");
+  assert.equal(updatedProfile.profileCompleted, true);
+  assert.equal(buildAvatarImageUrl(updatedProfile.avatarUrl), updatedProfile.avatarUrl);
 
   const created = await createFamily({ familyName: "小宝之家", childNickname: "小宝" });
   assert.equal(created.family.admin, true);
@@ -1423,6 +1443,7 @@ async function assertMockFlow() {
   const ownerMembers = await listFamilyMembers(created.family.id);
   assert.equal(ownerMembers.length, 1);
   assert.equal(ownerMembers[0].admin, true);
+  assert.equal(ownerMembers[0].displayName, "资料家长");
   assert.equal((await refreshFamilyInvite(created.family.id)).code, "654321");
 
   const templates = await listHabitTemplates({ category: "HEALTH", keyword: "喝水", sourceType: "SYSTEM" });
@@ -1537,6 +1558,7 @@ for (const path of [
   "services/habit-service.js",
   "services/child-habit-service.js",
   "services/checkin-service.js",
+  "services/profile-service.js",
   "services/session-state.js",
 ]) {
   assertFile(join(rootDir, path));
@@ -1557,7 +1579,10 @@ for (const apiPath of requiredApiPaths) {
 }
 const contractSource = readFileSync(contractPath, "utf8");
 assert.ok(contractSource.includes('"currentUser"'), "bootstrap contract must use currentUser");
-assert.ok(!contractSource.includes('"avatarUrl"'), "bootstrap contract must not document unsupported avatarUrl");
+assert.ok(contractSource.includes('"avatarUrl"'), "bootstrap contract must document avatarUrl");
+assert.ok(contractSource.includes('"profileCompleted"'), "bootstrap contract must document profileCompleted");
+assert.ok(contractSource.includes("POST /api/me/avatar"), "contract must document avatar upload");
+assert.ok(contractSource.includes("PATCH /api/me/profile"), "contract must document profile update");
 
 await assertMockFlow();
 

@@ -7,9 +7,10 @@
 
   <view wx:if="{{feedbackVisible}}" class="{{feedbackClass}}">{{feedbackText}}</view>
 
-  <view class="profile-section">
+  <view class="profile-section" bindtap="openProfileDialog">
     <view class="avatar-wrap">
-      <view class="avatar">{{avatarText}}</view>
+      <view class="avatar" wx:if="{{!avatarImageVisible}}">{{avatarText}}</view>
+      <image wx:if="{{avatarImageVisible}}" class="avatar avatar-image" src="{{avatarImageUrl}}" mode="aspectFill"></image>
     </view>
     <view class="profile-info">
       <view class="profile-name">{{nickname}}</view>
@@ -58,6 +59,30 @@
     <view class="{{habitLibraryEntryClass}}" bindtap="goHabitLibrary">
       <view class="bento-icon tertiary"><text class="material-symbols-outlined">{{icons.libraryBooks}}</text></view>
       <view class="bento-text">习惯库</view>
+    </view>
+  </view>
+
+  <view wx:if="{{profileDialogVisible}}" class="profile-dialog-mask">
+    <view class="profile-dialog">
+      <view class="profile-dialog-title">完善头像昵称</view>
+      <view class="profile-dialog-desc">用于展示家庭成员身份，方便家人识别你。</view>
+      <button class="profile-avatar-button" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" loading="{{profileSaving}}">
+        <view wx:if="{{!profileDraftAvatarImageVisible}}" class="profile-avatar-preview">{{avatarText}}</view>
+        <image wx:if="{{profileDraftAvatarImageVisible}}" class="profile-avatar-preview profile-avatar-image" src="{{profileDraftAvatarImageUrl}}" mode="aspectFill"></image>
+        <view class="profile-avatar-copy">选择头像</view>
+      </button>
+      <input
+        class="profile-nickname-input"
+        type="nickname"
+        value="{{profileDraftNickname}}"
+        bindinput="onProfileNicknameInput"
+        placeholder="填写昵称"
+        maxlength="64"
+      />
+      <view class="profile-dialog-actions">
+        <button class="profile-action secondary" bindtap="skipProfileDialog" disabled="{{profileSaving}}">跳过</button>
+        <button class="profile-action primary" bindtap="saveProfile" loading="{{profileSaving}}">保存</button>
+      </view>
     </view>
   </view>
 </view>

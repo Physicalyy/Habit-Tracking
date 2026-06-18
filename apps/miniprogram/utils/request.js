@@ -11,6 +11,10 @@ function setRequestConfig(nextConfig = {}) {
   Object.assign(requestConfig, nextConfig);
 }
 
+function getApiBaseUrl() {
+  return requestConfig.apiBaseUrl || "";
+}
+
 function createRequestError(response, statusCode) {
   const error = new Error(response && response.message ? response.message : "请求失败");
   error.code = response && response.code ? response.code : "REQUEST_FAILED";
@@ -36,6 +40,10 @@ function buildHeaders(options = {}) {
     }
   }
   return header;
+}
+
+function getAuthHeader() {
+  return buildHeaders();
 }
 
 function isUnauthorized(error) {
@@ -116,4 +124,6 @@ async function sendRequest(endpoint, data = {}, options = {}) {
 module.exports = {
   request,
   setRequestConfig,
+  getApiBaseUrl,
+  getAuthHeader,
 };

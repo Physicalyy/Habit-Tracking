@@ -1,6 +1,13 @@
 const { ROUTES } = require("../../core/routes.js");
 const { getBootstrap } = require("../../services/bootstrap-service.js");
 const { getCheckinSummary } = require("../../services/checkin-service.js");
+const {
+  uploadAvatar,
+  updateProfile,
+  shouldPromptProfile,
+  skipProfilePrompt,
+  buildAvatarImageUrl,
+} = require("../../services/profile-service.js");
 const { defaultFeedbackState, showInlineFeedback } = require("../../utils/inline-feedback.js");
 const { buildNavState } = require("../../utils/navigation-bar.js");
 const { syncCustomTabBar } = require("../../utils/tab-bar.js");
@@ -23,6 +30,14 @@ Page({
   data: {
     nickname: "新手家长",
     avatarText: "新",
+    avatarImageUrl: "",
+    avatarImageVisible: false,
+    profileDialogVisible: false,
+    profileDraftNickname: "",
+    profileDraftAvatarUrl: "",
+    profileDraftAvatarImageUrl: "",
+    profileDraftAvatarImageVisible: false,
+    profileSaving: false,
     ...defaultFamilyState,
     icons: {
       checklist: "\ue065",
@@ -39,12 +54,21 @@ Page({
     this.setData({
       nickname: "新手家长",
       avatarText: "新",
+      avatarImageUrl: "",
+      avatarImageVisible: false,
+      profileDialogVisible: false,
+      profileDraftNickname: "",
+      profileDraftAvatarUrl: "",
+      profileDraftAvatarImageUrl: "",
+      profileDraftAvatarImageVisible: false,
+      profileSaving: false,
       ...defaultFamilyState,
       ...defaultFeedbackState,
     });
     const bootstrap = await getBootstrap();
     const currentUser = bootstrap.currentUser || {};
     const nickname = currentUser.nickname || "新手家长";
+    const avatarImageUrl = buildAvatarImageUrl(currentUser.avatarUrl);
     const family = bootstrap.defaultFamily;
     const child = bootstrap.defaultChild;
     let totalCheckinCount = 0;
@@ -59,6 +83,8 @@ Page({
     this.setData({
       nickname,
       avatarText: nickname.slice(0, 1),
+      avatarImageUrl,
+      avatarImageVisible: Boolean(avatarImageUrl),
       familyName: family ? family.name : "未加入家庭",
       childNickname: child ? child.nickname : "未选择孩子",
       growthPointsText: totalCheckinCount.toLocaleString("zh-CN"),
@@ -71,6 +97,86 @@ Page({
       roleText: family ? (family.admin ? "主家长" : "成员家长") : "未加入家庭",
       familyMemberText: family ? "进入家庭组管理成员和邀请" : "加入家庭后显示成员",
     });
+    if (shouldPromptProfile(currentUser)) {
+      this.openProfileDialog();
+    }
+  },
+
+  openProfileDialog() {
+    this.setData({
+      profileDialogVisible: true,
+      profileDraftNickname: this.data.nickname,
+      profileDraftAvatarUrl: "",
+      profileDraftAvatarImageUrl: this.data.avatarImageUrl,
+      profileDraftAvatarImageVisible: Boolean(this.data.avatarImageUrl),
+      profileSaving: false,
+    });
+  },
+
+  closeProfileDialog() {
+    if (this.data.profileSaving) {
+      return;
+    }
+    this.setData({ profileDialogVisible: false });
+  },
+
+  skipProfileDialog() {
+    skipProfilePrompt();
+    this.setData({ profileDialogVisible: false });
+  },
+
+  async onChooseAvatar(event) {
+    const avatarUrl = event && event.detail ? event.detail.avatarUrl : "";
+    if (!avatarUrl || this.data.profileSaving) {
+      return;
+    }
+    this.setData({ profileSaving: true });
+    try {
+      const uploadedAvatarUrl = await uploadAvatar(avatarUrl);
+      const imageUrl = buildAvatarImageUrl(uploadedAvatarUrl);
+      this.setData({
+        profileDraftAvatarUrl: uploadedAvatarUrl,
+        profileDraftAvatarImageUrl: imageUrl,
+        profileDraftAvatarImageVisible: Boolean(imageUrl),
+      });
+    } catch (error) {
+      showInlineFeedback(this, "头像上传失败，请重试", "error");
+    } finally {
+      this.setData({ profileSaving: false });
+    }
+  },
+
+  onProfileNicknameInput(event) {
+    this.setData({
+      profileDraftNickname: event.detail.value,
+    });
+  },
+
+  async saveProfile() {
+    if (this.data.profileSaving) {
+      return;
+    }
+    this.setData({ profileSaving: true });
+    try {
+      const user = await updateProfile({
+        nickname: this.data.profileDraftNickname,
+        avatarUrl: this.data.profileDraftAvatarUrl || undefined,
+      });
+      const nickname = user.nickname || this.data.nickname;
+      const avatarImageUrl = buildAvatarImageUrl(user.avatarUrl);
+      this.setData({
+        nickname,
+        avatarText: nickname.slice(0, 1),
+        avatarImageUrl,
+        avatarImageVisible: Boolean(avatarImageUrl),
+        profileDialogVisible: false,
+      });
+      showInlineFeedback(this, "资料已更新", "success");
+    } catch (error) {
+      showInlineFeedback(this, "资料保存失败，请重试", "error");
+    } finally {
+      this.setData({ profileSaving: false });
+    }
   },
 
   goFamilyMembers() {

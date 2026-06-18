@@ -146,7 +146,7 @@ function createFamily(data) {
     familyId: family.id,
     userId: session.user.id,
     admin: true,
-    displayName: "我",
+    displayName: session.user.nickname,
   };
   const inviteCode = {
     code: "123456",
@@ -196,7 +196,7 @@ function joinFamily(data) {
     familyId: family.id,
     userId: session.user.id,
     admin: false,
-    displayName: "我",
+    displayName: session.user.nickname,
   };
 
   saveMockSession({
@@ -625,6 +625,33 @@ function getCheckinSummary(childId) {
   });
 }
 
+function updateProfile(data) {
+  const session = getMockSession();
+  const nickname = String(data.nickname || session.user.nickname || "微信用户").trim();
+  const avatarUrl = String(data.avatarUrl || session.user.avatarUrl || "").trim();
+  const nextUser = {
+    ...session.user,
+    nickname: nickname || session.user.nickname,
+    avatarUrl: avatarUrl || null,
+    profileCompleted: Boolean((nickname && nickname !== "微信用户") || avatarUrl),
+  };
+  const familyMembers = (session.familyMembers || []).map((member) => {
+    if (String(member.userId) !== String(nextUser.id)) {
+      return member;
+    }
+    return {
+      ...member,
+      displayName: nextUser.nickname,
+    };
+  });
+  saveMockSession({
+    ...session,
+    user: nextUser,
+    familyMembers,
+  });
+  return ok(nextUser);
+}
+
 function createCustomHabit(data) {
   const { session, error } = requireChildSession(data.childId);
   if (error) {
@@ -673,6 +700,10 @@ async function handleMockRequest({ endpoint, data = {} }) {
 
   if (endpoint === API_ENDPOINTS.ME_BOOTSTRAP) {
     return ok(toBootstrap(session));
+  }
+
+  if (endpoint === API_ENDPOINTS.ME_PROFILE) {
+    return updateProfile(data);
   }
 
   if (endpoint === API_ENDPOINTS.CREATE_FAMILY) {

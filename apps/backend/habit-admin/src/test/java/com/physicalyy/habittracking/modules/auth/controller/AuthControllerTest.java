@@ -35,7 +35,9 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.data.token").isString())
                 .andExpect(jsonPath("$.data.token").value(org.hamcrest.Matchers.not("test-token-1001")))
                 .andExpect(jsonPath("$.data.user.openid").value("login-openid-001"))
-                .andExpect(jsonPath("$.data.user.nickname").value("登录家长"));
+                .andExpect(jsonPath("$.data.user.nickname").value("登录家长"))
+                .andExpect(jsonPath("$.data.user.avatarUrl").doesNotExist())
+                .andExpect(jsonPath("$.data.user.profileCompleted").value(true));
     }
 
     @Test
@@ -60,7 +62,8 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.currentUser.openid").value("token-openid-001"))
-                .andExpect(jsonPath("$.data.currentUser.nickname").value("Token Parent"));
+                .andExpect(jsonPath("$.data.currentUser.nickname").value("Token Parent"))
+                .andExpect(jsonPath("$.data.currentUser.profileCompleted").value(true));
     }
 
     @Test
