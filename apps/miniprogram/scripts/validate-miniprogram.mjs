@@ -292,6 +292,7 @@ function assertTodayEmptyPrototypeGuard() {
   assert.ok(wxssSource.includes("@keyframes empty-pulse"), "today empty state must define inner orbit pulse animation");
   assert.ok(wxmlSource.includes('class="material-symbols-outlined empty-action-icon"'), "today empty action must render the prototype add_circle Material Symbol before text");
   assert.ok(wxssSource.includes(".empty-action-icon"), "today empty action must style the add_circle icon");
+  assert.ok(!wxmlSource.includes("child-avatar") && !wxssSource.includes(".child-avatar"), "today hero must not render the red-box child avatar chip");
 }
 
 function assertHabitLibraryPrototypeGuard() {
@@ -467,6 +468,18 @@ function assertHabitLibraryPrototypeGuard() {
   assert.ok(/\.library-template-card\s*\{[\s\S]*width:\s*48\.2%;[\s\S]*border-left:\s*8rpx solid #76d6bc;/.test(wxssSource), "habit-library cards must match prototype two-column card proportions and accent border");
   assert.ok(wxssSource.includes("background: #ff9d4d"), "habit-library active category must use prototype orange pill");
   assert.ok(wxssSource.includes(".library-sticky-tools") && wxssSource.includes(".custom-sticky-entry"), "habit-library search/category/custom entry must be sticky together");
+  assert.ok(
+    /<scroll-view class="library-scroll-area"[\s\S]*scroll-y="true"/.test(wxmlSource),
+    "habit-library list must scroll below the fixed search/category/custom tools",
+  );
+  assert.ok(
+    /\.library-sticky-tools\s*\{[\s\S]*position:\s*fixed;[\s\S]*top:\s*88px;/.test(wxssSource),
+    "habit-library search/category/custom tools must stay fixed while the template list scrolls",
+  );
+  assert.ok(
+    /\.library-scroll-area\s*\{[\s\S]*height:\s*100%;[\s\S]*padding:\s*280rpx 40rpx 40rpx;/.test(wxssSource),
+    "habit-library scroll area must reserve top space for the fixed tools",
+  );
   assert.ok(!wxssSource.includes("gap:"), "habit-library must avoid WXSS gap");
   assert.ok(fontSource.includes("Material Symbols Outlined Local"), "habit-library icons must use the local Material Symbols family");
   assert.ok(
@@ -581,7 +594,7 @@ function assertLoadStartClearsStalePageState() {
     [
       "family-members",
       "pages/family-members/index.js",
-      /loadMembers\(\)\s*\{[\s\S]*this\.setData\(\{[\s\S]*familyId:\s*""[\s\S]*familyName:\s*""[\s\S]*childNickname:\s*""[\s\S]*roleText:\s*""[\s\S]*isFamilyAdmin:\s*false[\s\S]*inviteActionClass:\s*"invite-primary action-disabled"[\s\S]*members:\s*\[\][\s\S]*memberCount:\s*0/,
+      /loadMembers\(\)\s*\{[\s\S]*this\.setData\(\{[\s\S]*familyId:\s*""[\s\S]*familyName:\s*""[\s\S]*childNickname:\s*""[\s\S]*roleText:\s*""[\s\S]*isFamilyAdmin:\s*false[\s\S]*members:\s*\[\][\s\S]*memberCount:\s*0/,
       "family-members loadMembers must clear stale family/member state before fetching",
     ],
     [
@@ -697,7 +710,6 @@ function assertP0VisualPrototypeGuard() {
     "historyEdu: \"\\uea3e\"",
     "eco: \"\\uea35\"",
     "checkCircle: \"\\ue86c\"",
-    "chevronRight: \"\\ue5cc\"",
   ]) {
     assert.ok(recordsJs.includes(token) || recordsWxml.includes(token) || recordsWxss.includes(token), `records page must preserve prototype list token ${token}`);
   }
@@ -707,6 +719,7 @@ function assertP0VisualPrototypeGuard() {
   );
   assert.ok(recordsWxml.includes("{{record.recordDateText}}"), "records list card primary title must be the grouped record date like the prototype");
   assert.ok(recordsWxml.includes("{{record.recordSubtitleText}}"), "records list card subtitle must be derived in JS instead of showing raw habit-only data");
+  assert.ok(!recordsJs.includes("chevronRight") && !recordsWxml.includes("record-chevron") && !recordsWxss.includes("record-chevron"), "records list must not show chevrons when cards are not clickable");
   assert.ok(!/[>][\ue000-\uf8ff][<]/u.test(recordsWxml), "records page must not hard-code private-use Material Symbol glyphs in WXML");
 
   for (const token of [
@@ -780,6 +793,7 @@ function assertSecondaryVisualPrototypeGuard() {
   const familyInviteJs = readFileSync(join(rootDir, "pages/family-invite/index.js"), "utf8");
   const familyInviteWxml = readFileSync(join(rootDir, "pages/family-invite/index.wxml"), "utf8");
   const familyInviteWxss = readFileSync(join(rootDir, "pages/family-invite/index.wxss"), "utf8");
+  const qrCodeJs = readFileSync(join(rootDir, "utils/qr-code.js"), "utf8");
   const familyMembersConfig = readJson(join(rootDir, "pages/family-members/index.json"));
   const familyMembersJs = readFileSync(join(rootDir, "pages/family-members/index.js"), "utf8");
   const familyMembersWxml = readFileSync(join(rootDir, "pages/family-members/index.wxml"), "utf8");
@@ -953,7 +967,6 @@ function assertSecondaryVisualPrototypeGuard() {
   for (const [name, source, token] of [
     ["create-family", createJs, "submitClass"],
     ["join-family", joinJs, "submitClass"],
-    ["family-members", familyMembersJs, "inviteActionClass"],
     ["habit-manage", habitManageJs, "toggleSwitchClass"],
     ["habit-permission", habitPermissionJs, "optionClass"],
   ]) {
@@ -994,6 +1007,14 @@ function assertSecondaryVisualPrototypeGuard() {
   assert.ok(familyInviteJs.includes("drawInviteQr") && familyInviteWxml.includes('canvas-id="inviteQr"'), "family-invite must render a real local QR canvas");
   assert.ok(familyInviteJs.includes("inviteCode="), "family-invite QR payload must carry inviteCode");
   assert.ok(!familyInviteWxml.includes("qr-placeholder") && !familyInviteWxml.includes("share-action"), "family-invite must not keep static QR placeholder or fake share action");
+  assert.ok(
+    qrCodeJs.includes("createErrorCorrection") && qrCodeJs.includes("drawFormatBits") && qrCodeJs.includes("applyMask"),
+    "family-invite QR utility must generate a standards-based QR matrix with ECC, format bits, and masking",
+  );
+  assert.ok(
+    !qrCodeJs.includes("hashPayload") && !qrCodeJs.includes("% 11"),
+    "family-invite QR utility must not use the old fake hash/random cell pattern",
+  );
   assert.ok(
     /copyInviteCode\(\)\s*\{[\s\S]*if\s*\(\s*!this\.data\.inviteCode\s*\)[\s\S]*showInlineFeedback\(this,\s*"邀请码未生成"[\s\S]*return;/.test(familyInviteJs),
     "family-invite copy action must show inline feedback when invite code is missing",
@@ -1053,8 +1074,12 @@ function assertSecondaryVisualPrototypeGuard() {
   assert.ok(!/[>][\ue000-\uf8ff][<]/u.test(familyMembersWxml), "family-members must not hard-code private-use Material Symbol glyphs in WXML");
   assert.ok(familyMembersJs.includes("goBack()") && familyMembersJs.includes("ROUTES.ME"), "family-members must provide fallback back navigation");
   assert.ok(
-    /goFamilyInvite\(\)\s*\{[\s\S]*if\s*\(\s*!this\.data\.familyId\s*\)[\s\S]*if\s*\(\s*!this\.data\.isFamilyAdmin\s*\)/.test(familyMembersJs),
-    "family-members invite action must show no-family guidance before admin permission errors",
+    /<view\s+wx:if="\{\{isFamilyAdmin\}\}"\s+class="fixed-action-spacer"><\/view>[\s\S]*<view\s+wx:if="\{\{isFamilyAdmin\}\}"\s+class="fixed-action">/.test(familyMembersWxml),
+    "family-members invite action must be hidden for non-admin members instead of disabled",
+  );
+  assert.ok(
+    !/goFamilyInvite\(\)\s*\{[\s\S]*if\s*\(\s*!this\.data\.isFamilyAdmin\s*\)[\s\S]*showInlineFeedback/.test(familyMembersJs),
+    "family-members non-admin invite tap must not show top inline feedback",
   );
 
   assert.equal(habitManageConfig.navigationStyle, "custom", "habit-manage must use custom navigation to match prototype header");

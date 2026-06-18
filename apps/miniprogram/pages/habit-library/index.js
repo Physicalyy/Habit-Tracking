@@ -53,6 +53,8 @@ const iconSymbols = {
   power_off: "\ue764",
 };
 
+const navState = buildNavState({ title: "习惯库", showBack: true });
+
 Page({
   data: {
     categories: buildCategories(""),
@@ -70,7 +72,8 @@ Page({
     errorText: "",
     ...defaultFeedbackState,
     icons,
-    ...buildNavState({ title: "习惯库", showBack: true }),
+    ...navState,
+    libraryToolsStyle: `top:${extractPaddingTop(navState.pageTopStyle)};`,
   },
 
   async onLoad() {
@@ -241,4 +244,9 @@ function buildShortDescription(description) {
 
 function iconSymbol(iconKey) {
   return iconSymbols[iconKey] || "\ue145";
+}
+
+function extractPaddingTop(styleText) {
+  const match = String(styleText || "").match(/padding-top:([^;]+);/);
+  return match ? match[1] : "88px";
 }

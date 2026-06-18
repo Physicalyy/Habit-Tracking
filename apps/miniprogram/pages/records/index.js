@@ -22,7 +22,6 @@ Page({
       historyEdu: "\uea3e",
       eco: "\uea35",
       checkCircle: "\ue86c",
-      chevronRight: "\ue5cc",
     },
     errorText: "",
     ...buildNavState({ title: "打卡记录" }),

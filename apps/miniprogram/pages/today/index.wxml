@@ -32,7 +32,6 @@
         <view class="today-date">{{currentDateText}}</view>
         <view class="today-heading">今天为{{childNickname}}打卡</view>
       </view>
-      <view class="child-avatar">{{childNickname}}</view>
     </view>
 
     <view class="progress-card card">

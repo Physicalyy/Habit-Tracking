@@ -10,7 +10,7 @@
   <view class="library-main">
     <view wx:if="{{feedbackVisible}}" class="{{feedbackClass}}">{{feedbackText}}</view>
 
-    <view class="library-sticky-tools">
+    <view class="library-sticky-tools" style="{{libraryToolsStyle}}">
       <view class="search-wrap">
         <text class="material-symbols-outlined search-icon">{{icons.search}}</text>
         <input
@@ -41,6 +41,7 @@
       </view>
     </view>
 
+    <scroll-view class="library-scroll-area" scroll-y="true" enhanced="true" show-scrollbar="false">
     <view wx:if="{{loading}}" class="muted-text library-state">加载中...</view>
     <view wx:elif="{{errorText}}" class="error-text library-state">{{errorText}}</view>
 
@@ -73,5 +74,6 @@
         <view class="library-empty-desc">换个关键词或分类再试试</view>
       </view>
     </view>
+    </scroll-view>
   </view>
 </view>

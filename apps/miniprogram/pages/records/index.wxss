@@ -200,9 +200,3 @@
   font-size: 26rpx;
   line-height: 1;
 }
-
-.record-chevron {
-  margin-left: 8rpx;
-  color: #a9b4af;
-  font-size: 38rpx;
-}

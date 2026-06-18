@@ -11,7 +11,6 @@ Page({
     childNickname: "",
     roleText: "",
     isFamilyAdmin: false,
-    inviteActionClass: "invite-primary action-disabled",
     members: [],
     memberCount: 0,
     loading: false,
@@ -45,7 +44,6 @@ Page({
       childNickname: "",
       roleText: "",
       isFamilyAdmin: false,
-      inviteActionClass: "invite-primary action-disabled",
       members: [],
       memberCount: 0,
     });
@@ -70,7 +68,6 @@ Page({
         childNickname: child ? child.nickname : "未选择孩子",
         roleText: family.admin ? "主家长" : "成员家长",
         isFamilyAdmin: Boolean(family.admin),
-        inviteActionClass: family.admin ? "invite-primary" : "invite-primary action-disabled",
         members: displayMembers,
         memberCount: displayMembers.length,
       });
@@ -84,10 +81,6 @@ Page({
   goFamilyInvite() {
     if (!this.data.familyId) {
       showInlineFeedback(this, "请先加入家庭", "info");
-      return;
-    }
-    if (!this.data.isFamilyAdmin) {
-      showInlineFeedback(this, "仅主家长可邀请成员", "info");
       return;
     }
     wx.navigateTo({ url: ROUTES.FAMILY_INVITE });

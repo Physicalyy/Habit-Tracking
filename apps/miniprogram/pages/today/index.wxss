@@ -161,7 +161,6 @@
 .today-hero {
   display: flex;
   align-items: flex-end;
-  justify-content: space-between;
   margin-bottom: 32rpx;
 }
 
@@ -177,23 +176,6 @@
   font-size: 44rpx;
   font-weight: 700;
   line-height: 56rpx;
-}
-
-.child-avatar {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 96rpx;
-  height: 96rpx;
-  margin-left: 24rpx;
-  overflow: hidden;
-  color: #005d4c;
-  background: #d9f7ee;
-  border: 4rpx solid #76d6bc;
-  border-radius: 999rpx;
-  font-size: 22rpx;
-  font-weight: 700;
 }
 
 .progress-card {

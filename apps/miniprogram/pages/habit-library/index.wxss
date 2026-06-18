@@ -1,8 +1,8 @@
 @import "/assets/fonts/material-symbols.wxss";
 
 .habit-library-page {
-  min-height: 100vh;
-  padding-bottom: 40rpx;
+  height: 100vh;
+  overflow: hidden;
   background: #f8faf8;
   color: #191c1b;
 }
@@ -48,17 +48,24 @@
 }
 
 .library-main {
-  padding: 32rpx 40rpx 0;
+  height: 100%;
 }
 
 .library-sticky-tools {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 88px;
   z-index: 45;
-  margin: -32rpx -40rpx 0;
   padding: 32rpx 40rpx 24rpx;
   background: #f8faf8;
   border-bottom: 2rpx solid #eceeec;
+}
+
+.library-scroll-area {
+  height: 100%;
+  padding: 280rpx 40rpx 40rpx;
+  box-sizing: border-box;
 }
 
 .search-wrap {

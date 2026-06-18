@@ -40,7 +40,6 @@
             <text class="material-symbols-outlined record-check-icon">{{icons.checkCircle}}</text>
             <text>{{record.completeText}}</text>
           </view>
-          <text class="material-symbols-outlined record-chevron">{{icons.chevronRight}}</text>
         </view>
       </view>
     </view>

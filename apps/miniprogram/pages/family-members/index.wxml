@@ -53,9 +53,9 @@
 
     <view class="family-helper">让更多家人参与{{childNickname}}的成长，<br />共同培养良好习惯。</view>
 
-    <view class="fixed-action-spacer"></view>
-    <view class="fixed-action">
-      <view class="{{inviteActionClass}}" bindtap="goFamilyInvite">
+    <view wx:if="{{isFamilyAdmin}}" class="fixed-action-spacer"></view>
+    <view wx:if="{{isFamilyAdmin}}" class="fixed-action">
+      <view class="invite-primary" bindtap="goFamilyInvite">
         <text class="material-symbols-outlined invite-primary-icon">{{icons.personAdd}}</text>
         <text>邀请家长加入</text>
       </view>
