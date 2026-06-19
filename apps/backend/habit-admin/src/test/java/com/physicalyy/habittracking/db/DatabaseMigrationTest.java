@@ -32,7 +32,9 @@ class DatabaseMigrationTest {
                 "habit_template",
                 "habit_child_config",
                 "habit_child_allowed_member",
-                "habit_checkin_record"
+                "habit_checkin_record",
+                "monitor_request_record",
+                "monitor_slow_sql_record"
         );
     }
 }
