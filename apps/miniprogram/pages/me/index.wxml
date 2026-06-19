@@ -62,27 +62,12 @@
     </view>
   </view>
 
-  <view wx:if="{{profileDialogVisible}}" class="profile-dialog-mask">
-    <view class="profile-dialog">
-      <view class="profile-dialog-title">完善头像昵称</view>
-      <view class="profile-dialog-desc">用于展示家庭成员身份，方便家人识别你。</view>
-      <button class="profile-avatar-button" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" loading="{{profileSaving}}">
-        <view wx:if="{{!profileDraftAvatarImageVisible}}" class="profile-avatar-preview">{{avatarText}}</view>
-        <image wx:if="{{profileDraftAvatarImageVisible}}" class="profile-avatar-preview profile-avatar-image" src="{{profileDraftAvatarImageUrl}}" mode="aspectFill"></image>
-        <view class="profile-avatar-copy">选择头像</view>
-      </button>
-      <input
-        class="profile-nickname-input"
-        type="nickname"
-        value="{{profileDraftNickname}}"
-        bindinput="onProfileNicknameInput"
-        placeholder="填写昵称"
-        maxlength="64"
-      />
-      <view class="profile-dialog-actions">
-        <button class="profile-action secondary" bindtap="skipProfileDialog" disabled="{{profileSaving}}">跳过</button>
-        <button class="profile-action primary" bindtap="saveProfile" loading="{{profileSaving}}">保存</button>
-      </view>
-    </view>
-  </view>
+  <profile-dialog
+    visible="{{profileDialogVisible}}"
+    nickname="{{nickname}}"
+    avatar-text="{{avatarText}}"
+    avatar-image-url="{{avatarImageUrl}}"
+    bindsaved="onProfileSaved"
+    bindskipped="onProfileSkipped"
+  />
 </view>

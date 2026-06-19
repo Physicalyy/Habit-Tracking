@@ -1,0 +1,34 @@
+<view wx:if="{{visible}}" class="profile-dialog-mask">
+  <view class="profile-dialog-panel">
+    <view class="profile-dialog-kicker">家庭身份</view>
+    <view class="profile-dialog-title">完善头像昵称</view>
+    <view class="profile-dialog-desc">用于展示家庭成员身份，方便家人识别你。</view>
+
+    <button class="profile-avatar-button" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" loading="{{saving}}">
+      <view wx:if="{{!draftAvatarImageVisible}}" class="profile-avatar-preview">{{avatarText}}</view>
+      <image wx:if="{{draftAvatarImageVisible}}" class="profile-avatar-preview profile-avatar-image" src="{{draftAvatarImageUrl}}" mode="aspectFill"></image>
+      <view class="profile-avatar-copy">选择微信头像</view>
+    </button>
+
+    <view class="profile-field">
+      <view class="profile-field-label">昵称</view>
+      <input
+        class="profile-nickname-input"
+        type="nickname"
+        value="{{draftNickname}}"
+        focus="{{nicknameInputFocus}}"
+        bindinput="onNicknameInput"
+        bindblur="onNicknameBlur"
+        placeholder="填写昵称"
+        maxlength="64"
+      />
+    </view>
+
+    <view wx:if="{{errorText}}" class="profile-dialog-error">{{errorText}}</view>
+
+    <view class="profile-dialog-actions">
+      <view class="{{skipActionClass}}" bindtap="skipProfile">跳过</view>
+      <view class="{{saveActionClass}}" bindtap="saveProfile">保存</view>
+    </view>
+  </view>
+</view>

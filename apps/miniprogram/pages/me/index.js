@@ -2,10 +2,7 @@ const { ROUTES } = require("../../core/routes.js");
 const { getBootstrap } = require("../../services/bootstrap-service.js");
 const { getCheckinSummary } = require("../../services/checkin-service.js");
 const {
-  uploadAvatar,
-  updateProfile,
   shouldPromptProfile,
-  skipProfilePrompt,
   buildAvatarImageUrl,
 } = require("../../services/profile-service.js");
 const { defaultFeedbackState, showInlineFeedback } = require("../../utils/inline-feedback.js");
@@ -33,11 +30,6 @@ Page({
     avatarImageUrl: "",
     avatarImageVisible: false,
     profileDialogVisible: false,
-    profileDraftNickname: "",
-    profileDraftAvatarUrl: "",
-    profileDraftAvatarImageUrl: "",
-    profileDraftAvatarImageVisible: false,
-    profileSaving: false,
     ...defaultFamilyState,
     icons: {
       checklist: "\ue065",
@@ -57,11 +49,6 @@ Page({
       avatarImageUrl: "",
       avatarImageVisible: false,
       profileDialogVisible: false,
-      profileDraftNickname: "",
-      profileDraftAvatarUrl: "",
-      profileDraftAvatarImageUrl: "",
-      profileDraftAvatarImageVisible: false,
-      profileSaving: false,
       ...defaultFamilyState,
       ...defaultFeedbackState,
     });
@@ -105,78 +92,25 @@ Page({
   openProfileDialog() {
     this.setData({
       profileDialogVisible: true,
-      profileDraftNickname: this.data.nickname,
-      profileDraftAvatarUrl: "",
-      profileDraftAvatarImageUrl: this.data.avatarImageUrl,
-      profileDraftAvatarImageVisible: Boolean(this.data.avatarImageUrl),
-      profileSaving: false,
     });
   },
 
-  closeProfileDialog() {
-    if (this.data.profileSaving) {
-      return;
-    }
-    this.setData({ profileDialogVisible: false });
-  },
-
-  skipProfileDialog() {
-    skipProfilePrompt();
-    this.setData({ profileDialogVisible: false });
-  },
-
-  async onChooseAvatar(event) {
-    const avatarUrl = event && event.detail ? event.detail.avatarUrl : "";
-    if (!avatarUrl || this.data.profileSaving) {
-      return;
-    }
-    this.setData({ profileSaving: true });
-    try {
-      const uploadedAvatarUrl = await uploadAvatar(avatarUrl);
-      const imageUrl = buildAvatarImageUrl(uploadedAvatarUrl);
-      this.setData({
-        profileDraftAvatarUrl: uploadedAvatarUrl,
-        profileDraftAvatarImageUrl: imageUrl,
-        profileDraftAvatarImageVisible: Boolean(imageUrl),
-      });
-    } catch (error) {
-      showInlineFeedback(this, "头像上传失败，请重试", "error");
-    } finally {
-      this.setData({ profileSaving: false });
-    }
-  },
-
-  onProfileNicknameInput(event) {
+  onProfileSaved(event) {
+    const user = event.detail.user || {};
+    const nickname = user.nickname || this.data.nickname;
+    const avatarImageUrl = buildAvatarImageUrl(user.avatarUrl);
     this.setData({
-      profileDraftNickname: event.detail.value,
+      nickname,
+      avatarText: nickname.slice(0, 1),
+      avatarImageUrl,
+      avatarImageVisible: Boolean(avatarImageUrl),
+      profileDialogVisible: false,
     });
+    showInlineFeedback(this, "资料已更新", "success");
   },
 
-  async saveProfile() {
-    if (this.data.profileSaving) {
-      return;
-    }
-    this.setData({ profileSaving: true });
-    try {
-      const user = await updateProfile({
-        nickname: this.data.profileDraftNickname,
-        avatarUrl: this.data.profileDraftAvatarUrl || undefined,
-      });
-      const nickname = user.nickname || this.data.nickname;
-      const avatarImageUrl = buildAvatarImageUrl(user.avatarUrl);
-      this.setData({
-        nickname,
-        avatarText: nickname.slice(0, 1),
-        avatarImageUrl,
-        avatarImageVisible: Boolean(avatarImageUrl),
-        profileDialogVisible: false,
-      });
-      showInlineFeedback(this, "资料已更新", "success");
-    } catch (error) {
-      showInlineFeedback(this, "资料保存失败，请重试", "error");
-    } finally {
-      this.setData({ profileSaving: false });
-    }
+  onProfileSkipped() {
+    this.setData({ profileDialogVisible: false });
   },
 
   goFamilyMembers() {

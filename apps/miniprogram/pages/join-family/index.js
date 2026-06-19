@@ -1,10 +1,19 @@
 const { ROUTES } = require("../../core/routes.js");
+const { getBootstrap } = require("../../services/bootstrap-service.js");
 const { joinFamily } = require("../../services/family-service.js");
+const {
+  shouldPromptProfile,
+  buildAvatarImageUrl,
+} = require("../../services/profile-service.js");
 const { buildNavState, goBackWithFallback } = require("../../utils/navigation-bar.js");
 
 Page({
   data: {
     inviteCode: "",
+    nickname: "微信用户",
+    avatarText: "微",
+    avatarImageUrl: "",
+    profileDialogVisible: false,
     submitting: false,
     submitClass: "primary-button visual-action",
     submitText: "加入家庭",
@@ -23,10 +32,28 @@ Page({
     goBackWithFallback(ROUTES.START);
   },
 
-  onLoad(options) {
+  async onLoad(options) {
     const inviteCode = parseInviteCode(options && options.inviteCode);
     if (inviteCode) {
       this.setData(buildScanConfirmState(inviteCode));
+    }
+    await this.loadProfilePrompt();
+  },
+
+  async loadProfilePrompt() {
+    try {
+      const bootstrap = await getBootstrap();
+      const currentUser = bootstrap.currentUser || {};
+      const nickname = currentUser.nickname || "微信用户";
+      const avatarImageUrl = buildAvatarImageUrl(currentUser.avatarUrl);
+      this.setData({
+        nickname,
+        avatarText: nickname.slice(0, 1),
+        avatarImageUrl,
+        profileDialogVisible: shouldPromptProfile(currentUser),
+      });
+    } catch (error) {
+      this.setData({ profileDialogVisible: false });
     }
   },
 
@@ -83,6 +110,21 @@ Page({
     } finally {
       this.setData({ submitting: false, submitClass: "primary-button visual-action" });
     }
+  },
+
+  onProfileSaved(event) {
+    const user = event.detail.user || {};
+    const nickname = user.nickname || this.data.nickname;
+    this.setData({
+      nickname,
+      avatarText: nickname.slice(0, 1),
+      avatarImageUrl: buildAvatarImageUrl(user.avatarUrl),
+      profileDialogVisible: false,
+    });
+  },
+
+  onProfileSkipped() {
+    this.setData({ profileDialogVisible: false });
   },
 });
 

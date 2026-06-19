@@ -40,4 +40,13 @@
       <text>扫码加入家庭</text>
     </view>
   </view>
+
+  <profile-dialog
+    visible="{{profileDialogVisible}}"
+    nickname="{{nickname}}"
+    avatar-text="{{avatarText}}"
+    avatar-image-url="{{avatarImageUrl}}"
+    bindsaved="onProfileSaved"
+    bindskipped="onProfileSkipped"
+  />
 </view>

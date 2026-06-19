@@ -117,4 +117,13 @@
       </view>
     </view>
   </view>
+
+  <profile-dialog
+    visible="{{profileDialogVisible}}"
+    nickname="{{nickname}}"
+    avatar-text="{{avatarText}}"
+    avatar-image-url="{{avatarImageUrl}}"
+    bindsaved="onProfileSaved"
+    bindskipped="onProfileSkipped"
+  />
 </view>

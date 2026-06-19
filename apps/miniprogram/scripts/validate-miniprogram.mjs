@@ -38,6 +38,10 @@ const tabPageSelections = [
   ["pages/me/index", 2],
 ];
 
+const requiredComponents = [
+  "components/profile-dialog/index",
+];
+
 const requiredApiPaths = [
   "POST /api/auth/wechat-login",
   "GET /api/me/bootstrap",
@@ -245,6 +249,15 @@ function assertJoinFamilyInviteParsing(joinJs) {
       }
       if (modulePath.includes("family-service")) {
         return { joinFamily: async () => ({}) };
+      }
+      if (modulePath.includes("bootstrap-service")) {
+        return { getBootstrap: async () => ({ currentUser: { nickname: "微信用户", profileCompleted: false } }) };
+      }
+      if (modulePath.includes("profile-service")) {
+        return {
+          shouldPromptProfile: () => true,
+          buildAvatarImageUrl: () => "",
+        };
       }
       if (modulePath.includes("navigation-bar")) {
         return {
@@ -714,6 +727,11 @@ function assertP0VisualPrototypeGuard() {
   }
   assert.ok(todayJs.includes("checkingHabitId"), "today page must guard repeated checkin taps while a request is in flight");
   assert.ok(todayJs.includes("this.data.checkingHabitId"), "today checkin handler must read in-flight checkin state");
+  assert.ok(todayJs.includes("replaceHabitCard") && todayJs.includes("buildTodayDisplayState"), "today checkin handlers must update the changed habit locally instead of reloading the whole page");
+  const checkinTapSource = todayJs.slice(todayJs.indexOf("async checkinTap"), todayJs.indexOf("async undoCheckinTap"));
+  const undoCheckinTapSource = todayJs.slice(todayJs.indexOf("async undoCheckinTap"), todayJs.indexOf("\n});", todayJs.indexOf("async undoCheckinTap")));
+  assert.ok(!checkinTapSource.includes("loadToday("), "today checkinTap must not reload the whole page after a checkin");
+  assert.ok(!undoCheckinTapSource.includes("loadToday("), "today undoCheckinTap must not reload the whole page after undo");
   for (const token of ["actionClass"]) {
     assert.ok(todayJs.includes(token), `today page must derive visual state ${token} in JS`);
   }
@@ -1314,6 +1332,9 @@ function assertApiConfiguration() {
   const appConfigSource = readFileSync(join(rootDir, "app.config.js"), "utf8");
   const authServiceSource = readFileSync(join(rootDir, "services/auth-service.js"), "utf8");
   const profileServiceSource = readFileSync(join(rootDir, "services/profile-service.js"), "utf8");
+  const profileDialogJsSource = readFileSync(join(rootDir, "components/profile-dialog/index.js"), "utf8");
+  const profileDialogWxmlSource = readFileSync(join(rootDir, "components/profile-dialog/index.wxml"), "utf8");
+  const profileDialogWxssSource = readFileSync(join(rootDir, "components/profile-dialog/index.wxss"), "utf8");
   const sessionStateSource = readFileSync(join(rootDir, "services/session-state.js"), "utf8");
   assert.ok(!requestSource.includes("const USE_MOCK_API = true"), "mock API must be explicit");
   assertTextIncludes(join(rootDir, "utils/request.js"), "setRequestConfig");
@@ -1328,6 +1349,15 @@ function assertApiConfiguration() {
   assert.ok(profileServiceSource.includes("API_ENDPOINTS.ME_AVATAR"), "profile-service must use ME_AVATAR endpoint");
   assert.ok(profileServiceSource.includes("API_ENDPOINTS.ME_PROFILE"), "profile-service must use ME_PROFILE endpoint");
   assert.ok(profileServiceSource.includes("habit-tracking.profile-prompt-skipped"), "profile-service must own profile prompt skip storage");
+  assert.ok(profileDialogWxmlSource.includes('open-type="chooseAvatar"'), "profile dialog must request avatar through chooseAvatar");
+  assert.ok(profileDialogWxmlSource.includes('type="nickname"'), "profile dialog must request nickname through nickname input");
+  assert.ok(profileDialogWxmlSource.includes('focus="{{nicknameInputFocus}}"'), "profile dialog must focus nickname input so WeChat can offer nickname selection");
+  assert.ok(profileDialogWxmlSource.includes('bindblur="onNicknameBlur"'), "profile dialog must release nickname input focus after selection");
+  assert.ok(/onNicknameInput\(event\)\s*\{[\s\S]*nicknameInputFocus:\s*false/.test(profileDialogJsSource), "profile dialog must dismiss nickname focus after the selected nickname fills the input");
+  assert.ok(profileDialogWxmlSource.includes("用于展示家庭成员身份"), "profile dialog must explain the family-member display purpose");
+  assert.ok(profileDialogWxssSource.includes("align-items: center"), "profile dialog must stay above WeChat nickname suggestion bar instead of sticking to the bottom");
+  assert.ok(profileDialogWxssSource.includes("transform: translateY(-44rpx)"), "profile dialog panel must keep vertical clearance for nickname suggestion bar");
+  assert.ok(/\.profile-dialog-action\s*\+\s*\.profile-dialog-action\s*\{[\s\S]*margin-left:\s*22rpx;/.test(profileDialogWxssSource), "profile dialog actions must keep visible spacing between skip and save");
   assertTextIncludes(join(rootDir, "services/session-state.js"), "habit-tracking.session");
   assertTextIncludes(join(rootDir, "app.js"), "app.local.config.js");
   assertTextIncludes(join(rootDir, "app.local.config.example.js"), "your-backend-domain.example");
@@ -1375,11 +1405,19 @@ function assertRoutesAndServices() {
     ["services/child-habit-service.js", ["listChildHabits", "addSystemTemplateToChild", "createCustomHabit", "updateChildHabit", "updateChildHabitStatus", "removeChildHabit", "updateChildHabitPermission", "childHabitPermissions(", "deleteChildHabit("]],
     ["services/checkin-service.js", ["listTodayHabits", "checkinHabit", "undoCheckinHabit", "listCheckinHistory", "getCheckinSummary", "todayHabits(", "checkinHabit(", "undoTodayCheckin(", "checkinHistory(", "checkinSummary("]],
     ["services/profile-service.js", ["uploadAvatar", "updateProfile", "shouldPromptProfile", "skipProfilePrompt", "buildAvatarImageUrl"]],
-    ["pages/today/index.js", ["listTodayHabits", "checkinHabit", "undoCheckinHabit", "todayHabits", "undoCheckinTap", "canCheckin"]],
+    ["pages/today/index.js", ["listTodayHabits", "checkinHabit", "undoCheckinHabit", "todayHabits", "undoCheckinTap", "canCheckin", "currentUser", "shouldPromptProfile", "buildAvatarImageUrl", "profileDialogVisible", "onProfileSaved", "onProfileSkipped"]],
+    ["pages/today/index.json", ["profile-dialog"]],
+    ["pages/today/index.wxml", ["<profile-dialog", "bindsaved=\"onProfileSaved\"", "bindskipped=\"onProfileSkipped\""]],
     ["pages/records/index.js", ["listCheckinHistory", "getCheckinSummary", "historyGroups", "totalCheckinDays", "ROUTES.START", "redirectTo"]],
     ["pages/records/index.wxml", ["historyGroups", "record.recordDateText", "record.recordSubtitleText", "summaryMetricText", "totalCheckinDays"]],
-    ["pages/me/index.js", ["ROUTES.FAMILY_MEMBERS", "goFamilyMembers", "isFamilyAdmin", "childNickname", "currentUser", "getCheckinSummary", "totalCheckinCount", "openProfileDialog", "onChooseAvatar", "saveProfile", "shouldPromptProfile"]],
-    ["pages/me/index.wxml", ["默认孩子", "childNickname", "open-type=\"chooseAvatar\"", "type=\"nickname\"", "用于展示家庭成员身份"]],
+    ["pages/create-family/index.js", ["getBootstrap", "shouldPromptProfile", "profileDialogVisible", "onProfileSaved", "onProfileSkipped"]],
+    ["pages/create-family/index.wxml", ["<profile-dialog", "bindsaved=\"onProfileSaved\"", "bindskipped=\"onProfileSkipped\""]],
+    ["pages/join-family/index.js", ["getBootstrap", "shouldPromptProfile", "profileDialogVisible", "onProfileSaved", "onProfileSkipped"]],
+    ["pages/join-family/index.wxml", ["<profile-dialog", "bindsaved=\"onProfileSaved\"", "bindskipped=\"onProfileSkipped\""]],
+    ["pages/me/index.js", ["ROUTES.FAMILY_MEMBERS", "goFamilyMembers", "isFamilyAdmin", "childNickname", "currentUser", "getCheckinSummary", "totalCheckinCount", "openProfileDialog", "onProfileSaved", "shouldPromptProfile"]],
+    ["pages/me/index.wxml", ["默认孩子", "childNickname", "<profile-dialog"]],
+    ["components/profile-dialog/index.js", ["Component(", "uploadAvatar", "updateProfile", "skipProfilePrompt", "nicknameInputFocus", "onNicknameBlur", "saved", "skipped"]],
+    ["components/profile-dialog/index.wxml", ["open-type=\"chooseAvatar\"", "type=\"nickname\"", "focus=\"{{nicknameInputFocus}}\"", "用于展示家庭成员身份"]],
     ["pages/habit-manage/index.js", ["ROUTES.HABIT_PERMISSION", "goHabitPermission", "canManageHabits", "permissionTypeText", "ROUTES.START", "redirectTo"]],
     ["pages/family-members/index.js", ["listFamilyMembers", "getBootstrap", "goFamilyInvite", "memberCount", "isFamilyAdmin"]],
     ["pages/family-invite/index.js", ["getFamilyInvite", "refreshFamilyInvite", "copyInviteCode", "refreshInvite", "isFamilyAdmin"]],
@@ -1542,6 +1580,16 @@ for (const page of requiredPages) {
   assertNoWxmlFunctionCalls(page);
   assertWxssCompatibility(page);
   assertFixedActionSafeArea(page);
+}
+
+for (const component of requiredComponents) {
+  assertFile(join(rootDir, component + ".js"));
+  assertFile(join(rootDir, component + ".json"));
+  assertFile(join(rootDir, component + ".wxml"));
+  assertFile(join(rootDir, component + ".wxss"));
+  assertCommonJs(join(rootDir, component + ".js"));
+  assertNoWxmlFunctionCalls(component);
+  assertWxssCompatibility(component);
 }
 
 for (const path of [
