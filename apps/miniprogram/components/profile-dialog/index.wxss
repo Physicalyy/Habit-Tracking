@@ -1,0 +1,169 @@
+.profile-dialog-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx 28rpx;
+  padding-bottom: calc(150rpx + env(safe-area-inset-bottom));
+  background: rgba(25, 28, 27, 0.42);
+}
+
+.profile-dialog-panel {
+  width: 100%;
+  max-width: 680rpx;
+  padding: 34rpx 30rpx 30rpx;
+  background: #ffffff;
+  border: 2rpx solid rgba(216, 229, 223, 0.9);
+  border-radius: 30rpx;
+  box-shadow: 0 22rpx 70rpx rgba(25, 28, 27, 0.22);
+  transform: translateY(-44rpx);
+}
+
+.profile-dialog-kicker {
+  width: 128rpx;
+  height: 42rpx;
+  margin: 0 auto 12rpx;
+  color: #006b58;
+  background: #e6f7f1;
+  border-radius: 999rpx;
+  font-size: 23rpx;
+  font-weight: 800;
+  line-height: 42rpx;
+  text-align: center;
+}
+
+.profile-dialog-title {
+  color: #191c1b;
+  font-size: 36rpx;
+  font-weight: 800;
+  line-height: 48rpx;
+  text-align: center;
+}
+
+.profile-dialog-desc {
+  width: 520rpx;
+  max-width: 100%;
+  margin: 12rpx auto 0;
+  color: #6e7a75;
+  font-size: 26rpx;
+  line-height: 38rpx;
+  text-align: center;
+}
+
+.profile-avatar-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  height: 144rpx;
+  margin-top: 30rpx;
+  padding: 18rpx 24rpx;
+  color: #006b58;
+  background: #eff8f4;
+  border: 2rpx solid #d5eee5;
+  border-radius: 24rpx;
+  line-height: normal;
+  text-align: left;
+}
+
+.profile-avatar-preview {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 104rpx;
+  height: 104rpx;
+  overflow: hidden;
+  color: #005d4c;
+  background: #94f4d9;
+  border-radius: 999rpx;
+  font-size: 42rpx;
+  font-weight: 800;
+}
+
+.profile-avatar-image {
+  display: block;
+  background: #e4e9e6;
+}
+
+.profile-avatar-copy {
+  margin-left: 24rpx;
+  color: #006b58;
+  font-size: 30rpx;
+  font-weight: 800;
+  line-height: 42rpx;
+}
+
+.profile-field {
+  margin-top: 24rpx;
+}
+
+.profile-field-label {
+  margin-bottom: 12rpx;
+  color: #3e4945;
+  font-size: 25rpx;
+  font-weight: 700;
+  line-height: 34rpx;
+}
+
+.profile-nickname-input {
+  width: 100%;
+  height: 92rpx;
+  padding: 0 26rpx;
+  color: #191c1b;
+  background: #f8faf8;
+  border: 2rpx solid #d8e5df;
+  border-radius: 20rpx;
+  font-size: 30rpx;
+  line-height: 92rpx;
+}
+
+.profile-dialog-error {
+  margin-top: 18rpx;
+  color: #7c2d12;
+  font-size: 25rpx;
+  font-weight: 700;
+  line-height: 36rpx;
+}
+
+.profile-dialog-actions {
+  display: flex;
+  align-items: center;
+  margin-top: 30rpx;
+}
+
+.profile-dialog-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 92rpx;
+  border-radius: 22rpx;
+  font-size: 30rpx;
+  font-weight: 800;
+  line-height: 92rpx;
+}
+
+.profile-dialog-action + .profile-dialog-action {
+  margin-left: 22rpx;
+}
+
+.profile-dialog-action-secondary {
+  color: #4f635d;
+  background: #edf2ef;
+}
+
+.profile-dialog-action-primary {
+  color: #ffffff;
+  background: #006b58;
+  box-shadow: 0 8rpx 28rpx rgba(0, 107, 88, 0.16);
+}
+
+.profile-dialog-action-disabled {
+  opacity: 0.55;
+}

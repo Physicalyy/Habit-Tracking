@@ -87,7 +87,9 @@ inputs and must not be used by the production miniprogram.
     "user": {
       "id": 1001,
       "openid": "wechat-openid",
-      "nickname": "微信用户"
+      "nickname": "微信用户",
+      "avatarUrl": null,
+      "profileCompleted": false
     }
   }
 }
@@ -118,7 +120,9 @@ inputs and must not be used by the production miniprogram.
     "currentUser": {
       "id": 1001,
       "openid": "test-openid-001",
-      "nickname": "Parent"
+      "nickname": "Parent",
+      "avatarUrl": "/api/public/avatars/1001-example.png",
+      "profileCompleted": true
     },
     "families": [],
     "defaultFamily": null,
@@ -139,7 +143,9 @@ inputs and must not be used by the production miniprogram.
     "currentUser": {
       "id": 1001,
       "openid": "test-openid-001",
-      "nickname": "Parent"
+      "nickname": "Parent",
+      "avatarUrl": "/api/public/avatars/1001-example.png",
+      "profileCompleted": true
     },
     "families": [
       {
@@ -169,6 +175,84 @@ inputs and must not be used by the production miniprogram.
 | 401 | `UNAUTHORIZED` | `Authentication is required` |
 | 401 | `UNAUTHORIZED` | `Authentication token is invalid` |
 | 401 | `UNAUTHORIZED` | `Authentication token is expired` |
+
+## Current User Profile
+
+`POST /api/me/avatar`
+
+Uploads the current user's avatar as multipart form data. The request field is
+`file`.
+
+### Behavior
+
+- Requires a valid Bearer Token.
+- Accepts only JPEG, PNG, or WebP image files up to 2 MB.
+- Validates both content type and image magic bytes.
+- Ignores the original file name and stores the file under the configured
+  avatar storage directory.
+- Returns a relative public URL. The response never contains a local filesystem
+  path.
+- Replacing an avatar deletes the previous local avatar when possible. Deletion
+  failure is logged as a non-sensitive warning and does not fail the upload.
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "code": "OK",
+  "message": "ok",
+  "data": {
+    "avatarUrl": "/api/public/avatars/1001-example.png"
+  }
+}
+```
+
+`PATCH /api/me/profile`
+
+Updates the current user's display profile.
+
+### Request
+
+```json
+{
+  "nickname": "Parent",
+  "avatarUrl": "/api/public/avatars/1001-example.png"
+}
+```
+
+### Behavior
+
+- Requires a valid Bearer Token.
+- Uses the existing nickname when `nickname` is blank or omitted.
+- Uses the existing avatar when `avatarUrl` is blank or omitted.
+- Accepts only avatar URLs previously uploaded by the current user.
+- Synchronizes the new nickname to all active `family_member.display_name` rows
+  for the current user.
+- `profileCompleted` is true when nickname is not the default `微信用户` or
+  `avatarUrl` is not blank.
+
+### Success Response
+
+```json
+{
+  "success": true,
+  "code": "OK",
+  "message": "ok",
+  "data": {
+    "id": 1001,
+    "openid": "wechat-openid",
+    "nickname": "Parent",
+    "avatarUrl": "/api/public/avatars/1001-example.png",
+    "profileCompleted": true
+  }
+}
+```
+
+`GET /api/public/avatars/{filename}`
+
+Publicly reads an uploaded avatar file. The backend only serves files inside
+the configured avatar storage directory.
 
 ## Create Family
 
@@ -725,13 +809,21 @@ Response `data`:
   - `WECHAT_MINIPROGRAM_SECRET`
   - `AUTH_TOKEN_SECRET`
   - `AUTH_TOKEN_TTL_SECONDS`, default `604800`
+  - `AVATAR_STORAGE_DIR`, default `/app/data/avatars` in Docker deployment
+  - `SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE`, recommended `2MB`
+  - `SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE`, recommended `2MB`
 - WeChat public platform must add the deployed backend HTTPS domain as a
   request legal domain.
+- WeChat public platform must add the deployed backend HTTPS domain as an
+  uploadFile legal domain for avatar upload.
+- The HTTPS reverse proxy must allow avatar upload size, for example
+  `client_max_body_size 2m` or higher.
 - If WeChat server IP whitelist is enabled, add the backend server's outbound
   IP from your server or from the WeChat error response.
 
 ## Out Of Scope
 
 - WeChat Pay APIv3 keys, merchant certificates, safe keyboard certificates.
-- Phone number authorization, avatar/nickname authorization.
+- Phone number authorization, object storage, CDN, image cropping, or image
+  review.
 - Account deletion or logout APIs.

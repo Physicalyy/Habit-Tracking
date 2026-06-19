@@ -44,7 +44,9 @@ JavaScript's safe integer range. Count fields such as `totalCheckinCount` and
   "user": {
     "id": "1001",
     "openid": "wechat-openid",
-    "nickname": "微信用户"
+    "nickname": "微信用户",
+    "avatarUrl": null,
+    "profileCompleted": false
   }
 }
 ```
@@ -76,7 +78,9 @@ Authorization: Bearer <token>
   "currentUser": {
     "id": "user_mock_parent",
     "openid": "mock-openid",
-    "nickname": "新手家长"
+    "nickname": "新手家长",
+    "avatarUrl": null,
+    "profileCompleted": false
   },
   "families": [],
   "defaultFamily": null,
@@ -92,7 +96,9 @@ Authorization: Bearer <token>
   "currentUser": {
     "id": "user_mock_parent",
     "openid": "mock-openid",
-    "nickname": "新手家长"
+    "nickname": "新手家长",
+    "avatarUrl": "/api/public/avatars/user_mock_parent-example.png",
+    "profileCompleted": true
   },
   "families": [
     {
@@ -114,6 +120,65 @@ Authorization: Bearer <token>
   "needOnboarding": false
 }
 ```
+
+## POST /api/me/avatar
+
+用途：上传当前登录用户主动选择的微信头像。小程序使用
+`button open-type="chooseAvatar"` 获取临时文件路径，再通过
+`wx.uploadFile` 上传。
+
+认证：需要 `Authorization: Bearer <token>`。
+
+表单字段：`file`
+
+响应 `data`：
+
+```json
+{
+  "avatarUrl": "/api/public/avatars/user_mock_parent-example.png"
+}
+```
+
+约束：
+
+- 仅支持 jpg、png、webp。
+- 最大 2MB。
+- 小程序展示相对 `avatarUrl` 时，使用本地配置的 `apiBaseUrl` 拼接成
+  HTTPS 图片地址。
+
+## PATCH /api/me/profile
+
+用途：保存当前用户昵称和头像，用于展示家庭成员身份。昵称输入使用
+`input type="nickname"`。
+
+认证：需要 `Authorization: Bearer <token>`。
+
+请求：
+
+```json
+{
+  "nickname": "妈妈",
+  "avatarUrl": "/api/public/avatars/user_mock_parent-example.png"
+}
+```
+
+响应 `data`：
+
+```json
+{
+  "id": "user_mock_parent",
+  "openid": "mock-openid",
+  "nickname": "妈妈",
+  "avatarUrl": "/api/public/avatars/user_mock_parent-example.png",
+  "profileCompleted": true
+}
+```
+
+说明：
+
+- `wx.login` 和 `code2Session` 不返回头像昵称，小程序不得写“自动获取”。
+- 用户可跳过资料完善，不影响家庭、习惯和打卡主流程。
+- 后端保存资料后会同步当前用户所有 active 家庭成员展示名。
 
 ## POST /api/families
 

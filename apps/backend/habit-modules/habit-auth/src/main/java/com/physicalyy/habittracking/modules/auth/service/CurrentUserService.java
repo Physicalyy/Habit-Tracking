@@ -44,7 +44,7 @@ public class CurrentUserService {
             account = new UserAccount();
             account.setOpenid(openid);
             account.setUnionid(StringUtils.hasText(unionid) ? unionid : null);
-            account.setNickname(StringUtils.hasText(nickname) ? nickname : "微信用户");
+            account.setNickname(StringUtils.hasText(nickname) ? nickname : UserAccount.DEFAULT_NICKNAME);
             account.touchForCreate(openid);
             userAccountMapper.insert(account);
             return account;

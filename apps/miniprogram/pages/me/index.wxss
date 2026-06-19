@@ -28,6 +28,10 @@
   text-align: center;
 }
 
+.profile-section:active {
+  opacity: 0.82;
+}
+
 .avatar-wrap {
   position: relative;
 }
@@ -43,6 +47,13 @@
   border-radius: 999rpx;
   font-size: 44rpx;
   font-weight: 700;
+}
+
+.avatar-image {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  background: #e4e9e6;
 }
 
 .profile-name {

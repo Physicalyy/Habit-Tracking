@@ -1,6 +1,10 @@
 const { ROUTES } = require("../../core/routes.js");
 const { getBootstrap } = require("../../services/bootstrap-service.js");
 const { getCheckinSummary } = require("../../services/checkin-service.js");
+const {
+  shouldPromptProfile,
+  buildAvatarImageUrl,
+} = require("../../services/profile-service.js");
 const { defaultFeedbackState, showInlineFeedback } = require("../../utils/inline-feedback.js");
 const { buildNavState } = require("../../utils/navigation-bar.js");
 const { syncCustomTabBar } = require("../../utils/tab-bar.js");
@@ -23,6 +27,9 @@ Page({
   data: {
     nickname: "新手家长",
     avatarText: "新",
+    avatarImageUrl: "",
+    avatarImageVisible: false,
+    profileDialogVisible: false,
     ...defaultFamilyState,
     icons: {
       checklist: "\ue065",
@@ -39,12 +46,16 @@ Page({
     this.setData({
       nickname: "新手家长",
       avatarText: "新",
+      avatarImageUrl: "",
+      avatarImageVisible: false,
+      profileDialogVisible: false,
       ...defaultFamilyState,
       ...defaultFeedbackState,
     });
     const bootstrap = await getBootstrap();
     const currentUser = bootstrap.currentUser || {};
     const nickname = currentUser.nickname || "新手家长";
+    const avatarImageUrl = buildAvatarImageUrl(currentUser.avatarUrl);
     const family = bootstrap.defaultFamily;
     const child = bootstrap.defaultChild;
     let totalCheckinCount = 0;
@@ -59,6 +70,8 @@ Page({
     this.setData({
       nickname,
       avatarText: nickname.slice(0, 1),
+      avatarImageUrl,
+      avatarImageVisible: Boolean(avatarImageUrl),
       familyName: family ? family.name : "未加入家庭",
       childNickname: child ? child.nickname : "未选择孩子",
       growthPointsText: totalCheckinCount.toLocaleString("zh-CN"),
@@ -71,6 +84,33 @@ Page({
       roleText: family ? (family.admin ? "主家长" : "成员家长") : "未加入家庭",
       familyMemberText: family ? "进入家庭组管理成员和邀请" : "加入家庭后显示成员",
     });
+    if (shouldPromptProfile(currentUser)) {
+      this.openProfileDialog();
+    }
+  },
+
+  openProfileDialog() {
+    this.setData({
+      profileDialogVisible: true,
+    });
+  },
+
+  onProfileSaved(event) {
+    const user = event.detail.user || {};
+    const nickname = user.nickname || this.data.nickname;
+    const avatarImageUrl = buildAvatarImageUrl(user.avatarUrl);
+    this.setData({
+      nickname,
+      avatarText: nickname.slice(0, 1),
+      avatarImageUrl,
+      avatarImageVisible: Boolean(avatarImageUrl),
+      profileDialogVisible: false,
+    });
+    showInlineFeedback(this, "资料已更新", "success");
+  },
+
+  onProfileSkipped() {
+    this.setData({ profileDialogVisible: false });
   },
 
   goFamilyMembers() {

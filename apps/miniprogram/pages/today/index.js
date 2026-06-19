@@ -9,6 +9,10 @@ const { normalizeAssetPath } = require("../../utils/asset-path.js");
 const { defaultFeedbackState, showInlineFeedback } = require("../../utils/inline-feedback.js");
 const { buildNavState } = require("../../utils/navigation-bar.js");
 const { syncCustomTabBar } = require("../../utils/tab-bar.js");
+const {
+  shouldPromptProfile,
+  buildAvatarImageUrl,
+} = require("../../services/profile-service.js");
 
 const CHECKIN_SUCCESS_ANIMATION_MS = 720;
 const CHECKIN_LEAVING_DELAY_MS = 460;
@@ -16,6 +20,10 @@ const CHECKIN_LEAVING_DELAY_MS = 460;
 Page({
   data: {
     loading: true,
+    nickname: "微信用户",
+    avatarText: "微",
+    avatarImageUrl: "",
+    profileDialogVisible: false,
     familyName: "",
     childId: "",
     childNickname: "",
@@ -57,6 +65,10 @@ Page({
     this.setData({
       loading: true,
       errorText: "",
+      nickname: "微信用户",
+      avatarText: "微",
+      avatarImageUrl: "",
+      profileDialogVisible: false,
       familyName: "",
       childId: "",
       childNickname: "",
@@ -96,8 +108,15 @@ Page({
         return;
       }
 
+      const currentUser = bootstrap.currentUser || {};
+      const nickname = currentUser.nickname || "微信用户";
+      const avatarImageUrl = buildAvatarImageUrl(currentUser.avatarUrl);
       const childId = bootstrap.defaultChild.id;
       this.setData({
+        nickname,
+        avatarText: nickname.slice(0, 1),
+        avatarImageUrl,
+        profileDialogVisible: shouldPromptProfile(currentUser),
         familyName: bootstrap.defaultFamily ? bootstrap.defaultFamily.name : "",
         childId,
         childNickname: bootstrap.defaultChild.nickname,
@@ -105,20 +124,11 @@ Page({
 
       const todayHabits = await listTodayHabits(childId);
       const habitCards = todayHabits.map(toCardState);
-      const habitGroups = buildHabitGroups(habitCards, false);
-      const completedCount = habitCards.filter((item) => item.checked).length;
-      const progressPercent = habitCards.length > 0 ? Math.round((completedCount / habitCards.length) * 100) : 0;
       this.setData({
         navTitle: `${bootstrap.defaultChild.nickname}今日打卡`,
         currentDateText: formatTodayText(),
-        completedCount,
-        progressPercent,
-        progressText: `${progressPercent}%`,
-        progressRingStyle: buildProgressRingStyle(progressPercent),
-        progressHint: buildProgressHint(habitCards.length, completedCount),
         todayHabits: habitCards,
-        ...habitGroups,
-        hasNoHabits: habitCards.length === 0,
+        ...buildTodayDisplayState(habitCards, false),
       });
     } catch (error) {
       this.setData({ errorText: error.message || "今日习惯加载失败" });
@@ -133,6 +143,22 @@ Page({
 
   goHabitManage() {
     wx.navigateTo({ url: ROUTES.HABIT_MANAGE });
+  },
+
+  onProfileSaved(event) {
+    const user = event.detail.user || {};
+    const nickname = user.nickname || this.data.nickname;
+    this.setData({
+      nickname,
+      avatarText: nickname.slice(0, 1),
+      avatarImageUrl: buildAvatarImageUrl(user.avatarUrl),
+      profileDialogVisible: false,
+    });
+    showInlineFeedback(this, "资料已更新", "success");
+  },
+
+  onProfileSkipped() {
+    this.setData({ profileDialogVisible: false });
   },
 
   toggleCheckedHabits() {
@@ -155,7 +181,7 @@ Page({
         checkingHabitId: habitIdText,
         ...buildCheckinAnimationState(this.data.todayHabits, habitIdText, "checking", this.data.checkedHabitsExpanded),
       });
-      await checkinHabit(this.data.childId, childHabitId);
+      const checkedHabit = await checkinHabit(this.data.childId, childHabitId);
       this.setData(buildCheckinAnimationState(this.data.todayHabits, habitIdText, "success", this.data.checkedHabitsExpanded));
       setTimeout(() => {
         if (this.data.animatingHabitId === habitIdText && this.data.checkinVisualState === "success") {
@@ -163,7 +189,14 @@ Page({
         }
       }, CHECKIN_LEAVING_DELAY_MS);
       await wait(CHECKIN_SUCCESS_ANIMATION_MS);
-      await this.loadToday();
+      const nextHabitCards = replaceHabitCard(this.data.todayHabits, childHabitId, checkedHabit);
+      this.setData({
+        todayHabits: nextHabitCards,
+        checkingHabitId: "",
+        animatingHabitId: "",
+        checkinVisualState: "",
+        ...buildTodayDisplayState(nextHabitCards, this.data.checkedHabitsExpanded),
+      });
     } catch (error) {
       this.setData({
         animatingHabitId: "",
@@ -184,8 +217,12 @@ Page({
     }
     try {
       this.setData({ undoingHabitId: String(childHabitId) });
-      await undoCheckinHabit(this.data.childId, childHabitId);
-      await this.loadToday();
+      const uncheckedHabit = await undoCheckinHabit(this.data.childId, childHabitId);
+      const nextHabitCards = replaceHabitCard(this.data.todayHabits, childHabitId, uncheckedHabit);
+      this.setData({
+        todayHabits: nextHabitCards,
+        ...buildTodayDisplayState(nextHabitCards, this.data.checkedHabitsExpanded),
+      });
     } catch (error) {
       showInlineFeedback(this, error.message || "撤销失败", "error");
     } finally {
@@ -198,6 +235,45 @@ function wait(duration) {
   return new Promise((resolve) => {
     setTimeout(resolve, duration);
   });
+}
+
+function replaceHabitCard(habitCards, childHabitId, updatedHabit) {
+  return habitCards.map((habit) => {
+    if (String(habit.childHabitId) !== String(childHabitId)) {
+      return resetHabitAnimationState(habit);
+    }
+    return toCardState({
+      ...habit,
+      ...updatedHabit,
+    });
+  });
+}
+
+function resetHabitAnimationState(habit) {
+  return {
+    ...habit,
+    cardClass: habit.baseCardClass,
+    actionClass: habit.baseActionClass,
+    actionText: habit.baseActionText,
+    actionIcon: habit.baseActionIcon,
+    undoActionClass: habit.baseUndoActionClass,
+    undoActionText: habit.baseUndoActionText,
+    showSuccessBurst: false,
+  };
+}
+
+function buildTodayDisplayState(habitCards, checkedHabitsExpanded) {
+  const completedCount = habitCards.filter((item) => item.checked).length;
+  const progressPercent = habitCards.length > 0 ? Math.round((completedCount / habitCards.length) * 100) : 0;
+  return {
+    completedCount,
+    progressPercent,
+    progressText: `${progressPercent}%`,
+    progressRingStyle: buildProgressRingStyle(progressPercent),
+    progressHint: buildProgressHint(habitCards.length, completedCount),
+    ...buildHabitGroups(habitCards, checkedHabitsExpanded),
+    hasNoHabits: habitCards.length === 0,
+  };
 }
 
 function buildCheckinAnimationState(habitCards, animatingHabitId, checkinVisualState, checkedHabitsExpanded) {

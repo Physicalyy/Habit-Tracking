@@ -68,7 +68,7 @@ public class MeBootstrapService {
 
         return new BootstrapResponse(
                 families.isEmpty(),
-                new CurrentUserSummary(user.getId(), user.getOpenid(), user.getNickname()),
+                MeProfileService.toSummary(user),
                 families,
                 defaultFamily,
                 defaultChild

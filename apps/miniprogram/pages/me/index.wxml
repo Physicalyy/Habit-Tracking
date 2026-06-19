@@ -7,9 +7,10 @@
 
   <view wx:if="{{feedbackVisible}}" class="{{feedbackClass}}">{{feedbackText}}</view>
 
-  <view class="profile-section">
+  <view class="profile-section" bindtap="openProfileDialog">
     <view class="avatar-wrap">
-      <view class="avatar">{{avatarText}}</view>
+      <view class="avatar" wx:if="{{!avatarImageVisible}}">{{avatarText}}</view>
+      <image wx:if="{{avatarImageVisible}}" class="avatar avatar-image" src="{{avatarImageUrl}}" mode="aspectFill"></image>
     </view>
     <view class="profile-info">
       <view class="profile-name">{{nickname}}</view>
@@ -60,4 +61,13 @@
       <view class="bento-text">习惯库</view>
     </view>
   </view>
+
+  <profile-dialog
+    visible="{{profileDialogVisible}}"
+    nickname="{{nickname}}"
+    avatar-text="{{avatarText}}"
+    avatar-image-url="{{avatarImageUrl}}"
+    bindsaved="onProfileSaved"
+    bindskipped="onProfileSkipped"
+  />
 </view>

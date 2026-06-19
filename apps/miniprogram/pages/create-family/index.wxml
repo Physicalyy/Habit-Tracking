@@ -62,4 +62,13 @@
     </view>
     <view class="terms-text">点击创建即表示同意 服务条款 和 隐私政策</view>
   </view>
+
+  <profile-dialog
+    visible="{{profileDialogVisible}}"
+    nickname="{{nickname}}"
+    avatar-text="{{avatarText}}"
+    avatar-image-url="{{avatarImageUrl}}"
+    bindsaved="onProfileSaved"
+    bindskipped="onProfileSkipped"
+  />
 </view>

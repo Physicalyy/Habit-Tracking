@@ -7,6 +7,14 @@ const API_ENDPOINTS = Object.freeze({
     method: "GET",
     path: "/api/me/bootstrap",
   }),
+  ME_AVATAR: Object.freeze({
+    method: "POST",
+    path: "/api/me/avatar",
+  }),
+  ME_PROFILE: Object.freeze({
+    method: "PATCH",
+    path: "/api/me/profile",
+  }),
   CREATE_FAMILY: Object.freeze({
     method: "POST",
     path: "/api/families",

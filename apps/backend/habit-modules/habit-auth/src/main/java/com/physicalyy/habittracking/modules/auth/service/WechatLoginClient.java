@@ -3,6 +3,8 @@ package com.physicalyy.habittracking.modules.auth.service;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.physicalyy.habittracking.common.exception.BusinessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -16,6 +18,8 @@ import java.time.Duration;
 
 @Component
 public class WechatLoginClient {
+
+    private static final Logger log = LoggerFactory.getLogger(WechatLoginClient.class);
 
     private final WechatMiniProgramProperties properties;
     private final ObjectMapper objectMapper;
@@ -53,6 +57,7 @@ public class WechatLoginClient {
             }
             WechatCodeToSessionResponse body = objectMapper.readValue(response.body(), WechatCodeToSessionResponse.class);
             if (body.errcode() != null && body.errcode() != 0) {
+                log.warn("WeChat code2Session failed: errcode={}, errmsg={}", body.errcode(), body.errmsg());
                 throw new BusinessException("BAD_REQUEST", "WeChat login failed");
             }
             if (!StringUtils.hasText(body.openid())) {

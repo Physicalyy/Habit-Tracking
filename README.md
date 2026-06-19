@@ -60,6 +60,9 @@ WeChat miniprogram is not built into this compose stack.
    - `WECHAT_MINIPROGRAM_SECRET`
    - `AUTH_TOKEN_SECRET`
    - `AUTH_TOKEN_TTL_SECONDS` defaults to `604800`
+   - `AVATAR_STORAGE_DIR` defaults to `/app/data/avatars`
+   - `SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE` defaults to `2MB`
+   - `SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE` defaults to `2MB`
 
 3. Build and start the stack:
 
@@ -79,6 +82,8 @@ Compose services:
   the `habit_mysql_data` Docker volume.
 - `backend`: Spring Boot backend, connects to
   `jdbc:mysql://mysql:3306/${MYSQL_DATABASE}` inside the compose network.
+  Uploaded avatars are persisted in the `habit_avatar_data` Docker volume and
+  served through relative URLs under `/api/public/avatars/`.
 
 If Docker Hub is slow or blocked, set `BACKEND_JRE_IMAGE` in `.env` to an
 available Java 17 JRE image mirror before running `docker compose up`.
@@ -87,6 +92,10 @@ Production miniprogram deployment also requires private environment
 configuration outside the public repository:
 
 - Add the deployed backend HTTPS domain as a WeChat request legal domain.
+- Add the same deployed backend HTTPS domain as a WeChat uploadFile legal
+  domain for avatar upload.
+- Configure the reverse proxy upload limit, for example
+  `client_max_body_size 2m` or higher.
 - If server IP whitelist is enabled for the miniprogram secret, add the
   backend server's outbound IP shown by your server or by WeChat's
   `code2Session` error response.

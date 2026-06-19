@@ -37,7 +37,13 @@ public class AuthService {
         }
         return new WechatLoginResponse(
                 authTokenService.issue(user),
-                new AuthUserSummary(user.getId(), user.getOpenid(), user.getNickname())
+                new AuthUserSummary(
+                        user.getId(),
+                        user.getOpenid(),
+                        user.getNickname(),
+                        user.getAvatarUrl(),
+                        user.isProfileCompleted()
+                )
         );
     }
 }

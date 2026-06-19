@@ -17,6 +17,8 @@ import com.physicalyy.habittracking.modules.habit.entity.HabitChildAllowedMember
 import com.physicalyy.habittracking.modules.habit.entity.HabitChildConfig;
 import com.physicalyy.habittracking.modules.habit.mapper.HabitChildAllowedMemberMapper;
 import com.physicalyy.habittracking.modules.habit.mapper.HabitChildConfigMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class CheckinService {
+
+    private static final Logger log = LoggerFactory.getLogger(CheckinService.class);
+    private static final long LIST_TODAY_SLOW_THRESHOLD_MS = 1_000L;
 
     private final CurrentUserService currentUserService;
     private final ChildProfileMapper childProfileMapper;
@@ -54,7 +59,10 @@ public class CheckinService {
     }
 
     public List<TodayHabitSummary> listTodayHabits(Long childId) {
+        long startedAt = System.nanoTime();
         ChildContext context = requireChildContext(childId);
+        long contextLoadedAt = System.nanoTime();
+
         List<HabitChildConfig> childHabits = habitChildConfigMapper.selectList(new LambdaQueryWrapper<HabitChildConfig>()
                 .eq(HabitChildConfig::getFamilyId, context.familyId())
                 .eq(HabitChildConfig::getChildId, childId)
@@ -62,7 +70,9 @@ public class CheckinService {
                 .eq(HabitChildConfig::getDelFlag, "0")
                 .orderByAsc(HabitChildConfig::getSortOrder)
                 .orderByAsc(HabitChildConfig::getCreateTime));
+        long childHabitsLoadedAt = System.nanoTime();
         if (childHabits.isEmpty()) {
+            logSlowListToday(startedAt, contextLoadedAt, childHabitsLoadedAt, childHabitsLoadedAt, childHabitsLoadedAt, 0, 0);
             return List.of();
         }
 
@@ -74,10 +84,22 @@ public class CheckinService {
                                 .eq(HabitCheckinRecord::getDelFlag, "0"))
                 .stream()
                 .collect(Collectors.toMap(HabitCheckinRecord::getChildHabitId, Function.identity()));
+        long todayRecordsLoadedAt = System.nanoTime();
 
-        return childHabits.stream()
+        List<TodayHabitSummary> summaries = childHabits.stream()
                 .map(childHabit -> toSummary(childHabit, todayRecords.get(childHabit.getId()), context.member()))
                 .toList();
+        long completedAt = System.nanoTime();
+        logSlowListToday(
+                startedAt,
+                contextLoadedAt,
+                childHabitsLoadedAt,
+                todayRecordsLoadedAt,
+                completedAt,
+                childHabits.size(),
+                todayRecords.size()
+        );
+        return summaries;
     }
 
     public List<CheckinHistoryItem> listHistory(Long childId) {
@@ -133,9 +155,18 @@ public class CheckinService {
             throw new BusinessException("BAD_REQUEST", "Current member cannot check in this habit");
         }
 
-        HabitCheckinRecord existingRecord = findTodayRecord(context, childHabitId);
-        if (existingRecord != null) {
+        HabitCheckinRecord existingRecord = findAnyTodayRecord(context, childHabitId);
+        if (existingRecord != null && "0".equals(existingRecord.getDelFlag())) {
             throw new BusinessException("BAD_REQUEST", "Habit already checked in today");
+        }
+        if (existingRecord != null) {
+            existingRecord.setDelFlag("0");
+            existingRecord.setCheckedByMemberId(context.member().getId());
+            existingRecord.setCheckedTime(now());
+            existingRecord.setNote("");
+            existingRecord.touchForUpdate(context.user().getOpenid());
+            habitCheckinRecordMapper.updateById(existingRecord);
+            return toSummary(childHabit, existingRecord, context.member());
         }
 
         HabitCheckinRecord record = new HabitCheckinRecord();
@@ -210,13 +241,23 @@ public class CheckinService {
     }
 
     private HabitCheckinRecord findTodayRecord(ChildContext context, Long childHabitId) {
-        return habitCheckinRecordMapper.selectOne(new LambdaQueryWrapper<HabitCheckinRecord>()
+        return findAnyTodayRecord(context, childHabitId, "0");
+    }
+
+    private HabitCheckinRecord findAnyTodayRecord(ChildContext context, Long childHabitId) {
+        return findAnyTodayRecord(context, childHabitId, null);
+    }
+
+    private HabitCheckinRecord findAnyTodayRecord(ChildContext context, Long childHabitId, String delFlag) {
+        LambdaQueryWrapper<HabitCheckinRecord> query = new LambdaQueryWrapper<HabitCheckinRecord>()
                 .eq(HabitCheckinRecord::getFamilyId, context.familyId())
                 .eq(HabitCheckinRecord::getChildId, context.child().getId())
                 .eq(HabitCheckinRecord::getChildHabitId, childHabitId)
-                .eq(HabitCheckinRecord::getCheckinDate, today())
-                .eq(HabitCheckinRecord::getDelFlag, "0")
-                .last("limit 1"));
+                .eq(HabitCheckinRecord::getCheckinDate, today());
+        if (delFlag != null) {
+            query.eq(HabitCheckinRecord::getDelFlag, delFlag);
+        }
+        return habitCheckinRecordMapper.selectOne(query.last("limit 1"));
     }
 
     private TodayHabitSummary toSummary(HabitChildConfig childHabit, HabitCheckinRecord record, FamilyMember member) {
@@ -276,6 +317,36 @@ public class CheckinService {
 
     private LocalDateTime now() {
         return LocalDateTime.now();
+    }
+
+    private void logSlowListToday(
+            long startedAt,
+            long contextLoadedAt,
+            long childHabitsLoadedAt,
+            long todayRecordsLoadedAt,
+            long completedAt,
+            int habitCount,
+            int checkedCount
+    ) {
+        long totalMs = elapsedMs(startedAt, completedAt);
+        if (totalMs < LIST_TODAY_SLOW_THRESHOLD_MS) {
+            return;
+        }
+
+        log.warn(
+                "Slow today habit list detected: totalMs={}, contextMs={}, habitQueryMs={}, checkinQueryMs={}, assembleMs={}, habitCount={}, checkedCount={}",
+                totalMs,
+                elapsedMs(startedAt, contextLoadedAt),
+                elapsedMs(contextLoadedAt, childHabitsLoadedAt),
+                elapsedMs(childHabitsLoadedAt, todayRecordsLoadedAt),
+                elapsedMs(todayRecordsLoadedAt, completedAt),
+                habitCount,
+                checkedCount
+        );
+    }
+
+    private long elapsedMs(long startNanos, long endNanos) {
+        return (endNanos - startNanos) / 1_000_000L;
     }
 
     private record ChildContext(

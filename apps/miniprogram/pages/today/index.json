@@ -1,3 +1,6 @@
 {
-  "navigationStyle": "custom"
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "profile-dialog": "/components/profile-dialog/index"
+  }
 }

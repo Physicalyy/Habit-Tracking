@@ -8,6 +8,8 @@ const mockUser = Object.freeze({
   id: "user_mock_parent",
   openid: "mock-openid",
   nickname: "新手家长",
+  avatarUrl: null,
+  profileCompleted: false,
 });
 
 function clone(value) {
