@@ -1099,6 +1099,13 @@ function assertSecondaryVisualPrototypeGuard() {
   }
   assert.ok(familyInviteJs.includes("this.data.refreshing"), "family-invite must prevent repeated invite refresh taps");
   assert.ok(familyInviteJs.includes("drawInviteQr") && familyInviteWxml.includes('canvas-id="inviteQr"'), "family-invite must render a real local QR canvas");
+  assert.ok(
+    /\.qr-box\s*\{[\s\S]*width:\s*320rpx;[\s\S]*height:\s*320rpx;/.test(familyInviteWxss) &&
+      /\.qr-canvas\s*\{[\s\S]*display:\s*block;[\s\S]*width:\s*320rpx;[\s\S]*height:\s*320rpx;/.test(familyInviteWxss),
+    "family-invite QR canvas must use the same rpx size as its centered box to avoid skewed rendering in WeChat",
+  );
+  const qrCanvasRule = familyInviteWxss.match(/\.qr-canvas\s*\{[^}]*\}/);
+  assert.ok(qrCanvasRule && !/[^r]px;/.test(qrCanvasRule[0]), "family-invite QR canvas must not use px sizing inside an rpx layout");
   assert.ok(familyInviteJs.includes("inviteCode="), "family-invite QR payload must carry inviteCode");
   assert.ok(!familyInviteWxml.includes("qr-placeholder") && !familyInviteWxml.includes("share-action"), "family-invite must not keep static QR placeholder or fake share action");
   assert.ok(

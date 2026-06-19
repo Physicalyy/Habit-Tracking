@@ -171,17 +171,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 360rpx;
-  height: 360rpx;
+  width: 320rpx;
+  height: 320rpx;
   margin: 28rpx auto 18rpx;
   background: #ffffff;
-  border: 2rpx solid #bdc9c4;
-  border-radius: 16rpx;
 }
 
 .qr-canvas {
-  width: 220px;
-  height: 220px;
+  display: block;
+  width: 320rpx;
+  height: 320rpx;
 }
 
 .invite-footer-hint {
