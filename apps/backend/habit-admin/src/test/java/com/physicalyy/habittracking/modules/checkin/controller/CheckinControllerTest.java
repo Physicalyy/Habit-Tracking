@@ -88,6 +88,17 @@ class CheckinControllerTest {
                         .header("X-Test-Nickname", "Owner"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].checked").value(false));
+
+        mockMvc.perform(post("/api/children/{childId}/habits/{childHabitId}/checkins", childId, activeHabitId)
+                        .header("X-Test-Openid", ownerOpenid)
+                        .header("X-Test-Nickname", "Owner"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.childHabitId").value(String.valueOf(activeHabitId)))
+                .andExpect(jsonPath("$.data.checked").value(true))
+                .andExpect(jsonPath("$.data.checkinId").isString());
+
+        assertThat(checkinCount(activeHabitId)).isEqualTo(1);
+        assertThat(totalCheckinRows(activeHabitId)).isEqualTo(1);
     }
 
     @Test
@@ -270,6 +281,14 @@ class CheckinControllerTest {
     private Long checkinCount(Long childHabitId) {
         return jdbcTemplate.queryForObject(
                 "select count(*) from habit_checkin_record where child_habit_id = ? and del_flag = '0'",
+                Long.class,
+                childHabitId
+        );
+    }
+
+    private Long totalCheckinRows(Long childHabitId) {
+        return jdbcTemplate.queryForObject(
+                "select count(*) from habit_checkin_record where child_habit_id = ?",
                 Long.class,
                 childHabitId
         );

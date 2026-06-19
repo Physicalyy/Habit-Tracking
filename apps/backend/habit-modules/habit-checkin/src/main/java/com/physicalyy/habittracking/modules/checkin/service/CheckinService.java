@@ -155,9 +155,18 @@ public class CheckinService {
             throw new BusinessException("BAD_REQUEST", "Current member cannot check in this habit");
         }
 
-        HabitCheckinRecord existingRecord = findTodayRecord(context, childHabitId);
-        if (existingRecord != null) {
+        HabitCheckinRecord existingRecord = findAnyTodayRecord(context, childHabitId);
+        if (existingRecord != null && "0".equals(existingRecord.getDelFlag())) {
             throw new BusinessException("BAD_REQUEST", "Habit already checked in today");
+        }
+        if (existingRecord != null) {
+            existingRecord.setDelFlag("0");
+            existingRecord.setCheckedByMemberId(context.member().getId());
+            existingRecord.setCheckedTime(now());
+            existingRecord.setNote("");
+            existingRecord.touchForUpdate(context.user().getOpenid());
+            habitCheckinRecordMapper.updateById(existingRecord);
+            return toSummary(childHabit, existingRecord, context.member());
         }
 
         HabitCheckinRecord record = new HabitCheckinRecord();
@@ -232,13 +241,23 @@ public class CheckinService {
     }
 
     private HabitCheckinRecord findTodayRecord(ChildContext context, Long childHabitId) {
-        return habitCheckinRecordMapper.selectOne(new LambdaQueryWrapper<HabitCheckinRecord>()
+        return findAnyTodayRecord(context, childHabitId, "0");
+    }
+
+    private HabitCheckinRecord findAnyTodayRecord(ChildContext context, Long childHabitId) {
+        return findAnyTodayRecord(context, childHabitId, null);
+    }
+
+    private HabitCheckinRecord findAnyTodayRecord(ChildContext context, Long childHabitId, String delFlag) {
+        LambdaQueryWrapper<HabitCheckinRecord> query = new LambdaQueryWrapper<HabitCheckinRecord>()
                 .eq(HabitCheckinRecord::getFamilyId, context.familyId())
                 .eq(HabitCheckinRecord::getChildId, context.child().getId())
                 .eq(HabitCheckinRecord::getChildHabitId, childHabitId)
-                .eq(HabitCheckinRecord::getCheckinDate, today())
-                .eq(HabitCheckinRecord::getDelFlag, "0")
-                .last("limit 1"));
+                .eq(HabitCheckinRecord::getCheckinDate, today());
+        if (delFlag != null) {
+            query.eq(HabitCheckinRecord::getDelFlag, delFlag);
+        }
+        return habitCheckinRecordMapper.selectOne(query.last("limit 1"));
     }
 
     private TodayHabitSummary toSummary(HabitChildConfig childHabit, HabitCheckinRecord record, FamilyMember member) {
