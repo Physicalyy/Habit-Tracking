@@ -98,6 +98,59 @@ const mockHabitTemplates = Object.freeze([
   }),
 ]);
 
+const mockGrowthPartnerTemplates = Object.freeze([
+  Object.freeze({
+    templateCode: "thunder-war-tiger",
+    name: "雷纹战虎",
+    description: "每天完成习惯，陪它一点点成长。",
+    defaultAnimationType: "css",
+    stages: Object.freeze([
+      Object.freeze({
+        stageCode: "thunder-war-tiger-egg",
+        name: "雷纹虎蛋",
+        requiredGrowthPoints: 0,
+        imageUrl: "/assets/partners/thunder-war-tiger-stage-0.png",
+        previewImageUrl: "/assets/partners/thunder-war-tiger-stage-0.png",
+      }),
+      Object.freeze({
+        stageCode: "thunder-war-tiger-cub",
+        name: "幼年雷纹虎",
+        requiredGrowthPoints: 20,
+        imageUrl: "/assets/partners/thunder-war-tiger-stage-1.png",
+        previewImageUrl: "/assets/partners/thunder-war-tiger-stage-1.png",
+      }),
+      Object.freeze({
+        stageCode: "thunder-war-tiger-spark",
+        name: "跃电雷纹虎",
+        requiredGrowthPoints: 40,
+        imageUrl: "/assets/partners/thunder-war-tiger-stage-2.png",
+        previewImageUrl: "/assets/partners/thunder-war-tiger-stage-2.png",
+      }),
+      Object.freeze({
+        stageCode: "thunder-war-tiger-battle",
+        name: "战纹雷虎",
+        requiredGrowthPoints: 60,
+        imageUrl: "/assets/partners/thunder-war-tiger-stage-3.png",
+        previewImageUrl: "/assets/partners/thunder-war-tiger-stage-3.png",
+      }),
+      Object.freeze({
+        stageCode: "thunder-war-tiger-armor",
+        name: "雷铠战虎",
+        requiredGrowthPoints: 80,
+        imageUrl: "/assets/partners/thunder-war-tiger-stage-4.png",
+        previewImageUrl: "/assets/partners/thunder-war-tiger-stage-4.png",
+      }),
+      Object.freeze({
+        stageCode: "thunder-war-tiger-wing",
+        name: "雷翼战虎",
+        requiredGrowthPoints: 100,
+        imageUrl: "/assets/partners/thunder-war-tiger-stage-5.png",
+        previewImageUrl: "/assets/partners/thunder-war-tiger-stage-5.png",
+      }),
+    ]),
+  }),
+]);
+
 function toBootstrap(session) {
   const families = session.family
     ? [
@@ -274,6 +327,86 @@ function listHabitTemplates(data) {
   }));
 }
 
+function listGrowthPartnerTemplates() {
+  return ok(mockGrowthPartnerTemplates.map((template) => ({
+    ...template,
+    stages: template.stages.map((stage) => toGrowthStageSummary(stage, 0)),
+  })));
+}
+
+function getChildGrowthPartner(childId) {
+  const { session, error } = requireChildSession(childId);
+  if (error) {
+    return error;
+  }
+  return ok(toGrowthPartnerState(session));
+}
+
+function adoptGrowthPartner(childId, data) {
+  const { session, error } = requireChildSession(childId);
+  if (error) {
+    return error;
+  }
+  if (session.growthPartner) {
+    return ok(toGrowthPartnerState(session));
+  }
+  const templateCode = String(data.templateCode || "").trim();
+  const template = mockGrowthPartnerTemplates.find((item) => item.templateCode === templateCode);
+  if (!template) {
+    return fail("成长伙伴不存在");
+  }
+  const growthPartner = {
+    id: `growth_partner_${templateCode}`,
+    childId,
+    templateCode,
+    templateName: template.name,
+    nickname: template.name,
+    growthPoints: 0,
+  };
+  const nextSession = saveMockSession({
+    ...session,
+    growthPartner,
+    growthPartnerLogs: session.growthPartnerLogs || [],
+  });
+  return ok(toGrowthPartnerState(nextSession));
+}
+
+function toGrowthPartnerState(session) {
+  const partner = session.growthPartner;
+  if (!partner) {
+    return {
+      adopted: false,
+      partner: null,
+      currentStage: null,
+      nextStage: null,
+      stages: [],
+    };
+  }
+  const template = mockGrowthPartnerTemplates.find((item) => item.templateCode === partner.templateCode);
+  const growthPoints = Number(partner.growthPoints || 0);
+  const stages = template ? template.stages : [];
+  const currentStage = stages
+    .filter((stage) => stage.requiredGrowthPoints <= growthPoints)
+    .sort((left, right) => right.requiredGrowthPoints - left.requiredGrowthPoints)[0];
+  const nextStage = stages
+    .filter((stage) => stage.requiredGrowthPoints > growthPoints)
+    .sort((left, right) => left.requiredGrowthPoints - right.requiredGrowthPoints)[0] || null;
+  return {
+    adopted: true,
+    partner,
+    currentStage: currentStage ? toGrowthStageSummary(currentStage, growthPoints) : null,
+    nextStage: nextStage ? toGrowthStageSummary(nextStage, growthPoints) : null,
+    stages: stages.map((stage) => toGrowthStageSummary(stage, growthPoints)),
+  };
+}
+
+function toGrowthStageSummary(stage, growthPoints) {
+  return {
+    ...stage,
+    unlocked: Number(growthPoints || 0) >= stage.requiredGrowthPoints,
+  };
+}
+
 function requireChildSession(childId) {
   const session = getMockSession();
   if (!session.child || String(session.child.id) !== String(childId)) {
@@ -345,6 +478,113 @@ function toTodayHabit(habit, session) {
     checkinDate: record ? record.checkinDate : null,
     checkedTime: record ? record.checkedTime : null,
   };
+}
+
+function recordGrowthForCheckin(session, childId, checkinId) {
+  if (!session.growthPartner) {
+    return { session, growthPartnerChange: null };
+  }
+  const logs = session.growthPartnerLogs || [];
+  const existingLog = logs.find((log) => String(log.checkinId) === String(checkinId));
+  if (existingLog && existingLog.status === "active") {
+    return { session, growthPartnerChange: null };
+  }
+  const partner = session.growthPartner;
+  const beforeGrowthPoints = Number(partner.growthPoints || 0);
+  const afterGrowthPoints = beforeGrowthPoints + 1;
+  const change = buildGrowthPartnerChange(partner.templateCode, beforeGrowthPoints, afterGrowthPoints, 1);
+  const nextLog = {
+    id: existingLog ? existingLog.id : `growth_log_${checkinId}`,
+    childId,
+    checkinId,
+    delta: 1,
+    beforeGrowthPoints,
+    afterGrowthPoints,
+    beforeStageCode: change.beforeStageCode,
+    afterStageCode: change.afterStageCode,
+    stageChanged: change.stageChanged,
+    animationType: change.animationType,
+    status: "active",
+  };
+  return {
+    session: {
+      ...session,
+      growthPartner: {
+        ...partner,
+        growthPoints: afterGrowthPoints,
+      },
+      growthPartnerLogs: existingLog
+        ? logs.map((log) => (log === existingLog ? nextLog : log))
+        : [...logs, nextLog],
+    },
+    growthPartnerChange: change,
+  };
+}
+
+function undoGrowthForCheckin(session, childId, checkinId) {
+  if (!session.growthPartner) {
+    return { session, growthPartnerChange: null };
+  }
+  const logs = session.growthPartnerLogs || [];
+  const existingLog = logs.find((log) => (
+    String(log.checkinId) === String(checkinId) &&
+    log.status === "active"
+  ));
+  if (!existingLog) {
+    return { session, growthPartnerChange: null };
+  }
+  const partner = session.growthPartner;
+  const beforeGrowthPoints = Number(partner.growthPoints || 0);
+  const afterGrowthPoints = Math.max(0, beforeGrowthPoints - 1);
+  const change = buildGrowthPartnerChange(partner.templateCode, beforeGrowthPoints, afterGrowthPoints, -1);
+  return {
+    session: {
+      ...session,
+      growthPartner: {
+        ...partner,
+        growthPoints: afterGrowthPoints,
+      },
+      growthPartnerLogs: logs.map((log) => (log === existingLog
+        ? {
+            ...log,
+            delta: -1,
+            beforeGrowthPoints,
+            afterGrowthPoints,
+            beforeStageCode: change.beforeStageCode,
+            afterStageCode: change.afterStageCode,
+            stageChanged: change.stageChanged,
+            animationType: change.animationType,
+            status: "reverted",
+          }
+        : log)),
+    },
+    growthPartnerChange: change,
+  };
+}
+
+function buildGrowthPartnerChange(templateCode, beforeGrowthPoints, afterGrowthPoints, delta) {
+  const template = mockGrowthPartnerTemplates.find((item) => item.templateCode === templateCode);
+  const stages = template ? template.stages : [];
+  const beforeStage = currentGrowthStage(stages, beforeGrowthPoints);
+  const afterStage = currentGrowthStage(stages, afterGrowthPoints);
+  const stageChanged = beforeStage.stageCode !== afterStage.stageCode;
+  return {
+    delta,
+    beforeGrowthPoints,
+    afterGrowthPoints,
+    beforeStageCode: beforeStage.stageCode,
+    afterStageCode: afterStage.stageCode,
+    stageChanged,
+    animationType: stageChanged
+      ? delta > 0 ? "stage_upgrade" : "stage_downgrade"
+      : "energy_gain",
+  };
+}
+
+function currentGrowthStage(stages, growthPoints) {
+  return stages
+    .filter((stage) => stage.requiredGrowthPoints <= growthPoints)
+    .sort((left, right) => right.requiredGrowthPoints - left.requiredGrowthPoints)[0] || stages[0];
 }
 
 function listTodayHabits(childId) {
@@ -541,8 +781,12 @@ function checkinHabit(childId, childHabitId) {
     ...session,
     checkins: [...(session.checkins || []), record],
   };
-  saveMockSession(nextSession);
-  return ok(toTodayHabit(habit, nextSession));
+  const growthResult = recordGrowthForCheckin(nextSession, childId, record.id);
+  const savedSession = saveMockSession(growthResult.session);
+  return ok({
+    ...toTodayHabit(habit, savedSession),
+    growthPartnerChange: growthResult.growthPartnerChange,
+  });
 }
 
 function undoCheckinHabit(childId, childHabitId) {
@@ -572,11 +816,19 @@ function undoCheckinHabit(childId, childHabitId) {
     ...session,
     checkins: checkins.filter((item) => item !== existing),
   };
-  saveMockSession(nextSession);
-  return ok(toTodayHabit(habit, nextSession));
+  const growthResult = undoGrowthForCheckin(nextSession, childId, existing.id);
+  const savedSession = saveMockSession(growthResult.session);
+  return ok({
+    ...toTodayHabit(habit, savedSession),
+    growthPartnerChange: growthResult.growthPartnerChange,
+  });
 }
 
-function toHistoryItem(record, habit) {
+function toHistoryItem(record, habit, session) {
+  const growthLog = (session.growthPartnerLogs || []).find((log) => (
+    String(log.checkinId) === String(record.id) &&
+    log.status === "active"
+  ));
   return {
     checkinId: record.id,
     childId: record.childId,
@@ -589,6 +841,7 @@ function toHistoryItem(record, habit) {
     checkedTime: record.checkedTime,
     checkedByMemberId: record.checkedByMemberId,
     note: record.note || "",
+    growthPartnerDelta: growthLog ? growthLog.delta : null,
   };
 }
 
@@ -609,6 +862,7 @@ function listCheckinHistory(childId) {
     .map((record) => toHistoryItem(
       record,
       childHabits.find((habit) => String(habit.id) === String(record.childHabitId)),
+      session,
     )));
 }
 
@@ -718,8 +972,22 @@ async function handleMockRequest({ endpoint, data = {} }) {
     return listHabitTemplates(data);
   }
 
+  if (endpoint === API_ENDPOINTS.GROWTH_PARTNER_TEMPLATES) {
+    return listGrowthPartnerTemplates();
+  }
+
   if (endpoint === API_ENDPOINTS.CUSTOM_HABIT_TEMPLATE) {
     return createCustomHabit(data);
+  }
+
+  if (endpoint.path && endpoint.method === "GET" && /\/api\/children\/[^/]+\/growth-partner$/.test(endpoint.path)) {
+    const childId = endpoint.path.match(/\/api\/children\/([^/]+)\/growth-partner$/)[1];
+    return getChildGrowthPartner(childId);
+  }
+
+  if (endpoint.path && endpoint.method === "POST" && /\/api\/children\/[^/]+\/growth-partner\/adopt$/.test(endpoint.path)) {
+    const childId = endpoint.path.match(/\/api\/children\/([^/]+)\/growth-partner\/adopt$/)[1];
+    return adoptGrowthPartner(childId, data);
   }
 
   if (endpoint.path && endpoint.method === "GET" && /\/api\/children\/[^/]+\/habits$/.test(endpoint.path)) {

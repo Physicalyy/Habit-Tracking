@@ -20,6 +20,7 @@
         <module>habit-family</module>
         <module>habit-child</module>
         <module>habit-habit</module>
+        <module>habit-growth-partner</module>
         <module>habit-checkin</module>
     </modules>
 </project>

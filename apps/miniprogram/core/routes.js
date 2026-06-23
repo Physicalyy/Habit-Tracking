@@ -11,6 +11,7 @@ const ROUTES = Object.freeze({
   FAMILY_MEMBERS: "/pages/family-members/index",
   FAMILY_INVITE: "/pages/family-invite/index",
   HABIT_PERMISSION: "/pages/habit-permission/index",
+  GROWTH_PARTNER_SELECT: "/pages/growth-partner/index",
 });
 
 module.exports = {

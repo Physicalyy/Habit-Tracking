@@ -31,6 +31,10 @@ const API_ENDPOINTS = Object.freeze({
     method: "POST",
     path: "/api/habit-templates/custom",
   }),
+  GROWTH_PARTNER_TEMPLATES: Object.freeze({
+    method: "GET",
+    path: "/api/growth-partner-templates",
+  }),
 });
 
 function familyInvite(familyId) {
@@ -131,6 +135,20 @@ function checkinSummary(childId) {
   });
 }
 
+function childGrowthPartner(childId) {
+  return Object.freeze({
+    method: "GET",
+    path: `/api/children/${childId}/growth-partner`,
+  });
+}
+
+function adoptGrowthPartner(childId) {
+  return Object.freeze({
+    method: "POST",
+    path: `/api/children/${childId}/growth-partner/adopt`,
+  });
+}
+
 module.exports = {
   API_ENDPOINTS,
   familyInvite,
@@ -147,4 +165,6 @@ module.exports = {
   undoTodayCheckin,
   checkinHistory,
   checkinSummary,
+  childGrowthPartner,
+  adoptGrowthPartner,
 };

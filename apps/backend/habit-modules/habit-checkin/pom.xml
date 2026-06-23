@@ -35,6 +35,10 @@
             <artifactId>habit-habit</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.physicalyy</groupId>
+            <artifactId>habit-growth-partner</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
         </dependency>

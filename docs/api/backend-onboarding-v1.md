@@ -682,6 +682,233 @@ Success response:
 | 400 | `BAD_REQUEST` | `Allowed members are required` |
 | 400 | `BAD_REQUEST` | `Allowed member is invalid` |
 
+## Growth Partner
+
+Growth partner APIs require a valid Bearer Token. Child-scoped APIs require the
+current user to be an active member of the child's family. V1 only seeds and
+exposes `thunder-war-tiger`, but the response shape supports multiple templates
+and multiple stages.
+
+### List Growth Partner Templates
+
+`GET /api/growth-partner-templates`
+
+Returns active growth partner templates and active stage previews ordered by
+template and stage sort fields.
+
+Response `data`:
+
+```json
+[
+  {
+    "templateCode": "thunder-war-tiger",
+    "name": "雷纹战虎",
+    "description": "陪孩子一起积累习惯成长分的雷纹战虎伙伴。",
+    "defaultAnimationType": "css",
+    "stages": [
+      {
+        "stageCode": "thunder-war-tiger-egg",
+        "name": "雷纹虎蛋",
+        "requiredGrowthPoints": 0,
+        "imageUrl": "/assets/partners/thunder-war-tiger-stage-0.png",
+        "previewImageUrl": "/assets/partners/thunder-war-tiger-stage-0.png",
+        "unlocked": true
+      },
+      {
+        "stageCode": "thunder-war-tiger-cub",
+        "name": "幼年雷纹虎",
+        "requiredGrowthPoints": 20,
+        "imageUrl": "/assets/partners/thunder-war-tiger-stage-1.png",
+        "previewImageUrl": "/assets/partners/thunder-war-tiger-stage-1.png",
+        "unlocked": false
+      },
+      {
+        "stageCode": "thunder-war-tiger-spark",
+        "name": "跃电雷纹虎",
+        "requiredGrowthPoints": 40,
+        "imageUrl": "/assets/partners/thunder-war-tiger-stage-2.png",
+        "previewImageUrl": "/assets/partners/thunder-war-tiger-stage-2.png",
+        "unlocked": false
+      },
+      {
+        "stageCode": "thunder-war-tiger-battle",
+        "name": "战纹雷虎",
+        "requiredGrowthPoints": 60,
+        "imageUrl": "/assets/partners/thunder-war-tiger-stage-3.png",
+        "previewImageUrl": "/assets/partners/thunder-war-tiger-stage-3.png",
+        "unlocked": false
+      },
+      {
+        "stageCode": "thunder-war-tiger-armor",
+        "name": "雷铠战虎",
+        "requiredGrowthPoints": 80,
+        "imageUrl": "/assets/partners/thunder-war-tiger-stage-4.png",
+        "previewImageUrl": "/assets/partners/thunder-war-tiger-stage-4.png",
+        "unlocked": false
+      },
+      {
+        "stageCode": "thunder-war-tiger-wing",
+        "name": "雷翼战虎",
+        "requiredGrowthPoints": 100,
+        "imageUrl": "/assets/partners/thunder-war-tiger-stage-5.png",
+        "previewImageUrl": "/assets/partners/thunder-war-tiger-stage-5.png",
+        "unlocked": false
+      }
+    ]
+  }
+]
+```
+
+### Get Current Child Growth Partner
+
+`GET /api/children/{childId}/growth-partner`
+
+Returns the child's adoption state. If no partner has been adopted,
+`adopted=false` and partner/stage fields are empty.
+
+Response `data` when unadopted:
+
+```json
+{
+  "adopted": false,
+  "partner": null,
+  "currentStage": null,
+  "nextStage": null,
+  "stages": [
+    {
+      "stageCode": "thunder-war-tiger-egg",
+      "name": "雷纹虎蛋",
+      "requiredGrowthPoints": 0,
+      "imageUrl": "/assets/partners/thunder-war-tiger-stage-0.png",
+      "previewImageUrl": "/assets/partners/thunder-war-tiger-stage-0.png",
+      "unlocked": true
+    },
+    {
+      "stageCode": "thunder-war-tiger-cub",
+      "name": "幼年雷纹虎",
+      "requiredGrowthPoints": 20,
+      "imageUrl": "/assets/partners/thunder-war-tiger-stage-1.png",
+      "previewImageUrl": "/assets/partners/thunder-war-tiger-stage-1.png",
+      "unlocked": false
+    },
+    {
+      "stageCode": "thunder-war-tiger-spark",
+      "name": "跃电雷纹虎",
+      "requiredGrowthPoints": 40,
+      "imageUrl": "/assets/partners/thunder-war-tiger-stage-2.png",
+      "previewImageUrl": "/assets/partners/thunder-war-tiger-stage-2.png",
+      "unlocked": false
+    },
+    {
+      "stageCode": "thunder-war-tiger-battle",
+      "name": "战纹雷虎",
+      "requiredGrowthPoints": 60,
+      "imageUrl": "/assets/partners/thunder-war-tiger-stage-3.png",
+      "previewImageUrl": "/assets/partners/thunder-war-tiger-stage-3.png",
+      "unlocked": false
+    },
+    {
+      "stageCode": "thunder-war-tiger-armor",
+      "name": "雷铠战虎",
+      "requiredGrowthPoints": 80,
+      "imageUrl": "/assets/partners/thunder-war-tiger-stage-4.png",
+      "previewImageUrl": "/assets/partners/thunder-war-tiger-stage-4.png",
+      "unlocked": false
+    },
+    {
+      "stageCode": "thunder-war-tiger-wing",
+      "name": "雷翼战虎",
+      "requiredGrowthPoints": 100,
+      "imageUrl": "/assets/partners/thunder-war-tiger-stage-5.png",
+      "previewImageUrl": "/assets/partners/thunder-war-tiger-stage-5.png",
+      "unlocked": false
+    }
+  ]
+}
+```
+
+Response `data` when adopted:
+
+```json
+{
+  "adopted": true,
+  "partner": {
+    "id": 30001,
+    "childId": 3001,
+    "templateCode": "thunder-war-tiger",
+    "templateName": "雷纹战虎",
+    "nickname": "雷纹战虎",
+    "growthPoints": 42
+  },
+  "currentStage": {
+    "stageCode": "thunder-war-tiger-spark",
+    "name": "跃电雷纹虎",
+    "requiredGrowthPoints": 40,
+    "imageUrl": "/assets/partners/thunder-war-tiger-stage-2.png",
+    "previewImageUrl": "/assets/partners/thunder-war-tiger-stage-2.png",
+    "unlocked": true
+  },
+  "nextStage": {
+    "stageCode": "thunder-war-tiger-battle",
+    "name": "战纹雷虎",
+    "requiredGrowthPoints": 60,
+    "imageUrl": "/assets/partners/thunder-war-tiger-stage-3.png",
+    "previewImageUrl": "/assets/partners/thunder-war-tiger-stage-3.png",
+    "unlocked": false
+  },
+  "stages": []
+}
+```
+
+### Adopt Growth Partner
+
+`POST /api/children/{childId}/growth-partner/adopt`
+
+Request body:
+
+```json
+{
+  "templateCode": "thunder-war-tiger"
+}
+```
+
+Creates the child's growth partner with default nickname `雷纹战虎`. Repeating
+the same or another adoption request is idempotent for V1: it returns the
+current partner and does not reset `growthPoints`.
+
+Response `data`: same shape as `GET /api/children/{childId}/growth-partner`.
+
+### Growth Change Payload
+
+`POST /checkins` and `DELETE /checkins/today` may include
+`growthPartnerChange` in the returned today habit item:
+
+```json
+{
+  "delta": 1,
+  "beforeGrowthPoints": 39,
+  "afterGrowthPoints": 40,
+  "beforeStageCode": "thunder-war-tiger-cub",
+  "afterStageCode": "thunder-war-tiger-spark",
+  "stageChanged": true,
+  "animationType": "stage_upgrade"
+}
+```
+
+Use `energy_gain` for same-stage growth, `stage_upgrade` for forward stage
+transitions, and `stage_downgrade` for undo transitions that cross a stage
+boundary. When the child has no adopted growth partner, the field is `null`
+and the check-in still succeeds.
+
+### Errors
+
+| HTTP Status | Code | Message |
+| --- | --- | --- |
+| 400 | `BAD_REQUEST` | `Child not found` |
+| 400 | `BAD_REQUEST` | `Current user is not a family member` |
+| 400 | `BAD_REQUEST` | `Growth partner template not found` |
+| 400 | `BAD_REQUEST` | `Growth partner stage not configured` |
+
 ## Today Check-In
 
 ### List Today Habits
@@ -708,7 +935,8 @@ Response `data`:
     "checkinId": null,
     "checkedByMemberId": null,
     "checkinDate": null,
-    "checkedTime": null
+    "checkedTime": null,
+    "growthPartnerChange": null
   }
 ]
 ```
@@ -722,7 +950,9 @@ family membership, child ownership, active habit status, permission, and the
 one-record-per-habit-per-day unique rule.
 
 Response `data`: same item shape as `GET /api/children/{childId}/today`, with
-`checked=true` and check-in fields filled.
+`checked=true` and check-in fields filled. If the child has adopted a growth
+partner, `growthPartnerChange` is filled with the growth delta for this check-in;
+otherwise it is `null`.
 
 ### Undo Today's Check-In
 
@@ -733,7 +963,8 @@ family membership, child ownership, active habit status, permission, and that a
 today record exists.
 
 Response `data`: same item shape as `GET /api/children/{childId}/today`, with
-`checked=false` and check-in fields empty.
+`checked=false` and check-in fields empty. If this check-in previously produced
+growth, `growthPartnerChange.delta` is `-1`; otherwise it is `null`.
 
 ### Errors
 
@@ -773,7 +1004,8 @@ Response `data`:
     "checkinDate": "2026-06-13",
     "checkedTime": "2026-06-13T12:00:00",
     "checkedByMemberId": 4001,
-    "note": ""
+    "note": "",
+    "growthPartnerDelta": 1
   }
 ]
 ```

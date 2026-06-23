@@ -1,0 +1,79 @@
+<view class="page growth-partner-page" style="{{pageTopStyle}}">
+  <view class="growth-top-bar page-nav" style="{{navBarStyle}}">
+    <view class="nav-content" style="{{navContentStyle}}">
+      <view wx:if="{{showNavBack}}" class="top-icon-button material-symbols-outlined" bindtap="goBack">{{icons.arrowBack}}</view>
+      <view class="top-title" style="{{navTitleStyle}}">{{navTitle}}</view>
+    </view>
+  </view>
+
+  <view class="growth-header">
+    <view class="growth-eyebrow">成长伙伴</view>
+    <view class="growth-title">为{{childNickname}}选择伙伴</view>
+    <view class="growth-subtitle">伙伴会随着每日打卡积累成长分，逐步解锁新阶段。</view>
+  </view>
+
+  <view wx:if="{{feedbackVisible}}" class="{{feedbackClass}}">{{feedbackText}}</view>
+
+  <view wx:if="{{loading}}" class="muted-text growth-state">加载中...</view>
+  <view wx:elif="{{errorText}}" class="error-text growth-state">{{errorText}}</view>
+  <block wx:else>
+    <view wx:if="{{showPartnerSelector}}" class="partner-selector">
+      <view
+        wx:for="{{templates}}"
+        wx:key="templateCode"
+        class="{{item.selectedClass}}"
+        data-template-code="{{item.templateCode}}"
+        bindtap="selectTemplate"
+      >
+        <view class="partner-option-icon">
+          <text class="material-symbols-outlined">{{icons.localFire}}</text>
+        </view>
+        <view class="partner-option-main">
+          <view class="partner-option-title">{{item.name}}</view>
+          <view class="partner-option-desc">{{item.description}}</view>
+        </view>
+        <view wx:if="{{item.showAdoptedBadge}}" class="partner-adopted-badge">
+          <text class="material-symbols-outlined adopted-icon">{{icons.checkCircle}}</text>
+          <text>{{item.adoptedBadgeText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="selected-card card">
+      <view class="selected-copy">
+        <view class="selected-name">{{selectedTemplateName}}</view>
+        <view class="selected-desc">{{selectedTemplateDescription}}</view>
+      </view>
+      <view class="{{selectedStageShowcaseClass}}">
+        <image class="stage-showcase-image" mode="aspectFit" src="{{selectedPreviewImageUrl}}" />
+        <view class="stage-showcase-copy">
+          <view class="stage-showcase-label">阶段预览</view>
+          <view class="stage-showcase-name">{{selectedPreviewName}}</view>
+          <view class="stage-showcase-meta">{{selectedPreviewRequiredText}}</view>
+        </view>
+      </view>
+      <view class="stage-list">
+        <view
+          wx:for="{{selectedStages}}"
+          wx:for-item="stage"
+          wx:key="stageCode"
+          class="{{stage.stageClass}}"
+          data-stage-code="{{stage.stageCode}}"
+          bindtap="previewStage"
+          hover-class="stage-preview-pressed"
+        >
+          <image class="stage-image" mode="aspectFit" src="{{stage.imageUrl}}" />
+          <view class="stage-info">
+            <view class="stage-name">{{stage.name}}</view>
+            <view class="stage-meta">{{stage.requiredText}}</view>
+          </view>
+          <view class="stage-state">{{stage.stateText}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="{{adoptActionClass}}" bindtap="adoptTap" hover-class="adopt-action-pressed">
+      {{adoptButtonText}}
+    </view>
+  </block>
+</view>

@@ -35,6 +35,8 @@ function createEmptySession() {
     familyMembers: [],
     childHabits: [],
     checkins: [],
+    growthPartner: null,
+    growthPartnerLogs: [],
     customTemplates: [],
   };
 }

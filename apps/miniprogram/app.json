@@ -3,6 +3,7 @@
     "pages/start/index",
     "pages/create-family/index",
     "pages/join-family/index",
+    "pages/growth-partner/index",
     "pages/today/index",
     "pages/records/index",
     "pages/me/index",

@@ -17,6 +17,8 @@ import com.physicalyy.habittracking.modules.habit.entity.HabitChildAllowedMember
 import com.physicalyy.habittracking.modules.habit.entity.HabitChildConfig;
 import com.physicalyy.habittracking.modules.habit.mapper.HabitChildAllowedMemberMapper;
 import com.physicalyy.habittracking.modules.habit.mapper.HabitChildConfigMapper;
+import com.physicalyy.habittracking.modules.growthpartner.service.GrowthPartnerService;
+import com.physicalyy.habittracking.modules.growthpartner.vo.GrowthPartnerChange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -41,6 +43,7 @@ public class CheckinService {
     private final HabitChildConfigMapper habitChildConfigMapper;
     private final HabitChildAllowedMemberMapper habitChildAllowedMemberMapper;
     private final HabitCheckinRecordMapper habitCheckinRecordMapper;
+    private final GrowthPartnerService growthPartnerService;
 
     public CheckinService(
             CurrentUserService currentUserService,
@@ -48,7 +51,8 @@ public class CheckinService {
             FamilyMemberMapper familyMemberMapper,
             HabitChildConfigMapper habitChildConfigMapper,
             HabitChildAllowedMemberMapper habitChildAllowedMemberMapper,
-            HabitCheckinRecordMapper habitCheckinRecordMapper
+            HabitCheckinRecordMapper habitCheckinRecordMapper,
+            GrowthPartnerService growthPartnerService
     ) {
         this.currentUserService = currentUserService;
         this.childProfileMapper = childProfileMapper;
@@ -56,6 +60,7 @@ public class CheckinService {
         this.habitChildConfigMapper = habitChildConfigMapper;
         this.habitChildAllowedMemberMapper = habitChildAllowedMemberMapper;
         this.habitCheckinRecordMapper = habitCheckinRecordMapper;
+        this.growthPartnerService = growthPartnerService;
     }
 
     public List<TodayHabitSummary> listTodayHabits(Long childId) {
@@ -128,8 +133,12 @@ public class CheckinService {
                 .stream()
                 .collect(Collectors.toMap(HabitChildConfig::getId, Function.identity()));
 
+        Map<Long, Integer> growthDeltas = growthPartnerService.growthDeltasByCheckinIds(records.stream()
+                .map(HabitCheckinRecord::getId)
+                .toList());
+
         return records.stream()
-                .map(record -> toHistoryItem(record, childHabits.get(record.getChildHabitId())))
+                .map(record -> toHistoryItem(record, childHabits.get(record.getChildHabitId()), growthDeltas.get(record.getId())))
                 .toList();
     }
 
@@ -166,7 +175,13 @@ public class CheckinService {
             existingRecord.setNote("");
             existingRecord.touchForUpdate(context.user().getOpenid());
             habitCheckinRecordMapper.updateById(existingRecord);
-            return toSummary(childHabit, existingRecord, context.member());
+            GrowthPartnerChange growthPartnerChange = growthPartnerService.recordCheckinGrowth(
+                    context.familyId(),
+                    childId,
+                    existingRecord.getId(),
+                    context.user().getOpenid()
+            );
+            return toSummary(childHabit, existingRecord, context.member(), growthPartnerChange);
         }
 
         HabitCheckinRecord record = new HabitCheckinRecord();
@@ -180,7 +195,13 @@ public class CheckinService {
         record.touchForCreate(context.user().getOpenid());
         habitCheckinRecordMapper.insert(record);
 
-        return toSummary(childHabit, record, context.member());
+        GrowthPartnerChange growthPartnerChange = growthPartnerService.recordCheckinGrowth(
+                context.familyId(),
+                childId,
+                record.getId(),
+                context.user().getOpenid()
+        );
+        return toSummary(childHabit, record, context.member(), growthPartnerChange);
     }
 
     @Transactional
@@ -199,7 +220,13 @@ public class CheckinService {
         existingRecord.touchForUpdate(context.user().getOpenid());
         habitCheckinRecordMapper.updateById(existingRecord);
 
-        return toSummary(childHabit, null, context.member());
+        GrowthPartnerChange growthPartnerChange = growthPartnerService.undoCheckinGrowth(
+                context.familyId(),
+                childId,
+                existingRecord.getId(),
+                context.user().getOpenid()
+        );
+        return toSummary(childHabit, null, context.member(), growthPartnerChange);
     }
 
     private ChildContext requireChildContext(Long childId) {
@@ -261,6 +288,15 @@ public class CheckinService {
     }
 
     private TodayHabitSummary toSummary(HabitChildConfig childHabit, HabitCheckinRecord record, FamilyMember member) {
+        return toSummary(childHabit, record, member, null);
+    }
+
+    private TodayHabitSummary toSummary(
+            HabitChildConfig childHabit,
+            HabitCheckinRecord record,
+            FamilyMember member,
+            GrowthPartnerChange growthPartnerChange
+    ) {
         return new TodayHabitSummary(
                 childHabit.getId(),
                 childHabit.getChildId(),
@@ -274,11 +310,16 @@ public class CheckinService {
                 record == null ? null : record.getId(),
                 record == null ? null : record.getCheckedByMemberId(),
                 record == null ? null : record.getCheckinDate(),
-                record == null ? null : record.getCheckedTime()
+                record == null ? null : record.getCheckedTime(),
+                growthPartnerChange
         );
     }
 
-    private CheckinHistoryItem toHistoryItem(HabitCheckinRecord record, HabitChildConfig childHabit) {
+    private CheckinHistoryItem toHistoryItem(
+            HabitCheckinRecord record,
+            HabitChildConfig childHabit,
+            Integer growthPartnerDelta
+    ) {
         return new CheckinHistoryItem(
                 record.getId(),
                 record.getChildId(),
@@ -290,7 +331,8 @@ public class CheckinService {
                 record.getCheckinDate(),
                 record.getCheckedTime(),
                 record.getCheckedByMemberId(),
-                record.getNote()
+                record.getNote(),
+                growthPartnerDelta
         );
     }
 

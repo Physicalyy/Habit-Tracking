@@ -90,6 +90,135 @@
   color: #b42318;
 }
 
+.records-partner-empty,
+.growth-route-card {
+  margin-top: 28rpx;
+  padding: 28rpx;
+}
+
+.records-partner-empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-left: 8rpx solid #f79f42;
+  background: #fffaf2;
+}
+
+.partner-empty-title {
+  color: #191c1b;
+  font-size: 30rpx;
+  font-weight: 800;
+  line-height: 40rpx;
+}
+
+.partner-empty-desc {
+  margin-top: 6rpx;
+  color: #56625d;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.partner-empty-action {
+  flex: none;
+  margin-left: 18rpx;
+  padding: 10rpx 18rpx;
+  color: #ffffff;
+  background: #006b58;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 800;
+  line-height: 32rpx;
+}
+
+.growth-route-card {
+  overflow: hidden;
+}
+
+.growth-route-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.growth-route-title {
+  color: #191c1b;
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 42rpx;
+}
+
+.growth-route-points {
+  margin-top: 6rpx;
+  color: #a34b00;
+  font-size: 24rpx;
+  font-weight: 800;
+  line-height: 34rpx;
+}
+
+.growth-route-scroll {
+  width: 100%;
+  margin-top: 24rpx;
+  white-space: nowrap;
+}
+
+.growth-route-track {
+  display: flex;
+  min-width: 620rpx;
+}
+
+.route-stage {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  width: 184rpx;
+  margin-right: 18rpx;
+  padding: 18rpx 14rpx;
+  background: #fffaf2;
+  border: 2rpx solid #f5e5c9;
+  border-radius: 20rpx;
+}
+
+.route-stage-unlocked {
+  background: #f0fbf7;
+  border-color: #c6ecdf;
+}
+
+.route-stage-image {
+  width: 112rpx;
+  height: 112rpx;
+}
+
+.route-stage-name {
+  margin-top: 10rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 156rpx;
+  color: #20362e;
+  font-size: 24rpx;
+  font-weight: 800;
+  line-height: 34rpx;
+}
+
+.route-stage-meta {
+  margin-top: 2rpx;
+  color: #6e7a75;
+  font-size: 22rpx;
+  line-height: 30rpx;
+}
+
+.route-stage-status {
+  margin-top: 8rpx;
+  padding: 4rpx 12rpx;
+  color: #8a3d00;
+  background: #ffe7c2;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  font-weight: 800;
+  line-height: 28rpx;
+}
+
 .empty-card {
   margin-top: 32rpx;
   padding: 40rpx 32rpx;
@@ -167,6 +296,19 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.record-growth-delta {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 10rpx;
+  padding: 6rpx 12rpx;
+  color: #a34b00;
+  background: #fff0db;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 800;
+  line-height: 30rpx;
 }
 
 .record-time {

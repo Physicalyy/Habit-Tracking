@@ -4,6 +4,8 @@ const {
   getCheckinSummary,
   listCheckinHistory,
 } = require("../../services/checkin-service.js");
+const { getChildGrowthPartner } = require("../../services/growth-partner-service.js");
+const { normalizeAssetPath } = require("../../utils/asset-path.js");
 const { buildNavState } = require("../../utils/navigation-bar.js");
 const { syncCustomTabBar } = require("../../utils/tab-bar.js");
 
@@ -16,6 +18,11 @@ Page({
     totalCheckinDays: 0,
     totalCheckinCount: 0,
     summaryMetricText: "养成 0 个好习惯",
+    showRecordsPartnerSelect: false,
+    showRecordsGrowthRoute: false,
+    recordsPartnerName: "",
+    recordsPartnerPointsText: "",
+    recordsPartnerStageCards: [],
     historyGroups: [],
     hasNoRecords: false,
     icons: {
@@ -42,6 +49,11 @@ Page({
       totalCheckinDays: 0,
       totalCheckinCount: 0,
       summaryMetricText: "养成 0 个好习惯",
+      showRecordsPartnerSelect: false,
+      showRecordsGrowthRoute: false,
+      recordsPartnerName: "",
+      recordsPartnerPointsText: "",
+      recordsPartnerStageCards: [],
       historyGroups: [],
       hasNoRecords: false,
     });
@@ -53,8 +65,11 @@ Page({
       }
 
       const childId = bootstrap.defaultChild.id;
-      const summary = await getCheckinSummary(childId);
-      const records = await listCheckinHistory(childId);
+      const [summary, records, growthPartnerState] = await Promise.all([
+        getCheckinSummary(childId),
+        listCheckinHistory(childId),
+        getChildGrowthPartner(childId),
+      ]);
       const historyGroups = groupByDate(records);
       this.setData({
         navTitle: `${bootstrap.defaultChild.nickname}的打卡记录`,
@@ -64,6 +79,7 @@ Page({
         totalCheckinDays: summary.totalCheckinDays || 0,
         totalCheckinCount: summary.totalCheckinCount || 0,
         summaryMetricText: buildSummaryMetricText(summary),
+        ...buildRecordsGrowthPartnerState(growthPartnerState),
         historyGroups,
         hasNoRecords: historyGroups.length === 0,
       });
@@ -72,6 +88,10 @@ Page({
     } finally {
       this.setData({ loading: false });
     }
+  },
+
+  goGrowthPartnerSelect() {
+    wx.navigateTo({ url: ROUTES.GROWTH_PARTNER_SELECT });
   },
 });
 
@@ -103,9 +123,45 @@ function groupByDate(records) {
       recordSubtitleText: buildRecordSubtitleText(record),
       descriptionText: record.description || formatTimeText(record.checkedTime) || "已完成打卡",
       completeText: formatTimeText(record.checkedTime) ? `${formatTimeText(record.checkedTime)} 完成` : "已完成",
+      showGrowthDelta: record.growthPartnerDelta !== undefined && record.growthPartnerDelta !== null,
+      growthDeltaText: formatGrowthDelta(record.growthPartnerDelta),
     });
   }
   return groups;
+}
+
+function buildRecordsGrowthPartnerState(partnerState) {
+  if (!partnerState || !partnerState.adopted || !partnerState.partner) {
+    return {
+      showRecordsPartnerSelect: true,
+      showRecordsGrowthRoute: false,
+      recordsPartnerName: "",
+      recordsPartnerPointsText: "",
+      recordsPartnerStageCards: [],
+    };
+  }
+  return {
+    showRecordsPartnerSelect: false,
+    showRecordsGrowthRoute: true,
+    recordsPartnerName: partnerState.partner.nickname || partnerState.partner.templateName,
+    recordsPartnerPointsText: `${partnerState.partner.growthPoints || 0} 成长分`,
+    recordsPartnerStageCards: (partnerState.stages || []).map(toRecordsStageCard),
+  };
+}
+
+function toRecordsStageCard(stage) {
+  return {
+    ...stage,
+    imageUrl: normalizeAssetPath(stage.previewImageUrl || stage.imageUrl),
+    requiredText: `${stage.requiredGrowthPoints || 0} 分`,
+    stageClass: stage.unlocked ? "route-stage route-stage-unlocked" : "route-stage",
+    statusText: stage.unlocked ? "已解锁" : "未解锁",
+  };
+}
+
+function formatGrowthDelta(delta) {
+  const value = Number(delta || 0);
+  return value > 0 ? `+${value} 成长分` : `${value} 成长分`;
 }
 
 function buildRecordSubtitleText(record) {

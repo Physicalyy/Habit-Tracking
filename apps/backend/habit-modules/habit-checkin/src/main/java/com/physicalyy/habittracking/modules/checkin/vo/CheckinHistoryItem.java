@@ -14,6 +14,7 @@ public record CheckinHistoryItem(
         LocalDate checkinDate,
         LocalDateTime checkedTime,
         Long checkedByMemberId,
-        String note
+        String note,
+        Integer growthPartnerDelta
 ) {
 }

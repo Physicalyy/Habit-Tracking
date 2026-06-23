@@ -15,6 +15,7 @@ const requiredPages = [
   "pages/start/index",
   "pages/create-family/index",
   "pages/join-family/index",
+  "pages/growth-partner/index",
   "pages/today/index",
   "pages/records/index",
   "pages/me/index",
@@ -53,6 +54,9 @@ const requiredApiPaths = [
   "POST /api/families/{familyId}/invite/refresh",
   "GET /api/families/{familyId}/members",
   "GET /api/habit-templates",
+  "GET /api/growth-partner-templates",
+  "GET /api/children/{childId}/growth-partner",
+  "POST /api/children/{childId}/growth-partner/adopt",
   "GET /api/children/{childId}/habits",
   "POST /api/children/{childId}/habits",
   "PATCH /api/children/{childId}/habits/{childHabitId}",
@@ -80,6 +84,12 @@ const requiredAssets = [
   "assets/icons/favorite-teal.png",
   "assets/icons/add-home-white.png",
   "assets/icons/group-add-teal.png",
+  "assets/partners/thunder-war-tiger-stage-0.png",
+  "assets/partners/thunder-war-tiger-stage-1.png",
+  "assets/partners/thunder-war-tiger-stage-2.png",
+  "assets/partners/thunder-war-tiger-stage-3.png",
+  "assets/partners/thunder-war-tiger-stage-4.png",
+  "assets/partners/thunder-war-tiger-stage-5.png",
 ];
 
 const systemHabitSlugs = [
@@ -122,13 +132,21 @@ function assertTextIncludes(path, value) {
   assert.ok(content.includes(value), `${path} must include ${value}`);
 }
 
-function collectFiles(dir) {
+function assertTextExcludes(path, value) {
+  const content = readFileSync(path, "utf8");
+  assert.ok(!content.includes(value), `${path} must not include ${value}`);
+}
+
+function collectFiles(dir, ignoredDirs = []) {
   const files = [];
   for (const entry of readdirSync(dir)) {
     const path = join(dir, entry);
     const stat = statSync(path);
     if (stat.isDirectory()) {
-      files.push(...collectFiles(path));
+      const relativeDir = path.slice(rootDir.length + 1).replace(/\\/g, "/");
+      if (!ignoredDirs.includes(relativeDir)) {
+        files.push(...collectFiles(path, ignoredDirs));
+      }
     } else {
       files.push(path);
     }
@@ -137,7 +155,11 @@ function collectFiles(dir) {
 }
 
 function assertUploadSourceSize() {
-  const totalBytes = collectFiles(rootDir)
+  const projectConfig = readJson(join(rootDir, "project.config.json"));
+  const ignoredDirs = (projectConfig.packOptions?.ignore || [])
+    .filter((item) => item.type === "folder")
+    .map((item) => String(item.value || "").replace(/\\/g, "/").replace(/\/$/, ""));
+  const totalBytes = collectFiles(rootDir, ignoredDirs)
     .reduce((sum, path) => sum + statSync(path).size, 0);
   assert.ok(
     totalBytes <= maxUploadSourceSizeBytes,
@@ -1330,6 +1352,8 @@ function assertApiConfiguration() {
     "function undoTodayCheckin",
     "function checkinHistory",
     "function checkinSummary",
+    "function childGrowthPartner",
+    "function adoptGrowthPartner",
   ]) {
     assertTextIncludes(join(rootDir, "core/api.js"), token);
   }
@@ -1402,6 +1426,7 @@ function assertRoutesAndServices() {
     "FAMILY_MEMBERS",
     "FAMILY_INVITE",
     "HABIT_PERMISSION",
+    "GROWTH_PARTNER_SELECT",
   ]) {
     assertTextIncludes(join(rootDir, "core/routes.js"), token);
   }
@@ -1411,12 +1436,15 @@ function assertRoutesAndServices() {
     ["services/habit-service.js", ["listHabitTemplates", "API_ENDPOINTS.HABIT_TEMPLATES"]],
     ["services/child-habit-service.js", ["listChildHabits", "addSystemTemplateToChild", "createCustomHabit", "updateChildHabit", "updateChildHabitStatus", "removeChildHabit", "updateChildHabitPermission", "childHabitPermissions(", "deleteChildHabit("]],
     ["services/checkin-service.js", ["listTodayHabits", "checkinHabit", "undoCheckinHabit", "listCheckinHistory", "getCheckinSummary", "todayHabits(", "checkinHabit(", "undoTodayCheckin(", "checkinHistory(", "checkinSummary("]],
+    ["services/growth-partner-service.js", ["listGrowthPartnerTemplates", "getChildGrowthPartner", "adoptChildGrowthPartner", "GROWTH_PARTNER_TEMPLATES", "childGrowthPartner(", "adoptGrowthPartner("]],
     ["services/profile-service.js", ["uploadAvatar", "updateProfile", "shouldPromptProfile", "skipProfilePrompt", "buildAvatarImageUrl"]],
-    ["pages/today/index.js", ["listTodayHabits", "checkinHabit", "undoCheckinHabit", "todayHabits", "undoCheckinTap", "canCheckin", "currentUser", "shouldPromptProfile", "buildAvatarImageUrl", "profileDialogVisible", "onProfileSaved", "onProfileSkipped"]],
+    ["pages/growth-partner/index.js", ["listGrowthPartnerTemplates", "getChildGrowthPartner", "adoptChildGrowthPartner", "buildSelectedState", "toStageCard", "previewStage", "showPartnerSelector", "selectedPreviewImageUrl", "selectedStageShowcaseClass", "stage-showcase-pop", "stage-preview-selected", "领取"]],
+    ["pages/growth-partner/index.wxml", ["selectedStages", "adoptTap", "成长伙伴", "adoptButtonText", "showPartnerSelector", "stage-showcase", "selectedPreviewImageUrl", "selectedPreviewName", "bindtap=\"previewStage\"", "data-stage-code"]],
+    ["pages/today/index.js", ["listTodayHabits", "checkinHabit", "undoCheckinHabit", "todayHabits", "undoCheckinTap", "canCheckin", "currentUser", "shouldPromptProfile", "buildAvatarImageUrl", "profileDialogVisible", "onProfileSaved", "onProfileSkipped", "getChildGrowthPartner", "growthPartnerChange", "goGrowthPartnerSelect", "stage_upgrade", "stage_downgrade", "energy_gain", "growthPartnerTargetText", "growthPartnerProgressStyle"]],
     ["pages/today/index.json", ["profile-dialog"]],
-    ["pages/today/index.wxml", ["<profile-dialog", "bindsaved=\"onProfileSaved\"", "bindskipped=\"onProfileSkipped\""]],
-    ["pages/records/index.js", ["listCheckinHistory", "getCheckinSummary", "historyGroups", "totalCheckinDays", "ROUTES.START", "redirectTo"]],
-    ["pages/records/index.wxml", ["historyGroups", "record.recordDateText", "record.recordSubtitleText", "summaryMetricText", "totalCheckinDays"]],
+    ["pages/today/index.wxml", ["<profile-dialog", "bindsaved=\"onProfileSaved\"", "bindskipped=\"onProfileSkipped\"", "showPartnerSelectCard", "showGrowthPartnerCard", "goGrowthPartnerSelect", "growthPartnerPointsText", "growthPartnerTargetText", "growthPartnerProgressStyle"]],
+    ["pages/records/index.js", ["listCheckinHistory", "getCheckinSummary", "getChildGrowthPartner", "historyGroups", "totalCheckinDays", "ROUTES.START", "redirectTo", "growthPartnerDelta", "buildRecordsGrowthPartnerState"]],
+    ["pages/records/index.wxml", ["historyGroups", "record.recordDateText", "record.recordSubtitleText", "summaryMetricText", "totalCheckinDays", "showRecordsPartnerSelect", "showRecordsGrowthRoute", "recordsPartnerStageCards", "scroll-x=\"true\"", "record.showGrowthDelta", "record.growthDeltaText"]],
     ["pages/create-family/index.js", ["getBootstrap", "shouldPromptProfile", "profileDialogVisible", "onProfileSaved", "onProfileSkipped"]],
     ["pages/create-family/index.wxml", ["<profile-dialog", "bindsaved=\"onProfileSaved\"", "bindskipped=\"onProfileSkipped\""]],
     ["pages/join-family/index.js", ["getBootstrap", "shouldPromptProfile", "profileDialogVisible", "onProfileSaved", "onProfileSkipped"]],
@@ -1435,11 +1463,46 @@ function assertRoutesAndServices() {
       assertTextIncludes(join(rootDir, path), token);
     }
   }
+  assertTextExcludes(join(rootDir, "pages/growth-partner/index.wxml"), "selected-stage-hero");
+  assertTextExcludes(join(rootDir, "pages/growth-partner/index.js"), "已解锁");
+  assertTextExcludes(join(rootDir, "pages/growth-partner/index.js"), "stage-preview-unlocked");
+  for (const token of [
+    "selectedPreviewFrameUrl",
+    "selectedPreviewFrames",
+    "previewAnimationTimer",
+    "startPreviewAnimation",
+    "stopPreviewAnimation",
+    "buildPreviewFrames",
+  ]) {
+    assertTextExcludes(join(rootDir, "pages/growth-partner/index.js"), token);
+    assertTextExcludes(join(rootDir, "pages/growth-partner/index.wxml"), token);
+  }
+}
+
+function assertNoLegacyGrowthPartnerResiduals() {
+  const legacyTokens = ["fire" + "-dragon", "火" + "龙", "小" + "火"];
+  const textPaths = [
+    "core/api.js",
+    "services/growth-partner-service.js",
+    "utils/mock-api.js",
+    "pages/growth-partner/index.js",
+    "pages/growth-partner/index.wxml",
+    "pages/today/index.js",
+    "pages/today/index.wxml",
+    "pages/records/index.js",
+    "pages/records/index.wxml",
+  ];
+  for (const path of textPaths) {
+    const source = readFileSync(join(rootDir, path), "utf8");
+    for (const token of legacyTokens) {
+      assert.ok(!source.includes(token), `${path} must not include legacy growth partner token ${token}`);
+    }
+  }
 }
 
 async function assertMockFlow() {
   const { setRequestConfig } = requireFromRoot("./utils/request.js");
-  const { resetMockSession } = requireFromRoot("./services/session-state.js");
+  const { getMockSession, resetMockSession, saveMockSession } = requireFromRoot("./services/session-state.js");
   const { getBootstrap } = requireFromRoot("./services/bootstrap-service.js");
   const { updateProfile, shouldPromptProfile, buildAvatarImageUrl } = requireFromRoot("./services/profile-service.js");
   const {
@@ -1466,6 +1529,11 @@ async function assertMockFlow() {
     listCheckinHistory,
     getCheckinSummary,
   } = requireFromRoot("./services/checkin-service.js");
+  const {
+    adoptChildGrowthPartner,
+    getChildGrowthPartner,
+    listGrowthPartnerTemplates,
+  } = requireFromRoot("./services/growth-partner-service.js");
 
   setRequestConfig({ useMockApi: true });
   resetMockSession();
@@ -1516,13 +1584,36 @@ async function assertMockFlow() {
   assert.equal(todayHabits.length, 1);
   assert.equal(todayHabits[0].checked, false);
   assert.equal(todayHabits[0].canCheckin, true);
+  const growthTemplates = await listGrowthPartnerTemplates();
+  assert.equal(growthTemplates[0].templateCode, "thunder-war-tiger");
+  assert.equal(growthTemplates[0].name, "雷纹战虎");
+  assert.deepEqual(
+    growthTemplates[0].stages.map((stage) => stage.requiredGrowthPoints),
+    [0, 20, 40, 60, 80, 100],
+  );
+  const unadoptedPartner = await getChildGrowthPartner(childId);
+  assert.equal(unadoptedPartner.adopted, false);
+  const checkedWithoutPartner = await checkinHabit(childId, addedHabit.id);
+  assert.equal(checkedWithoutPartner.checked, true);
+  assert.equal(checkedWithoutPartner.growthPartnerChange, null);
+  const undoneWithoutPartner = await undoCheckinHabit(childId, addedHabit.id);
+  assert.equal(undoneWithoutPartner.checked, false);
+  assert.equal(undoneWithoutPartner.growthPartnerChange, null);
+  const adoptedPartner = await adoptChildGrowthPartner(childId, "thunder-war-tiger");
+  assert.equal(adoptedPartner.adopted, true);
+  assert.equal(adoptedPartner.partner.nickname, "雷纹战虎");
+  assert.equal(adoptedPartner.currentStage.stageCode, "thunder-war-tiger-egg");
   const checked = await checkinHabit(childId, addedHabit.id);
   assert.equal(checked.checked, true);
+  assert.equal(checked.growthPartnerChange.delta, 1);
+  assert.equal(checked.growthPartnerChange.animationType, "energy_gain");
+  assert.equal((await getChildGrowthPartner(childId)).partner.growthPoints, 1);
   await assert.rejects(() => checkinHabit(childId, addedHabit.id), /已打卡|already checked/);
   assert.equal((await getCheckinSummary(childId)).totalCheckinDays, 1);
   assert.equal((await getCheckinSummary(childId)).totalCheckinCount, 1);
   const undone = await undoCheckinHabit(childId, addedHabit.id);
   assert.equal(undone.checked, false);
+  assert.equal(undone.growthPartnerChange.delta, -1);
   assert.equal((await getCheckinSummary(childId)).totalCheckinCount, 0);
   await checkinHabit(childId, addedHabit.id);
   const disabledAfterCheckin = await updateChildHabitStatus(childId, addedHabit.id, "disabled");
@@ -1531,11 +1622,37 @@ async function assertMockFlow() {
   assert.equal(history.length, 1);
   assert.equal(history[0].habitName, "每天主动喝水");
   assert.equal(history[0].iconKey, "water_drop");
+  assert.equal(history[0].growthPartnerDelta, 1);
   await removeChildHabit(childId, addedHabit.id);
   assert.equal((await listChildHabits(childId)).length, 0);
   assert.equal((await listCheckinHistory(childId)).length, 1);
   const readdedHabit = await addSystemTemplateToChild(childId, templates[0].id);
   assert.notEqual(readdedHabit.id, addedHabit.id);
+  const stageSession = getMockSession();
+  saveMockSession({
+    ...stageSession,
+    growthPartner: {
+      ...stageSession.growthPartner,
+      growthPoints: 39,
+    },
+  });
+  const upgraded = await checkinHabit(childId, readdedHabit.id);
+  assert.equal(upgraded.growthPartnerChange.beforeGrowthPoints, 39);
+  assert.equal(upgraded.growthPartnerChange.afterGrowthPoints, 40);
+  assert.equal(upgraded.growthPartnerChange.stageChanged, true);
+  assert.equal(upgraded.growthPartnerChange.animationType, "stage_upgrade");
+  assert.equal(upgraded.growthPartnerChange.beforeStageCode, "thunder-war-tiger-cub");
+  assert.equal(upgraded.growthPartnerChange.afterStageCode, "thunder-war-tiger-spark");
+  const upgradedPartner = await getChildGrowthPartner(childId);
+  assert.equal(upgradedPartner.currentStage.stageCode, "thunder-war-tiger-spark");
+  const reverted = await undoCheckinHabit(childId, readdedHabit.id);
+  assert.equal(reverted.growthPartnerChange.beforeGrowthPoints, 40);
+  assert.equal(reverted.growthPartnerChange.afterGrowthPoints, 39);
+  assert.equal(reverted.growthPartnerChange.stageChanged, true);
+  assert.equal(reverted.growthPartnerChange.animationType, "stage_downgrade");
+  assert.equal(reverted.growthPartnerChange.beforeStageCode, "thunder-war-tiger-spark");
+  assert.equal(reverted.growthPartnerChange.afterStageCode, "thunder-war-tiger-cub");
+  assert.equal((await getChildGrowthPartner(childId)).currentStage.stageCode, "thunder-war-tiger-cub");
 
   const custom = await createCustomHabit({
     childId,
@@ -1613,6 +1730,7 @@ for (const path of [
   "services/habit-service.js",
   "services/child-habit-service.js",
   "services/checkin-service.js",
+  "services/growth-partner-service.js",
   "services/profile-service.js",
   "services/session-state.js",
 ]) {
@@ -1626,6 +1744,7 @@ for (const asset of requiredAssets) {
 
 assertApiConfiguration();
 assertRoutesAndServices();
+assertNoLegacyGrowthPartnerResiduals();
 
 const contractPath = join(repoDir, "docs/api/miniprogram-onboarding-v1.md");
 assertFile(contractPath);
@@ -1638,6 +1757,9 @@ assert.ok(contractSource.includes('"avatarUrl"'), "bootstrap contract must docum
 assert.ok(contractSource.includes('"profileCompleted"'), "bootstrap contract must document profileCompleted");
 assert.ok(contractSource.includes("POST /api/me/avatar"), "contract must document avatar upload");
 assert.ok(contractSource.includes("PATCH /api/me/profile"), "contract must document profile update");
+for (const token of ["fire" + "-dragon", "火" + "龙", "小" + "火"]) {
+  assert.ok(!contractSource.includes(token), `contract must not include legacy growth partner token ${token}`);
+}
 
 await assertMockFlow();
 

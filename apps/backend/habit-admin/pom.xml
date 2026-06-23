@@ -40,6 +40,10 @@
         </dependency>
         <dependency>
             <groupId>com.physicalyy</groupId>
+            <artifactId>habit-growth-partner</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.physicalyy</groupId>
             <artifactId>habit-checkin</artifactId>
         </dependency>
         <dependency>

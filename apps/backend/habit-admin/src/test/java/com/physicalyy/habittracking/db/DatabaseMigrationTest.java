@@ -33,6 +33,10 @@ class DatabaseMigrationTest {
                 "habit_child_config",
                 "habit_child_allowed_member",
                 "habit_checkin_record",
+                "growth_partner_template",
+                "growth_partner_stage",
+                "child_growth_partner",
+                "growth_partner_log",
                 "monitor_request_record",
                 "monitor_slow_sql_record"
         );

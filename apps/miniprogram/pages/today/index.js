@@ -5,6 +5,7 @@ const {
   listTodayHabits,
   undoCheckinHabit,
 } = require("../../services/checkin-service.js");
+const { getChildGrowthPartner } = require("../../services/growth-partner-service.js");
 const { normalizeAssetPath } = require("../../utils/asset-path.js");
 const { defaultFeedbackState, showInlineFeedback } = require("../../utils/inline-feedback.js");
 const { buildNavState } = require("../../utils/navigation-bar.js");
@@ -44,6 +45,16 @@ Page({
     progressText: "0%",
     progressRingStyle: "",
     progressHint: "先配置一个习惯，开始今天的成长记录",
+    showPartnerSelectCard: false,
+    showGrowthPartnerCard: false,
+    growthPartnerCardClass: "growth-partner-card card",
+    growthPartnerImageUrl: "",
+    growthPartnerName: "",
+    growthPartnerStageName: "",
+    growthPartnerPointsText: "",
+    growthPartnerNextText: "",
+    growthPartnerTargetText: "",
+    growthPartnerProgressStyle: "",
     checkingHabitId: "",
     undoingHabitId: "",
     animatingHabitId: "",
@@ -89,6 +100,16 @@ Page({
       progressText: "0%",
       progressRingStyle: buildProgressRingStyle(0),
       progressHint: "先配置一个习惯，开始今天的成长记录",
+      showPartnerSelectCard: false,
+      showGrowthPartnerCard: false,
+      growthPartnerCardClass: "growth-partner-card card",
+      growthPartnerImageUrl: "",
+      growthPartnerName: "",
+      growthPartnerStageName: "",
+      growthPartnerPointsText: "",
+      growthPartnerNextText: "",
+      growthPartnerTargetText: "",
+      growthPartnerProgressStyle: "",
       checkingHabitId: "",
       undoingHabitId: "",
       animatingHabitId: "",
@@ -122,12 +143,16 @@ Page({
         childNickname: bootstrap.defaultChild.nickname,
       });
 
-      const todayHabits = await listTodayHabits(childId);
+      const [todayHabits, growthPartnerState] = await Promise.all([
+        listTodayHabits(childId),
+        getChildGrowthPartner(childId),
+      ]);
       const habitCards = todayHabits.map(toCardState);
       this.setData({
         navTitle: `${bootstrap.defaultChild.nickname}今日打卡`,
         currentDateText: formatTodayText(),
         todayHabits: habitCards,
+        ...buildGrowthPartnerDisplayState(growthPartnerState, ""),
         ...buildTodayDisplayState(habitCards, false),
       });
     } catch (error) {
@@ -143,6 +168,10 @@ Page({
 
   goHabitManage() {
     wx.navigateTo({ url: ROUTES.HABIT_MANAGE });
+  },
+
+  goGrowthPartnerSelect() {
+    wx.navigateTo({ url: ROUTES.GROWTH_PARTNER_SELECT });
   },
 
   onProfileSaved(event) {
@@ -182,6 +211,7 @@ Page({
         ...buildCheckinAnimationState(this.data.todayHabits, habitIdText, "checking", this.data.checkedHabitsExpanded),
       });
       const checkedHabit = await checkinHabit(this.data.childId, childHabitId);
+      await this.refreshGrowthPartnerAfterChange(checkedHabit.growthPartnerChange);
       this.setData(buildCheckinAnimationState(this.data.todayHabits, habitIdText, "success", this.data.checkedHabitsExpanded));
       setTimeout(() => {
         if (this.data.animatingHabitId === habitIdText && this.data.checkinVisualState === "success") {
@@ -218,6 +248,7 @@ Page({
     try {
       this.setData({ undoingHabitId: String(childHabitId) });
       const uncheckedHabit = await undoCheckinHabit(this.data.childId, childHabitId);
+      await this.refreshGrowthPartnerAfterChange(uncheckedHabit.growthPartnerChange);
       const nextHabitCards = replaceHabitCard(this.data.todayHabits, childHabitId, uncheckedHabit);
       this.setData({
         todayHabits: nextHabitCards,
@@ -228,6 +259,17 @@ Page({
     } finally {
       this.setData({ undoingHabitId: "" });
     }
+  },
+
+  async refreshGrowthPartnerAfterChange(growthPartnerChange) {
+    if (!growthPartnerChange) {
+      return;
+    }
+    const growthPartnerState = await getChildGrowthPartner(this.data.childId);
+    this.setData(buildGrowthPartnerDisplayState(growthPartnerState, growthPartnerChange.animationType));
+    setTimeout(() => {
+      this.setData({ growthPartnerCardClass: "growth-partner-card card" });
+    }, 900);
   },
 });
 
@@ -274,6 +316,72 @@ function buildTodayDisplayState(habitCards, checkedHabitsExpanded) {
     ...buildHabitGroups(habitCards, checkedHabitsExpanded),
     hasNoHabits: habitCards.length === 0,
   };
+}
+
+function buildGrowthPartnerDisplayState(partnerState, animationType) {
+  if (!partnerState || !partnerState.adopted || !partnerState.partner) {
+    return {
+      showPartnerSelectCard: true,
+      showGrowthPartnerCard: false,
+      growthPartnerCardClass: "growth-partner-card card",
+      growthPartnerImageUrl: "",
+      growthPartnerName: "",
+      growthPartnerStageName: "",
+      growthPartnerPointsText: "",
+      growthPartnerNextText: "",
+      growthPartnerTargetText: "",
+      growthPartnerProgressStyle: "",
+    };
+  }
+  const partner = partnerState.partner;
+  const currentStage = partnerState.currentStage || {};
+  const nextStage = partnerState.nextStage || null;
+  const growthPoints = Number(partner.growthPoints || 0);
+  const progress = buildGrowthPartnerProgress(currentStage, nextStage, growthPoints);
+  return {
+    showPartnerSelectCard: false,
+    showGrowthPartnerCard: true,
+    growthPartnerCardClass: buildGrowthPartnerCardClass(animationType),
+    growthPartnerImageUrl: normalizeAssetPath(currentStage.imageUrl),
+    growthPartnerName: partner.nickname || partner.templateName,
+    growthPartnerStageName: currentStage.name || "",
+    growthPartnerPointsText: nextStage
+      ? `${growthPoints} / ${nextStage.requiredGrowthPoints}`
+      : `${growthPoints} / ${growthPoints}`,
+    growthPartnerNextText: nextStage
+      ? `下一阶段：${nextStage.name}`
+      : "已解锁全部阶段",
+    growthPartnerTargetText: nextStage
+      ? `再得 ${Math.max(0, Number(nextStage.requiredGrowthPoints || 0) - growthPoints)} 分解锁下一阶段`
+      : "全部阶段已解锁",
+    growthPartnerProgressStyle: `width: ${progress}%;`,
+  };
+}
+
+function buildGrowthPartnerCardClass(animationType) {
+  if (animationType === "stage_upgrade") {
+    return "growth-partner-card card growth-partner-stage-upgrade";
+  }
+  if (animationType === "stage_downgrade") {
+    return "growth-partner-card card growth-partner-stage-downgrade";
+  }
+  if (animationType === "energy_gain") {
+    return "growth-partner-card card growth-partner-energy-gain";
+  }
+  return "growth-partner-card card";
+}
+
+function buildGrowthPartnerProgress(currentStage, nextStage, growthPoints) {
+  if (!nextStage) {
+    return 100;
+  }
+  const start = Number(currentStage.requiredGrowthPoints || 0);
+  const end = Number(nextStage.requiredGrowthPoints || 0);
+  if (end <= start) {
+    return 0;
+  }
+  const percent = Math.round(((growthPoints - start) / (end - start)) * 100);
+  return Math.max(0, Math.min(100, percent));
 }
 
 function buildCheckinAnimationState(habitCards, animatingHabitId, checkinVisualState, checkedHabitsExpanded) {

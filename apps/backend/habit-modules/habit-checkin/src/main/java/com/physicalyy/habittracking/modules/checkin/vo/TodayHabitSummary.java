@@ -1,5 +1,7 @@
 package com.physicalyy.habittracking.modules.checkin.vo;
 
+import com.physicalyy.habittracking.modules.growthpartner.vo.GrowthPartnerChange;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -16,6 +18,7 @@ public record TodayHabitSummary(
         Long checkinId,
         Long checkedByMemberId,
         LocalDate checkinDate,
-        LocalDateTime checkedTime
+        LocalDateTime checkedTime,
+        GrowthPartnerChange growthPartnerChange
 ) {
 }
